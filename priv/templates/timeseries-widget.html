@@ -1,0 +1,11 @@
+{% extends "collapsible-panel-widget.html" %}
+
+{% block title %}{{title}}{% endblock %}
+
+{% block body %}
+<div data-widget-source="{{source}}"
+     data-widget-format="{{format}}"
+     data-widget-label="{{label}}"
+     data-widget-init="initTimeseries"
+     data-widget-update="updateTimeseries"></div>
+{% endblock %}

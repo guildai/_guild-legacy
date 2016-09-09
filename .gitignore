@@ -1,0 +1,8 @@
+/build
+/local-deps
+/man/*
+!/man/*.ronn
+*.beam
+erl_crash.dump
+rebar3.crashdump
+rebar.lock

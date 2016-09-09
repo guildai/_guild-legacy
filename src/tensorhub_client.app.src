@@ -1,0 +1,10 @@
+%%% -*-erlang-*-
+{application, tensorhub_client,
+ [{description, "TensorHub client"},
+  {vsn, "0.0.0"},
+  {modules, []},
+  {registered, []},
+  {applications, [kernel, stdlib, gproc]},
+  {mod, {e2_application, [hubc_app]}},
+  {env, []}
+ ]}.

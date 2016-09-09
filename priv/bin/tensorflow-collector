@@ -1,0 +1,93 @@
+#!/usr/bin/env python
+
+import json
+import os
+import sys
+
+from tensorflow.python.summary import event_multiplexer
+from tensorflow.python.summary import event_accumulator
+
+LOGDIR = None
+
+RELOAD_INTERVAL = 5
+
+event_loaders = {}
+
+###################################################################
+# Init
+###################################################################
+
+def init():
+    global LOGDIR
+    LOGDIR = os.getenv("LOGDIR")
+    if not LOGDIR:
+        raise AssertionError("LOGDIR env not set")
+
+###################################################################
+# Scalars
+###################################################################
+
+def print_scalars():
+    print_ktsv(latest_scalars())
+
+def latest_scalars():
+    refresh_event_loaders()
+    data = {}
+    for run, reader in event_loaders.items():
+        add_scalars_from_events(reader.Load(), run, data)
+    return data
+
+def add_scalars_from_events(events, run, data):
+    for event in events:
+        if event.HasField("summary"):
+            add_scalars_from_summary(event.summary.value, run, event, data)
+
+def add_scalars_from_summary(summary, run, event, data):
+    for value in summary:
+        if value.HasField("simple_value"):
+            add_scalar(
+                run, value.tag, event.wall_time, event.step,
+                value.simple_value, data)
+
+def add_scalar(run, tag, time, step, value, data):
+    vals = data.setdefault("tf/" + run + "/" + tag, [])
+    vals.append([int(time * 1000), step, legal_json(value)])
+
+def legal_json(val):
+    if val != val: # test for float('nan')
+        return None
+    else:
+        return val
+
+def refresh_event_loaders():
+    for subdir in event_multiplexer.GetLogdirSubdirectories(LOGDIR):
+        name = os.path.relpath(subdir, LOGDIR)
+        if name not in event_loaders:
+            event_loaders[name] = init_event_loader(subdir)
+
+def init_event_loader(path):
+    return event_accumulator._GeneratorFromPath(path)
+
+###################################################################
+# Print
+###################################################################
+
+def print_ktsv(vals):
+    json.dump({"ktsv": vals}, sys.stdout)
+    print_eof()
+
+def print_eof():
+    sys.stdout.write("\n\n")
+    sys.stdout.flush()
+
+###################################################################
+# Main
+###################################################################
+
+def main():
+    init()
+    while sys.stdin.readline():
+        print_scalars()
+        print_eof()
+
+main()

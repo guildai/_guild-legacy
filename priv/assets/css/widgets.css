@@ -1,0 +1,73 @@
+/* ===================================================================
+ * Panel widget
+ * =================================================================== */
+
+.panel .label-icon {
+    font-size: 64px;
+    margin-top: 4px;
+}
+
+.panel .label-value {
+    font-size: 36px;
+    white-space: nowrap;
+    line-height: 36px;
+    margin-top: 6px;
+    transform:scale(0.95,1);
+    width: 103%;
+}
+
+.panel .label-value-small {
+    font-size: 28px;
+}
+
+.panel .label-caption {
+    font-size: 18px;
+    line-height: 18px;
+    white-space: nowrap;
+    margin: 6px 0;
+}
+
+.panel-heading {
+    color: #fff;
+}
+
+/* ===================================================================
+ * Status wiget
+ * =================================================================== */
+
+.panel .status-icon {
+    font-size: 36px;
+    margin-top:6px;
+}
+
+.panel .status-label {
+    font-size: 30px;
+}
+
+/* ===================================================================
+ * Output widget
+ * =================================================================== */
+
+table.output tr.stderr {
+    color: #777
+}
+
+/* ===================================================================
+ * Data tables
+ * =================================================================== */
+
+.dataTable > tbody > tr > td {
+    padding: 6px;
+}
+
+.dataTables_wrapper .dataTables_filter {
+    float: inherit !important;
+    text-align: inherit !important;
+}
+
+.dataTables_wrapper .dataTables_filter input {
+    font-weight: normal !important;
+    margin-left: 0 !important;
+    font-size: 14px !important;
+    width: 15em !important;
+}

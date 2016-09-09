@@ -1,0 +1,251 @@
+#!/usr/bin/env python
+
+from __future__ import division
+
+import json
+import re
+import sys
+
+CPU_LINE_RE = re.compile("^(cpu.*?) +(\\d+) (\\d+) (\\d+) (\\d+)")
+
+last_cpu = None
+last_disk = None
+
+###################################################################
+# CPU stats
+###################################################################
+
+def print_cpu_stats():
+    print_kv(cpu_stats())
+
+def cpu_stats():
+    global last_cpu
+    cur_cpu = read_cpu_stats()
+    if last_cpu:
+        stats = calc_cpu_stats(cur_cpu, last_cpu)
+    else:
+        stats = {}
+    last_cpu = cur_cpu
+    return stats
+
+def read_cpu_stats():
+    stats = {}
+    stats["cpu"] = init_cpu_stats()
+    for line in open("/proc/stat", "r"):
+        m = CPU_LINE_RE.match(line)
+        if m:
+            name, user, nice, sys, idle = m.groups()
+            cpu_stats = cpu_stats_from_parts(user, nice, sys, idle)
+            stats[name] = cpu_stats
+            stats["cpu"] = increment_cpu_stats(stats["cpu"], cpu_stats)
+    return stats
+
+def init_cpu_stats():
+    return 0, 0
+
+def cpu_stats_from_parts(user, nice, sys, idle):
+    user = int(user)
+    nice = int(nice)
+    sys = int(sys)
+    idle = int(idle)
+    used = user + nice + sys
+    total = used + idle
+    return used, total
+
+def increment_cpu_stats(stats, incr):
+    stats_used, stats_total = stats
+    incr_used, incr_total = incr
+    return stats_used + incr_used, stats_total + incr_total
+
+def calc_cpu_stats(cur, last):
+    stats = {}
+    for name in cur:
+        cur_used, cur_total = cur[name]
+        last_used, last_total = last[name]
+        if cur_total > last_total:
+            util = (cur_used - last_used) / (cur_total - last_total)
+        else:
+            util = 0
+        stats["sys/%s/util" % name] = util
+    return stats
+
+###################################################################
+# Disk stats
+###################################################################
+
+def print_disk_stats(uptime):
+    print_kv(io_stats(uptime))
+
+def io_stats(uptime):
+    global last_disk
+    cur_disk = uptime, read_disk_stats()
+    if last_disk:
+        stats = calc_disk_stats(cur_disk, last_disk)
+    else:
+        stats = {}
+    last_disk = cur_disk
+    return stats
+
+def read_disk_stats():
+    stats = {}
+    for line in open("/proc/diskstats", "r"):
+        parts = line.split()
+        if not device_in_use(parts):
+            continue
+        stats[device_name(parts)] = device_stats(parts)
+    return stats
+
+def device_in_use(parts):
+    return parts[13] != '0'
+
+def device_name(parts):
+    return parts[2]
+
+def device_stats(parts):
+    fields = parts[3:]
+    return {
+        "r": int(fields[0]),
+        "rrqm": int(fields[1]),
+        "rsec": int(fields[2]),
+        "rms": int(fields[3]),
+        "w": int(fields[4]),
+        "wrqm": int(fields[5]),
+        "wsec": int(fields[6]),
+        "wms": int(fields[7]),
+        "ioms": int(fields[9]),
+        "wioms": int(fields[10])
+    }
+
+def calc_disk_stats(cur, last):
+    stats = {}
+    cur_time, cur_stats = cur
+    last_time, last_stats = last
+    for device_name in cur_stats:
+        for name, val in device_disk_stats(cur_time,
+                                         cur_stats[device_name],
+                                         last_time,
+                                         last_stats[device_name]):
+            stats[device_stat_name(device_name, name)] = val
+    return stats
+
+def device_disk_stats(time1, stats1, time0, stats0):
+    elapsed = time1 - time0
+    rrqm = stats1["rrqm"] - stats0["rrqm"]
+    wrqm = stats1["wrqm"] - stats0["wrqm"]
+    reads = stats1["r"] - stats0["r"]
+    writes = stats1["w"] - stats0["w"]
+    rsecs = stats1["rsec"] - stats0["rsec"]
+    wsecs = stats1["wsec"] - stats0["wsec"]
+    wioms = stats1["wioms"] - stats0["wioms"]
+    rms = stats1["rms"] - stats0["rms"]
+    wms = stats1["wms"] - stats0["wms"]
+    ioms = stats1["ioms"] - stats0["ioms"]
+    util = ioms / elapsed / 1000
+    io = reads + writes
+    if io > 0:
+        avgrqsz = (rsecs + wsecs) / io
+        await = rms + wms / io
+        svctm = util * 1000 / io
+    else:
+        avgrqsz = 0
+        await = 0
+        svctm = 0
+    if ioms > 0:
+        avgqusz = wioms / ioms
+    else:
+        avgqusz = 0
+    return [
+        ("rrqms", rrqm / elapsed),
+        ("wrqm", wrqm / elapsed),
+        ("rs", reads / elapsed),
+        ("ws", writes / elapsed),
+        ("rsecs", rsecs / elapsed),
+        ("wsecs", wsecs / elapsed),
+        ("avgrqsz", avgrqsz),
+        ("avgqusz", wioms / elapsed / 1000),
+        ("util", util),
+        ("await", await),
+        ("svctm", svctm)
+    ]
+
+def device_stat_name(device_name, stat_name):
+    return "sys/dev%s/%s" % (device_name, stat_name)
+
+###################################################################
+# Memory stats
+###################################################################
+
+def print_mem_stats():
+    print_kv(mem_stats())
+
+def mem_stats():
+    return calc_mem_stats(read_mem_stats())
+
+def read_mem_stats():
+    names = set([
+        "MemTotal",
+        "MemFree",
+        "Buffers",
+        "Cached",
+        "SwapTotal",
+        "SwapFree"
+    ])
+    stats = {}
+    for line in open("/proc/meminfo", "r"):
+        parts = line.split()
+        name = parts[0][0:-1]
+        if name in names:
+            if parts[2] != "kB":
+                raise AssertionError(parts)
+            stats[name] = parts[1]
+    return stats
+
+def calc_mem_stats(raw):
+    mem_total = int(raw["MemTotal"]) * 1024
+    mem_free = int(raw["MemFree"]) * 1024
+    swap_total = int(raw["SwapTotal"]) * 1024
+    swap_free = int(raw["SwapFree"]) * 1024
+    if swap_total > 0:
+        swap_util = (swap_total - swap_free) / swap_total
+    else:
+        swap_util = 0
+    return {
+        "sys/mem/total": mem_total,
+        "sys/mem/free": mem_free,
+        "sys/mem/used": mem_total - mem_free,
+        "sys/mem/util": (mem_total - mem_free) / mem_total,
+        "sys/mem/cached": int(raw["Cached"]) * 1024,
+        "sys/mem/buffers": int(raw["Buffers"]) * 1024,
+        "sys/swap/total": swap_total,
+        "sys/swap/free": swap_free,
+        "sys/swap/util": swap_util,
+    }
+
+###################################################################
+# Print
+###################################################################
+
+def print_kv(vals):
+    json.dump({"kv": vals}, sys.stdout)
+    print_eof()
+
+def print_eof():
+    sys.stdout.write("\n\n")
+    sys.stdout.flush()
+
+###################################################################
+# Main
+###################################################################
+
+def main():
+    while sys.stdin.readline():
+        uptime = read_uptime()
+        print_cpu_stats()
+        print_disk_stats(uptime)
+        print_mem_stats()
+        print_eof()
+
+def read_uptime():
+    return float(open("/proc/uptime", "r").read().split()[0])
+
+main()

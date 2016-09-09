@@ -1,0 +1,15 @@
+<table
+    data-widget-init="initCompareTable"
+    data-coldefs="coldefs-{{uid}}"
+    class="compare table table-sm table-hover" width="100%"></table>
+
+<div id="coldefs-{{uid}}" class="hidden">
+  {% for col in columns %}
+  <div class="coldef"
+       data-title="{{col.title}}"
+       data-source="{{col.source}}"
+       data-attribute="{{col.attribute}}"
+       data-reduce="{{col.reduce}}"
+       data-format="{{col.format}}"></div>
+  {% endfor %}
+</div>

@@ -1,0 +1,3 @@
+--ignore-dir=rel
+--ignore-dir=build
+--ignore-file=is:erl_crash.dump
