@@ -1,11 +1,9 @@
 {% extends "base.html" %}
 
 {% block styles %}
-{#
-{% for css in viewdef|viewdef_css %}
+{% for css in active_view|page_view_css %}
 <link href="{{css}}" rel="stylesheet">
 {% endfor %}
-#}
 {% endblock %}
 
 {% block navbar_menu %}
@@ -25,18 +23,14 @@
 {% endblock %}
 
 {% block scripts %}
-{#
-{% for js in viewdef|viewdef_js %}
+{% for js in active_view|page_view_js %}
 <script src="{{js}}"></script>
 {% endfor %}
-#}
 <script>
- {#
  $(function() {
      var selectedRun = {{params.run|default:null}};
      var syncInterval = {{view_opts.data_poll_interval|default:5}}
-     initIndexPage(selectedRun, syncInterval);
+     initViewPage(selectedRun, syncInterval);
  });
- #}
 </script>
 {% endblock %}

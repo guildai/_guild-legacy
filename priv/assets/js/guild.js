@@ -167,6 +167,37 @@ function comparePageState() {
 }
 
 /********************************************************************
+ * Project view support
+ ********************************************************************/
+
+function initViewPage(selectedRun, dataRefreshInterval) {
+    initRunsSelectChangeHandler();
+    var state = viewPageState(selectedRun, dataRefreshInterval);
+    refreshViewPage(state);
+}
+
+function viewPageState(selectedRun, refreshIntervalSeconds) {
+    return {
+        selectedRun: selectedRun,
+        refreshInterval: refreshIntervalSeconds * 1000,
+        runs: null,
+        run: null,
+        widgetsInit: false,
+        runStopped: false
+    };
+}
+
+function refreshViewPage(state) {
+    fetchGuildData("/data/runs", function(runs) {
+        refreshStateRuns(state, runs);
+        updateRunsSelect(state);
+        maybeUpdateWidgets(state);
+        updateRunStatus(state);
+        scheduleNextIndexPageRefresh(state);
+    });
+}
+
+/********************************************************************
  * Data
  ********************************************************************/
 

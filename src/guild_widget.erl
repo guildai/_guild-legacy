@@ -21,7 +21,7 @@
 for_name("compare-table") -> {ok, data_table_widget(guild_compare_table_widget)};
 for_name("flags")         -> {ok, default_widget(guild_flags_widget)};
 for_name("output")        -> {ok, data_table_widget(guild_output_widget)};
-for_name("page-header")   -> {ok, default_widget(guild_page_header_widget)};
+for_name("page-header")   -> {ok, select_widget(guild_page_header_widget)};
 for_name("placeholder")   -> {ok, default_widget(guild_placeholder_widget)};
 for_name("status")        -> {ok, default_widget(guild_status_widget)};
 for_name("timeseries")    -> {ok, c3_widget(guild_timeseries_widget)};
@@ -30,7 +30,8 @@ for_name(_)               -> error.
 
 default_widget(Template) ->
     #widget{css=["/assets/css/widgets.css"],
-            js=["/assets/js/widgets.js"],
+            js=["/assets/js/numeral.min.js",
+                "/assets/js/widgets.js"],
             template=Template}.
 
 data_table_widget(Template) ->
@@ -45,6 +46,13 @@ c3_widget(Template) ->
                  "/assets/css/widgets.css"],
             js=["/assets/js/d3.min.js",
                 "/assets/js/c3.js",
+                "/assets/js/widgets.js"],
+            template=Template}.
+
+select_widget(Template) ->
+    #widget{css=["/assets/css/bootstrap-select.min.css",
+                 "/assets/css/widgets.css"],
+            js=["/assets/js/bootstrap-select.min.js",
                 "/assets/js/widgets.js"],
             template=Template}.
 

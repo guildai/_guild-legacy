@@ -21,7 +21,8 @@
 -export([render_viewdef/1, viewdef_css/1, viewdef_js/1,
          resolve_value/1, format_value/2, resolve_icon_alias/1,
          navbar_links/1, navbar_item_active_class/2,
-         navbar_item_link/2, render_page_view/2]).
+         navbar_item_link/2, render_page_view/2, page_view_css/1,
+         page_view_js/1]).
 
 version() -> 1.
 
@@ -35,7 +36,9 @@ inventory(filters) ->
      navbar_links,
      navbar_item_active_class,
      navbar_item_link,
-     render_page_view];
+     render_page_view,
+     page_view_css,
+     page_view_js];
 inventory(tags) ->
     [].
 
@@ -96,13 +99,13 @@ widgets_acc([{row, Cols}|Rest], Acc) ->
 widgets_acc([{col, _Attrs, Children}|Rest], Acc) ->
     widgets_acc(Rest, widgets_acc(Children, Acc));
 widgets_acc([{Name, _, _}|Rest], Acc) ->
-    widgets_acc(Rest, try_apply_widget(Name, Acc));
+    widgets_acc(Rest, try_acc_widget(Name, Acc));
 widgets_acc([{Name, _}|Rest], Acc) ->
-    widgets_acc(Rest, try_apply_widget(Name, Acc));
+    widgets_acc(Rest, try_acc_widget(Name, Acc));
 widgets_acc([], Acc) ->
     Acc.
 
-try_apply_widget(Name, Acc) ->
+try_acc_widget(Name, Acc) ->
     case guild_widget:for_name(Name) of
         {ok, W} -> [W|Acc];
         error -> Acc
@@ -250,7 +253,7 @@ navbar_item_link(Item, Params) ->
 %% Render page view
 %% ===================================================================
 
-render_page_view({_Name, View}, Context) ->
+render_page_view({_, View}, Context) ->
     [render_view_row(Row, Context) || {row, Row} <- View].
 
 render_view_row(Cols, Context) ->
@@ -269,3 +272,25 @@ render_view_col_item({widget, WidgetName, Attrs}, Context) ->
     AllAttrs = apply_widget_uid(Attrs ++ Context),
     Vars = proplists:unfold(AllAttrs),
     render_widget(WidgetName, Vars).
+
+%% ===================================================================
+%% Page view CSS/JS
+%% ===================================================================
+
+page_view_css({_, View}) ->
+    widget_resources(fun guild_widget:css/1, page_view_widgets(View)).
+
+page_view_js({_, View}) ->
+    widget_resources(fun guild_widget:js/1, page_view_widgets(View)).
+
+page_view_widgets(View) ->
+    page_view_widgets_acc(View, []).
+
+page_view_widgets_acc([{row, Cols}|Rest], Acc) ->
+    page_view_widgets_acc(Rest, page_view_widgets_acc(Cols, Acc));
+page_view_widgets_acc([{col, _, Items}|Rest], Acc) ->
+    page_view_widgets_acc(Rest, page_view_widgets_acc(Items, Acc));
+page_view_widgets_acc([{widget, Name, _}|Rest], Acc) ->
+    page_view_widgets_acc(Rest, try_acc_widget(Name, Acc));
+page_view_widgets_acc([], Acc) ->
+    Acc.
