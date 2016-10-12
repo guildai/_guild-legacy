@@ -14,7 +14,7 @@
 
 -module(guild_project_view).
 
--behavior(e2_supervisor).
+-behavior(e2_service).
 
 -export([start_link/2, index_page_vars/2, compare_page_vars/1, json/2,
          stop/1]).
