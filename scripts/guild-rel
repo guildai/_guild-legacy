@@ -1,0 +1,9 @@
+#!/bin/sh -eu
+
+SCRIPT=$(readlink -f "$0")
+export ROOTDIR=${SCRIPT%/*/*}
+export BINDIR=$(echo $ROOTDIR/erts-*/bin)
+export EMU=beam
+export PROGNAME=$0
+
+exec $BINDIR/erlexec +B -boot start_clean -noshell -run guild main -extra "$@"

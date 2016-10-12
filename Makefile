@@ -1,7 +1,4 @@
 LOCAL_DEPS = $(wildcard local-deps/*)
-MAN_SOURCES = $(wildcard man/*.ronn)
-MAN_FILES = $(MAN_SOURCES:.ronn=)
-MAN_ORG = "TensorHub 0.0.0"
 
 compile:
 	./rebar3 compile
@@ -18,16 +15,32 @@ upgrade:
 	./rebar3 upgrade
 	./rebar3 compile
 
-script:
-	./rebar3 escriptize
+test-all: test-internal test-operations
 
-test: compile
-	scripts/test $(TESTS)
+test-internal: compile
+	test/internal $(TESTS)
+
+test-operations: compile
+	test/operations
 
 shell:
-	ERL_LIBS=local-deps:build/default/lib erl -s e2_reloader -s tensorhub_client
+	ERL_LIBS=local-deps:build/default/lib erl -s guild
 
-man: $(MAN_FILES)
+shell-reload:
+	ERL_LIBS=local-deps:build/default/lib erl -s e2_reloader -s guild
 
-man/%: man/%.ronn
-	ronn --organization $(MAN_ORG) $<
+version:
+	@if [ -z "$(VERSION)" ]; then \
+	  echo "VERSION must be defined"; \
+	  exit 1; \
+	fi
+
+release: version compile
+	scripts/mkrel $(VERSION)
+
+.PHONY : docs
+docs:
+	cd docs && make
+
+serve-docs:
+	cd docs && make serve

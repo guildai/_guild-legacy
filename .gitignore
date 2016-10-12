@@ -1,4 +1,5 @@
 /build
+/releases
 /local-deps
 /man/*
 !/man/*.ronn
@@ -6,3 +7,5 @@
 erl_crash.dump
 rebar3.crashdump
 rebar.lock
+# Not sure who's generating this but it's related to erlexec
+compile_commands.json

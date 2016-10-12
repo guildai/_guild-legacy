@@ -304,7 +304,7 @@ function compareTableColdefs(widget) {
 function initCompareTableData(coldefs, widget) {
     var dataUrl = compareDataUrl(coldefs);
     var timeout = window.setTimeout(function() { blockUI("Loading data"); }, 1500);
-    fetchTensorhubData(dataUrl, function(runs) {
+    fetchGuildData(dataUrl, function(runs) {
         window.clearTimeout(timeout);
         unblockUI();
         var rows = compareDataRows(runs, coldefs);
@@ -323,7 +323,7 @@ function compareDataRows(runs, coldefs) {
     var rows = [];
     for (var i in runs) {
         var run = runs[i].run;
-        var row = [[run.id, run.start, runLabel(run)], runStatus(run)];
+        var row = [[run.id, run.started, runLabel(run)], runStatus(run)];
         rows.push(row);
         for (var j in coldefs) {
             row.push(coldefValue(coldefs[j], runs[i]));

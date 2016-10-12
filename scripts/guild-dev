@@ -1,0 +1,19 @@
+#!/bin/sh -eu
+
+ERL=$(which erl)
+ERL_PREFIX=${ERL%/*/*}
+export ROOTDIR=$ERL_PREFIX/lib/erlang
+export BINDIR=$(echo $ROOTDIR/erts-*/bin)
+
+if [ "$(uname -s)" = "Darwin" ]; then
+    SCRIPT=`perl -e 'use Cwd "abs_path";print abs_path(shift)' $0`
+else
+    SCRIPT=$(readlink -f "$0")
+fi
+SCRIPTDIR=${SCRIPT%/*}
+export ERL_LIBS=$SCRIPTDIR/../build/default/lib
+
+export EMU=beam
+export PROGNAME=$0
+
+exec $BINDIR/erlexec +B -boot start_clean -noshell -run guild main -extra "$@"
