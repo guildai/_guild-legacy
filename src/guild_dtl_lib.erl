@@ -21,7 +21,7 @@
 -export([render_viewdef/1, viewdef_css/1, viewdef_js/1,
          resolve_value/1, format_value/2, resolve_icon_alias/1,
          navbar_links/1, navbar_item_active_class/2,
-         navbar_item_link/2]).
+         navbar_item_link/2, render_page_view/2]).
 
 version() -> 1.
 
@@ -34,7 +34,8 @@ inventory(filters) ->
      resolve_icon_alias,
      navbar_links,
      navbar_item_active_class,
-     navbar_item_link];
+     navbar_item_link,
+     render_page_view];
 inventory(tags) ->
     [].
 
@@ -244,3 +245,27 @@ navbar_item_link(Item, Params) ->
         undefined -> "/" ++ View;
         RunId -> "/" ++ View ++ "?" ++ RunId
     end.
+
+%% ===================================================================
+%% Render page view
+%% ===================================================================
+
+render_page_view({_Name, View}, Context) ->
+    [render_view_row(Row, Context) || {row, Row} <- View].
+
+render_view_row(Cols, Context) ->
+    ["<div class=\"row\">",
+     [render_view_col(Attrs, Items, Context) || {col, Attrs, Items} <- Cols],
+     "</div>"].
+
+render_view_col(Attrs, Items, Context) ->
+    ["<div class=\"", proplists:get_value(class, Attrs, ""), "\">",
+     [render_view_col_item(Item, Context) || Item <- Items],
+     "</div>"].
+
+render_view_col_item({row, Cols}, Context) ->
+    render_view_row(Cols, Context);
+render_view_col_item({widget, WidgetName, Attrs}, Context) ->
+    AllAttrs = apply_widget_uid(Attrs ++ Context),
+    Vars = proplists:unfold(AllAttrs),
+    render_widget(WidgetName, Vars).

@@ -122,14 +122,21 @@ handle_view_page_(error, _Params, _ViewVars) ->
     guild_http:not_found().
 
 view_page_vars(ActiveView, Params, ViewVars) ->
-    [{html_title,  html_title_for_view(ViewVars)},
-     {nav_title,   "Guild View"},
-     {active_view, ActiveView},
-     {params,      Params}
-     |ViewVars].
+    apply_view_render_context(
+      [{html_title,  html_title_for_view(ViewVars)},
+       {nav_title,   "Guild View"},
+       {active_view, ActiveView},
+       {params,      Params}
+       |ViewVars]).
 
 html_title_for_view(ViewVars) ->
     case proplists:get_value(project_title, ViewVars) of
         undefined -> "Guild";
         ProjectTitle -> ProjectTitle ++ " - Guild"
     end.
+
+apply_view_render_context(Vars) ->
+    [{view_render_context, view_render_context(Vars)}|Vars].
+
+view_render_context(Vars) ->
+    [{project_title, proplists:get_value(project_title, Vars)}].

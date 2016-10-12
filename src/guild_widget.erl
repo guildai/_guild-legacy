@@ -18,13 +18,14 @@
 
 -record(widget, {css=[], js=[], template}).
 
+for_name("compare-table") -> {ok, data_table_widget(guild_compare_table_widget)};
 for_name("flags")         -> {ok, default_widget(guild_flags_widget)};
 for_name("output")        -> {ok, data_table_widget(guild_output_widget)};
+for_name("page-header")   -> {ok, default_widget(guild_page_header_widget)};
 for_name("placeholder")   -> {ok, default_widget(guild_placeholder_widget)};
 for_name("status")        -> {ok, default_widget(guild_status_widget)};
 for_name("timeseries")    -> {ok, c3_widget(guild_timeseries_widget)};
 for_name("value-panel")   -> {ok, default_widget(guild_value_panel_widget)};
-for_name("compare-table") -> {ok, data_table_widget(guild_compare_table_widget)};
 for_name(_)               -> error.
 
 default_widget(Template) ->

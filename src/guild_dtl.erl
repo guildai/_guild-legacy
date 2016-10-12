@@ -21,6 +21,7 @@
          {"compare-table-widget.html", guild_compare_table_widget},
          {"flags-widget.html",         guild_flags_widget},
          {"output-widget.html",        guild_output_widget},
+         {"page-header-widget.html",   guild_page_header_widget},
          {"placeholder-widget.html",   guild_placeholder_widget},
          {"project-compare.html",      guild_project_compare_page},
          {"project-index.html",        guild_project_index_page},
