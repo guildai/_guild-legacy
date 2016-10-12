@@ -40,15 +40,15 @@ print_compile_error(_, {_, sys_core_fold, useless_building}) ->
 print_compile_error(File, {_, [{Where, erlydtl_parser, Err}]}) ->
     FileRef = format_file_ref(File, Where),
     Msg = erlydtl_parser:format_error(Err),
-    io:format(standard_error, "~s: ~s~n", [FileRef, Msg]);
+    guild_log:warn("~s: ~s~n", [FileRef, Msg]);
 print_compile_error(File, {_, [{Where, erlydtl_scanner, Err}]}) ->
     FileRef = format_file_ref(File, Where),
     Msg = erlydtl_scanner:format_error(Err),
-    io:format(standard_error, "~s: ~s~n", [FileRef, Msg]);
+    guild_log:warn("~s: ~s~n", [FileRef, Msg]);
 print_compile_error(File, {Where, erlydtl_beam_compiler, Err}) ->
     FileRef = format_file_ref(File, Where),
     Msg = format_compiler_error(Err),
-    io:format(standard_error, "~s: ~s~n", [FileRef, Msg]).
+    guild_log:warn("~s: ~s~n", [FileRef, Msg]).
 
 format_file_ref(File, {Line, Col}) when is_integer(Line), is_integer(Col) ->
     io_lib:format("~s:~b:~b", [File, Line, Col]);
