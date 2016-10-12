@@ -14,10 +14,9 @@
 
 -module(guild_project_view2).
 
--behavior(e2_supervisor).
+-behavior(e2_service).
 
--export([start_link/2, index_page_vars/2, compare_page_vars/1, json/2,
-         stop/1]).
+-export([start_link/2, page_vars/2, json/2]).
 
 -export([init/1, handle_msg/3]).
 
@@ -46,51 +45,32 @@ init_state(Project, Opts) ->
 %% API
 %% ===================================================================
 
-index_page_vars(View, Opts) ->
-    e2_service:call(View, {index_page_vars, Opts}).
-
-compare_page_vars(View) ->
-    e2_service:call(View, compare_page_vars).
+page_vars(View, RunId) ->
+    e2_service:call(View, {page_vars, RunId}).
 
 json(View, Request) ->
     e2_service:call(View, {json, Request}).
-
-stop(View) ->
-    e2_service:call(View, stop).
 
 %% ===================================================================
 %% Message dispatch
 %% ===================================================================
 
-handle_msg({index_page_vars, Opts}, _From, State) ->
-    handle_index_page_vars(Opts, State);
-handle_msg(compare_page_vars, _From, State) ->
-    handle_compare_page_vars(State);
+handle_msg({page_vars, RunId}, _From, State) ->
+    handle_page_vars(RunId, State);
 handle_msg({json, Request}, From, State) ->
-    handle_json_request(Request, From, State);
-handle_msg(stop, _From, State) ->
-    {stop, normal, ok, State}.
+    handle_json_request(Request, From, State).
 
 %% ===================================================================
-%% Index page vars
+%% Page vars
 %% ===================================================================
 
-handle_index_page_vars(Opts, State) ->
+handle_page_vars(RunId, #state{opts=Opts}=State) ->
+    Run = resolve_run(RunId, State),
     Vars =
         [{project_title, project_title(State)},
-         {viewdef,       index_page_viewdef(Opts, State)},
-         {view_opts,     view_opts(State)}],
-    {reply, Vars, State}.
-
-%% ===================================================================
-%% Compare page vars
-%% ===================================================================
-
-handle_compare_page_vars(State) ->
-    Vars =
-        [{project_title, project_title(State)},
-         {viewdef,       compare_page_viewdef(State)},
-         {view_opts,     view_opts(State)}],
+         {active_run,    run_attrs(Run)},
+         {viewdef,       viewdef(Run, State)},
+         {view_opts,     Opts}],
     {reply, Vars, State}.
 
 %% ===================================================================
@@ -119,67 +99,54 @@ dir_basename(".") -> filename:basename(filename:absname(""));
 dir_basename(Dir) -> filename:basename(filename:absname(Dir)).
 
 %% ===================================================================
-%% Index page viewdef
+%% Run attrs
 %% ===================================================================
 
-index_page_viewdef(Opts, State) ->
-    Runs = runs(State),
-    Run = active_run(Runs, Opts),
-    index_viewdef_for_run(Run, State).
+run_attrs(undefined) -> [];
+run_attrs(Run)       -> [{id, guild_run:id(Run)}].
 
-index_viewdef_for_run(undefined, _State) ->
-    empty_index_viewdef();
-index_viewdef_for_run(Run, #state{p=Project}) ->
+%% ===================================================================
+%% Viewdef
+%% ===================================================================
+
+viewdef(undefined, _State) ->
+    empty_viewdef();
+viewdef(Run, #state{p=Project}) ->
     {ok, Model} = run_model(Run, Project),
-    case guild_project_util:view_path("view", Model, Project) of
-        {ok, View} -> load_viewdef(View);
-        error -> default_index_viewdef(Model, Project)
+    case guild_project_util:view_path("view2", Model, Project) of
+        {ok, Path} -> load_viewdef(Path);
+        error -> default_viewdef(Model, Project)
     end.
+
+empty_viewdef() -> [].
 
 run_model(Run, Project) ->
     case guild_run:attr(Run, "model") of
         {ok, <<>>} -> default_model(Project);
         {ok, Name} -> named_model(Project, binary_to_list(Name));
-        error -> default_model(Project)
+        error      -> default_model(Project)
     end.
-
-default_model(Project) ->
-    guild_project:section(Project, ["model"]).
 
 named_model(Project, Name) ->
     guild_project:section(Project, ["model", Name]).
 
-empty_index_viewdef() -> [].
-
-default_index_viewdef(_, _) ->
-    %% TODO: what do we show by default here?
-    empty_index_viewdef().
-
 load_viewdef(Path) ->
-    {ok, Def} = file:consult(Path),
-    Def.
-
-%% ===================================================================
-%% Compare page viewdef
-%% ===================================================================
-
-compare_page_viewdef(#state{p=Project}) ->
-    case guild_project_util:view_path("compare", Project) of
-        {ok, View} -> load_viewdef(View);
-        error -> default_compare_viewdef(Project)
+    case file:consult(Path) of
+        {ok, Def} -> Def;
+        {error, Err} ->
+            log_viewdef_error(Err, Path),
+            empty_viewdef()
     end.
 
-default_compare_viewdef(_Project) ->
+log_viewdef_error({Line, erl_parse, Msg}, File) ->
+    guild_log:warn("~s:~b: ~s~n", [File, Line, Msg]).
+
+default_model(Project) ->
+    guild_project:section(Project, ["model"]).
+
+default_viewdef(_, _) ->
     %% TODO: what do we show by default here?
-    empty_compare_viewdef().
-
-empty_compare_viewdef() -> [].
-
-%% ===================================================================
-%% View opts
-%% ===================================================================
-
-view_opts(#state{opts=Opts}) -> Opts.
+    empty_viewdef().
 
 %% ===================================================================
 %% JSON request
@@ -188,10 +155,10 @@ view_opts(#state{opts=Opts}) -> Opts.
 handle_json_request(Request, From, State) ->
     dispatch_reader(reader_request(Request, State), From, State).
 
-reader_request(runs, State) ->
-    {runs_json, runroots(State)};
-reader_request({flags, Run}, State) ->
-    {flags_json, resolve_run(Run, State)};
+reader_request(runs, #state{runroots=RunRoots}) ->
+    {runs_json, RunRoots};
+reader_request({flags, RunId}, State) ->
+    {flags_json, resolve_run(RunId, State)};
 reader_request({summary, Run}, State) ->
     {summary_json, resolve_run(Run, State)};
 reader_request({series, Pattern, Opts}, State) ->
@@ -210,9 +177,6 @@ dispatch_reader(Request, From, State) ->
 reply_fun(Client) ->
     fun(Reply) -> e2_service:reply(Client, Reply) end.
 
-resolve_run(latest, State) -> first_run(runs(State));
-resolve_run(Id, State)     -> run_for_id(Id, runs(State)).
-
 run_opt(Opts) ->
     proplists:get_value(run, Opts, latest).
 
@@ -220,33 +184,22 @@ max_epochs_opt(Opts) ->
     proplists:get_value(max_epochs, Opts, ?max_series_epochs).
 
 %% ===================================================================
-%% Run support
+%% Utils
 %% ===================================================================
+
+resolve_run(latest, State) -> first_run(runs(State));
+resolve_run(Id,     State) -> run_for_id(Id, runs(State)).
 
 runs(#state{runroots=RunRoots}) ->
     guild_run:runs_for_runroots(RunRoots).
-
-active_run(Runs, Opts) ->
-    case proplists:get_value(run, Opts, latest) of
-        latest -> first_run(Runs);
-        Id -> run_for_id(Id, Runs)
-    end.
 
 first_run([First|_]) -> First;
 first_run([])        -> undefined.
 
 run_for_id(Id, [Run|Rest]) ->
-    maybe_run_for_id(guild_run:id(Run), Id, Run, Rest);
+    run_for_id(guild_run:id(Run), Id, Run, Rest);
 run_for_id(_Id, []) ->
     undefined.
 
-maybe_run_for_id(Id, Id, Run, _Rest) ->
-    Run;
-maybe_run_for_id(_Other, Id, _Run, Rest) ->
-    run_for_id(Id, Rest).
-
-%% ===================================================================
-%% State interface
-%% ===================================================================
-
-runroots(#state{runroots=Dirs}) -> Dirs.
+run_for_id(Id, Id, Run, _)    -> Run;
+run_for_id(_,  Id, _,   Rest) -> run_for_id(Id, Rest).

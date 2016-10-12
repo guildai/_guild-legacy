@@ -49,16 +49,17 @@ fmt(Msg, Data) -> io_lib:format(Msg, Data).
 %% ===================================================================
 
 main(Opts, []) ->
-    case proplists:get_bool(v2, Opts) of
-        false -> main_(v1, Opts);
-        true  -> main_(v2, Opts)
-    end.
-
-main_(Version, Opts) ->
+    Version = view_scheme_version(Opts),
     View = init_project_view(Version, Opts),
     guild_app:init_support([json, exec]),
     Server = start_http_server(Version, View, Opts),
     wait_for_server_and_terminate(Server).
+
+view_scheme_version(Opts) ->
+    case proplists:get_bool(v2, Opts) of
+        false -> v1;
+        true  -> v2
+    end.
 
 init_project_view(Version, Opts) ->
     Project = guild_cmd_support:project_from_opts(Opts),

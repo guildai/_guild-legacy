@@ -24,6 +24,7 @@
          {"placeholder-widget.html",   guild_placeholder_widget},
          {"project-compare.html",      guild_project_compare_page},
          {"project-index.html",        guild_project_index_page},
+         {"project-view.html",         guild_project_view_page},
          {"status-widget.html",        guild_status_widget},
          {"timeseries-widget.html",    guild_timeseries_widget},
          {"value-panel-widget.html",   guild_value_panel_widget}

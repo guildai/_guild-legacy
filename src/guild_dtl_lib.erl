@@ -19,7 +19,9 @@
 -export([version/0, inventory/1]).
 
 -export([render_viewdef/1, viewdef_css/1, viewdef_js/1,
-         resolve_value/1, format_value/2, resolve_icon_alias/1]).
+         resolve_value/1, format_value/2, resolve_icon_alias/1,
+         navbar_links/1, navbar_item_active_class/2,
+         navbar_item_link/2]).
 
 version() -> 1.
 
@@ -29,7 +31,10 @@ inventory(filters) ->
      viewdef_js,
      resolve_value,
      format_value,
-     resolve_icon_alias];
+     resolve_icon_alias,
+     navbar_links,
+     navbar_item_active_class,
+     navbar_item_link];
 inventory(tags) ->
     [].
 
@@ -218,3 +223,24 @@ resolve_icon_alias("steps")    -> "retweet";
 resolve_icon_alias("time")     -> "clock-o";
 resolve_icon_alias("loss")     -> "random";
 resolve_icon_alias(Value)      -> Value.
+
+%% ===================================================================
+%% Nabvar support
+%% ===================================================================
+
+navbar_links(Viewdef) ->
+    Navbar = proplists:get_value(navbar, Viewdef, []),
+    [Attrs || {link, Attrs} <- Navbar].
+
+navbar_item_active_class(Item, {Active, _}) ->
+    case proplists:get_value(view, Item) of
+        Active -> "active";
+        _ -> ""
+    end.
+
+navbar_item_link(Item, Params) ->
+    View = proplists:get_value(view, Item, ""),
+    case proplists:get_value("run", Params) of
+        undefined -> "/" ++ View;
+        RunId -> "/" ++ View ++ "?" ++ RunId
+    end.

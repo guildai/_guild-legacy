@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block styles %}
+{#
+{% for css in viewdef|viewdef_css %}
+<link href="{{css}}" rel="stylesheet">
+{% endfor %}
+#}
+{% endblock %}
+
+{% block navbar_menu %}
+<ul class="nav navbar-nav">
+  {% for item in viewdef|navbar_links %}
+  <li class="{{item|navbar_item_active_class:active_view}}">
+    <a href="{{item|navbar_item_link:params}}"><i class="fa fa-{{item.icon}} fa-fw"></i> {{item.label}}</a>
+  </li>
+  {% endfor %}
+</ul>
+{% endblock %}
+
+{% block page_content %}
+<div class="row">
+  <div class="col-lg-12">
+    <div class="page-header">
+      <h1>{{project_title}}</h1>
+      <select class="page-header-select selectpicker" id="runs-select"
+              data-width="fit"
+              data-none-selected-text="">
+      </select>
+    </div>
+  </div>
+</div>
+{#
+{% autoescape off %}
+{{viewdef|render_viewdef}}
+{% endautoescape %}
+#}
+{% endblock %}
+
+{% block scripts %}
+{#
+{% for js in viewdef|viewdef_js %}
+<script src="{{js}}"></script>
+{% endfor %}
+#}
+<script>
+ {#
+ $(function() {
+     var selectedRun = {{params.run|default:null}};
+     var syncInterval = {{view_opts.data_poll_interval|default:5}}
+     initIndexPage(selectedRun, syncInterval);
+ });
+ #}
+</script>
+{% endblock %}
