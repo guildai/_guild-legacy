@@ -19,7 +19,7 @@
 -export([version/0, inventory/1]).
 
 -export([render_viewdef/1, viewdef_css/1, viewdef_js/1,
-         resolve_value/1, format_value/2]).
+         resolve_value/1, format_value/2, resolve_icon_alias/1]).
 
 version() -> 1.
 
@@ -28,7 +28,8 @@ inventory(filters) ->
      viewdef_css,
      viewdef_js,
      resolve_value,
-     format_value];
+     format_value,
+     resolve_icon_alias];
 inventory(tags) ->
     [].
 
@@ -207,3 +208,13 @@ apply_last_thousands_part(N, Acc) ->
 
 apply_thousands_part(N, Acc) ->
     [io_lib:format("~3..0b", [N])|Acc].
+
+%% ===================================================================
+%% Resolve icon alias
+%% ===================================================================
+
+resolve_icon_alias("accuracy") -> "bullseye";
+resolve_icon_alias("steps")    -> "retweet";
+resolve_icon_alias("time")     -> "clock-o";
+resolve_icon_alias("loss")     -> "random";
+resolve_icon_alias(Value)      -> Value.

@@ -3,7 +3,7 @@
     <div class="row">
       {% if icon %}
       <div class="col-xs-3">
-        <i class="fa fa-{{icon}} label-icon"></i>
+        <i class="fa fa-{{icon|resolve_icon_alias}} label-icon"></i>
       </div>
       {% endif %}
       <div class="{% if icon %}col-xs-9{% else %}col-xs-12{% endif %} text-right">
