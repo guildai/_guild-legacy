@@ -16,7 +16,7 @@
 
 -behavior(e2_supervisor).
 
--export([start_link/0, start_view/2, stop_view/1]).
+-export([start_link/0, start_view/2]).
 
 start_link() ->
     e2_supervisor:start_link(
@@ -26,6 +26,3 @@ start_link() ->
 
 start_view(Project, Opts) ->
     e2_supervisor:start_child(?MODULE, [Project, Opts]).
-
-stop_view(View) ->
-    guild_project_view:stop(View).
