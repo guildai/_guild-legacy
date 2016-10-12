@@ -24,10 +24,10 @@ compile_template(File, Module, UserOpts) ->
          |UserOpts],
     handle_compile(erlydtl:compile_file(File, Module, AllOpts), File).
 
-handle_compile({ok, _, []}, _File) ->
-    ok;
-handle_compile({ok, _, [{_, Warnings}]}, File) ->
-    print_compile_errors(File, Warnings);
+handle_compile({ok, _, WarningsList}, File) ->
+    lists:foreach(
+      fun({_, Warnings}) -> print_compile_errors(File, Warnings) end,
+      WarningsList);
 handle_compile({error, Errors, []}, File) ->
     print_compile_errors(File, Errors),
     error({template_compile, File}).
