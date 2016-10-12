@@ -12,15 +12,12 @@
 %% See the License for the specific language governing permissions and
 %% limitations under the License.
 
--module(guild_observer).
+-module(guild_reload).
 
--export([maybe_start_from_opts/1]).
+-export([init_from_opts/1]).
 
-maybe_start_from_opts(Opts) ->
-    maybe_start_observer(proplists:get_bool(observer, Opts)).
-
-maybe_start_observer(true) ->
-    observer:start(),
-    guild_proc:reg(global, observer);
-maybe_start_observer(false) ->
-    ok.
+init_from_opts(Opts) ->
+    case proplists:get_bool(reload, Opts) of
+        true -> e2_reloader:start();
+        false -> ok
+    end.

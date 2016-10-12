@@ -86,11 +86,13 @@ handle_main_result(Result) ->
 
 global_opts() ->
     [{trace,    "--trace",    "trace a module/function", [hidden]},
+     {reload,   "--reload",   "reload modified modules", [hidden, flag]},
      {observer, "--observer", "run observer",            [hidden, flag]}].
 
 apply_global_opts(Opts) ->
-    guild_trace:init_from_global_opts(Opts),
-    guild_observer:maybe_start_from_global_opts(Opts).
+    guild_trace:init_from_opts(Opts),
+    guild_reload:init_from_opts(Opts),
+    guild_observer:maybe_start_from_opts(Opts).
 
 %% ===================================================================
 %% Generate CLI error

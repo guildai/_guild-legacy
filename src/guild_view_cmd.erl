@@ -33,16 +33,15 @@ parser() ->
 
 view_options() ->
     [{port, "-p, --port",
-      io_lib:format(
-        "HTTP server port (default is ~b)",
-        [?default_port]),
+      fmt("HTTP server port (default is ~b)", [?default_port]),
       [{metavar, "PORT"}]},
      {interval, "-n, --interval",
-      io_lib:format(
-        "refresh interval in seconds (default is ~b)",
-        [?default_interval]),
+      fmt("refresh interval in seconds (default is ~b)", [?default_interval]),
       [{metavar, "SECONDS"}]},
-     {logging, "-l, --logging", "enable logging", [flag]}].
+     {logging, "-l, --logging",
+      "enable logging", [flag]}].
+
+fmt(Msg, Data) -> io_lib:format(Msg, Data).
 
 %% ===================================================================
 %% Main

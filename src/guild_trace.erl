@@ -14,9 +14,9 @@
 
 -module(guild_trace).
 
--export([init_from_global_opts/1, init_from_env/1]).
+-export([init_from_opts/1, init_from_env/1]).
 
-init_from_global_opts(Opts) ->
+init_from_opts(Opts) ->
     lists:foreach(fun apply_trace/1, parse_trace(trace_opt(Opts))).
 
 init_from_env(false) ->
