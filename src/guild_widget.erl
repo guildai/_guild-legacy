@@ -38,6 +38,7 @@ data_table_widget(Template) ->
     #widget{css=["/assets/css/datatables.min.css",
                  "/assets/css/widgets.css"],
             js=["/assets/js/datatables.min.js",
+                "/assets/js/numeral.min.js",
                 "/assets/js/widgets.js"],
             template=Template}.
 
@@ -46,6 +47,7 @@ c3_widget(Template) ->
                  "/assets/css/widgets.css"],
             js=["/assets/js/d3.min.js",
                 "/assets/js/c3.js",
+                "/assets/js/numeral.min.js",
                 "/assets/js/widgets.js"],
             template=Template}.
 
