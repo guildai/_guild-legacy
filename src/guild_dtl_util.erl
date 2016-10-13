@@ -26,30 +26,36 @@ compile_template(File, Module, UserOpts) ->
 
 handle_compile({ok, _, WarningsList}, File) ->
     lists:foreach(
-      fun({_, Warnings}) -> print_compile_errors(File, Warnings) end,
+      fun({_, Warnings}) -> print_errors(File, Warnings) end,
       WarningsList);
 handle_compile({error, Errors, []}, File) ->
-    print_compile_errors(File, Errors),
+    print_errors(File, Errors),
     error({template_compile, File}).
 
-print_compile_errors(File, Errors) ->
-    lists:foreach(fun(E) -> print_compile_error(File, E) end, Errors).
+print_errors(File, Errors) ->
+    lists:foreach(fun(E) -> print_error(File, E) end, Errors).
 
-print_compile_error(_, {_, sys_core_fold, useless_building}) ->
+print_error(_, {_, sys_core_fold, useless_building}) ->
     ok;
-print_compile_error(File, {_, [{Where, erlydtl_parser, Err}]}) ->
+print_error(File, {_, [{Where, erlydtl_parser, Err}]}) ->
     FileRef = format_file_ref(File, Where),
     Msg = erlydtl_parser:format_error(Err),
     guild_log:warn("~s: ~s~n", [FileRef, Msg]);
-print_compile_error(File, {_, [{Where, erlydtl_scanner, Err}]}) ->
+print_error(File, {_, [{Where, erlydtl_scanner, Err}]}) ->
     FileRef = format_file_ref(File, Where),
     Msg = erlydtl_scanner:format_error(Err),
     guild_log:warn("~s: ~s~n", [FileRef, Msg]);
-print_compile_error(File, {Where, erlydtl_beam_compiler, Err}) ->
+print_error(File, {_, [{Where, erlydtl_compiler, Err}]}) ->
+    FileRef = format_file_ref(File, Where),
+    Msg = format_compiler_error(Err),
+    guild_log:warn("~s: ~s~n", [FileRef, Msg]);
+print_error(File, {Where, erlydtl_beam_compiler, Err}) ->
     FileRef = format_file_ref(File, Where),
     Msg = format_compiler_error(Err),
     guild_log:warn("~s: ~s~n", [FileRef, Msg]).
 
+format_file_ref(File, none) ->
+    File;
 format_file_ref(File, {Line, Col}) when is_integer(Line), is_integer(Col) ->
     io_lib:format("~s:~b:~b", [File, Line, Col]);
 format_file_ref(File, Line) when is_integer(Line) ->
@@ -57,5 +63,7 @@ format_file_ref(File, Line) when is_integer(Line) ->
 
 format_compiler_error({unknown_filter, Filter, _Arity}) ->
     io_lib:format("unknown filter '~s'", [Filter]);
+format_compiler_error({read_file, _, enoent}) ->
+    "file does not exist";
 format_compiler_error(Err) ->
     erlydtl_compiler:format_error(Err).
