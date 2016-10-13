@@ -22,7 +22,7 @@
 
 run() ->
     guild_trace:init_from_env(os:getenv("TRACE")),
-    test_inifile_parse(),
+    test_inifile(),
     test_project(),
     test_input_buffer(),
     test_proc_waiting(),
@@ -51,11 +51,11 @@ ok() ->
     io:format("OK~n").
 
 %% ===================================================================
-%% Ini file parse
+%% Ini file
 %% ===================================================================
 
-test_inifile_parse() ->
-    start("initfile_parse"),
+test_inifile() ->
+    start("inifile"),
 
     P = fun(Bin) -> inifile:parse(Bin) end,
 
@@ -108,16 +108,42 @@ test_inifile_parse() ->
     %% Typed section
     {ok, [{["foo", "bar"], []}]} = P("[foo \"bar\"]\n"),
 
+    %% Comments
+    {ok, [{["foo"], [{"bar", "123"}]}]} =
+        P("# This is a comment\n"
+          "[foo]\n"
+          "# Another comment\n"
+          "; An alternative comment\n"
+          "bar = 123"),
+
+    %% Line continuation
+    {ok, [{["foo"],
+           [{"bar","1       2       3"},
+            {"baz","4, 5, 6,   8, 9, 10"}]}]} =
+        P("[foo]\n"
+          "bar = 1 \\\n"
+          "      2 \\\n"
+          "      3\n"
+          "\n"
+          "baz = \\\n"
+          "  4, 5, 6, \\\n"
+          "  8, 9, 10\n"),
+
     %% Attr without a section
-    {error, {no_section_for_attr, "foo = bar", 1}} = P("foo = bar"),
-    {error, {no_section_for_attr, "foo = bar", 3}} = P("\n\nfoo = bar"),
+    {error, {no_section_for_attr, 1}} = P("foo = bar"),
+    {error, {no_section_for_attr, 3}} = P("\n\nfoo = bar"),
 
     %% Malformed section
-    {error, {section_line, "[foo", 1}} = P("[foo\n"),
-    {error, {section_line, "[bar", 3}} = P("[foo]\n\n[bar\n"),
+    {error, {section_line, 1}} = P("[foo\n"),
+    {error, {section_line, 3}} = P("[foo]\n\n[bar\n"),
 
     %% Malformed attr
-    {error, {attr_line, "bar", 2}} = P("[foo]\nbar"),
+    {error, {attr_line, 2}} = P("[foo]\nbar"),
+    {error, {attr_line, 3}} = P("[foo]\nbar=123\nbaz"),
+
+    %% Line continuation at eof
+    {error, {eof, 2}} = P("[foo]\nbar = 123 \\"),
+    {error, {eof, 3}} = P("[foo]\nbar = 123 \\\n\\"),
 
     %% Attrs with no value
     {ok, [{["foo"], [{"bar", ""}]}]} = P("[foo]\nbar="),
