@@ -26,7 +26,7 @@ import distutils.spawn
 SMI_PATH = distutils.spawn.find_executable("nvidia-smi")
 if not SMI_PATH:
     sys.stderr.write(
-        "ERROR: nvidia-smi not installed, cannot collect GPU stats "
+        "WARNING: nvidia-smi not installed, cannot collect GPU stats "
         "(see https://developer.nvidia.com/cuda-downloads)\n")
     sys.exit(127)
 

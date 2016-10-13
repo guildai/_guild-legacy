@@ -24,9 +24,9 @@ try:
     import psutil
 except ImportError:
     sys.stderr.write(
-        "ERROR: psutil not installed, cannot collect system stats "
+        "WARNING: psutil not installed, cannot collect system stats "
         "(see https://github.com/giampaolo/psutil)\n")
-    sys.exit(1)
+    sys.exit(127)
 
 cpu_percent_init = False
 last_disk = None

@@ -17,7 +17,7 @@
 SMI=nvidia-smi
 
 if ! which $SMI > /dev/null; then
-    echo "ERROR: $SMI not installed, cannot collect GPU attrs" \
+    echo "WARNING: $SMI not installed, cannot collect GPU attrs" \
          "(see https://developer.nvidia.com/cuda-downloads)" >&2
    exit 127
 fi
