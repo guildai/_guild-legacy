@@ -102,7 +102,7 @@ dir_basename(Dir) -> filename:basename(filename:absname(Dir)).
 %% Run attrs
 %% ===================================================================
 
-run_attrs(undefined) -> [];
+run_attrs(undefined) -> undefined;
 run_attrs(Run)       -> [{id, guild_run:id(Run)}].
 
 %% ===================================================================

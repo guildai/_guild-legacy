@@ -97,13 +97,21 @@ handle_view_page({Path, _, Params}, ProjectView) ->
 
 find_page_view(Path, ViewVars) ->
     Viewdef = proplists:get_value(viewdef, ViewVars, []),
-    Views = [{Name, Attrs} || {view, Name, Attrs} <- Viewdef],
-    find_page_view_(Path, Views).
+    case has_active_run(ViewVars) of
+        true  -> find_page_view_(Path, viewdef_views(Viewdef));
+        false -> {error, no_run}
+    end.
+
+has_active_run(Vars) ->
+    proplists:get_value(active_run, Vars) /= undefined.
+
+viewdef_views(Viewdef) ->
+    [{Name, Attrs} || {view, Name, Attrs} <- Viewdef].
 
 find_page_view_("/",    [First|_])       -> {ok, First};
 find_page_view_("/"++X, [{X, _}=View|_]) -> {ok, View};
 find_page_view_(Path,   [_|Rest])        -> find_page_view_(Path, Rest);
-find_page_view_(_Path,  [])              -> error.
+find_page_view_(_Path,  [])              -> {error, path_not_found}.
 
 selected_run(Params) ->
     case psycho_util:validate(Params, [{"run", [integer]}]) of
@@ -118,7 +126,11 @@ handle_view_page_({ok, PageView}, Params, ViewVars) ->
     PageVars = view_page_vars(PageView, Params, ViewVars),
     Page = guild_dtl:render(guild_project_view_page, PageVars),
     guild_http:ok_html(Page);
-handle_view_page_(error, _Params, _ViewVars) ->
+handle_view_page_({error, no_run}, Params, ViewVars) ->
+    PageVars = view_page_vars(undefined, Params, ViewVars),
+    Page = guild_dtl:render(guild_project_no_run_page, PageVars),
+    guild_http:ok_html(Page);
+handle_view_page_({error, path_not_found}, _Params, _ViewVars) ->
     guild_http:not_found().
 
 view_page_vars(ActiveView, Params, ViewVars) ->
