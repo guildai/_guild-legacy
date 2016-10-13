@@ -21,7 +21,7 @@
 -export([init/1, handle_task/1, handle_msg/3]).
 
 -record(state, {op, cmd, rundir, op_ospid, exec_pid, exec_ospid,
-                buf, waiting, stopping}).
+                buf, stderr_handler, waiting, stopping}).
 
 -define(default_repeat, 5000).
 -define(stop_exec_timeout, 1000).
@@ -31,9 +31,10 @@
 %% Start / init
 %% ===================================================================
 
-start_link(Op, Cmd, TaskOpts) ->
-    SafeOpts = ensure_repeat(TaskOpts),
-    e2_task:start_link(?MODULE, [Op, Cmd], SafeOpts).
+start_link(Op, Cmd, Opts) ->
+    {TaskOpts, CollectorOpts} = e2_task_impl:split_options(?MODULE, Opts),
+    SafeTaskOpts = ensure_repeat(TaskOpts),
+    e2_task:start_link(?MODULE, [Op, Cmd, CollectorOpts], SafeTaskOpts).
 
 start_builtin(Op, LocalExe, TaskOpts) ->
     start_link(Op, local_exe_cmd(LocalExe), TaskOpts).
@@ -47,13 +48,13 @@ ensure_repeat(Opts) ->
         _ -> Opts
     end.
 
-init([Op, Cmd]) ->
+init([Op, Cmd, Opts]) ->
     process_flag(trap_exit, true),
     monitor(process, Op),
     guild_proc:reg(optask, self()),
-    {ok, init_state(Op, Cmd)}.
+    {ok, init_state(Op, Cmd, Opts)}.
 
-init_state(Op, Cmd) ->
+init_state(Op, Cmd, Opts) ->
     RunDir = guild_operation:rundir(Op),
     OpOsPid = guild_operation:ospid(Op),
     #state{
@@ -62,7 +63,19 @@ init_state(Op, Cmd) ->
        rundir=RunDir,
        op_ospid=OpOsPid,
        buf=guild_collector_protocol:new_input_buffer(),
+       stderr_handler=stderr_handler_opt(Opts),
        waiting=false}.
+
+stderr_handler_opt(Opts) ->
+    case proplists:get_value(stderr_handler, Opts) of
+        {F, _}=H
+          when is_function(F) -> H;
+        undefined             -> default_stderr_handler();
+        Other                 -> error({invalid_stderr_handler, Other})
+    end.
+
+default_stderr_handler() ->
+    {fun(Bin, _) -> guild_log:internal(Bin) end, not_used}.
 
 %% ===================================================================
 %% Task
@@ -146,6 +159,14 @@ handle_eof(RestDecoded, State) ->
     handle_decoded_(RestDecoded, State#state{waiting=false}).
 
 %% ===================================================================
+%% Stderr
+%% ===================================================================
+
+handle_stderr(Bin, #state{stderr_handler={Handle, HState}}=State) ->
+    NextHState = Handle(Bin, HState),
+    {noreply, State#state{stderr_handler={Handle, NextHState}}}.
+
+%% ===================================================================
 %% Log decoded
 %% ===================================================================
 
@@ -168,14 +189,6 @@ log_keytsvs(KTSVs, #state{rundir=RunDir}) ->
 handle_db_result(ok) -> ok;
 handle_db_result({error, Err}) ->
     guild_log:internal("Error logging series values: ~p~n", [Err]).
-
-%% ===================================================================
-%% Stderr
-%% ===================================================================
-
-handle_stderr(Bin, State) ->
-    guild_log:internal(Bin),
-    {noreply, State}.
 
 %% ===================================================================
 %% Operation exited - run a final time

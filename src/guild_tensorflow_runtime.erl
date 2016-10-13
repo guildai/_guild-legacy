@@ -101,7 +101,10 @@ train_tasks(Flags, Env) ->
        {collector, "op-stats", Repeat},
        {collector, "system-stats", Repeat},
        {collector, "gpu-stats", Repeat},
-       {collector, "tensorflow-collector", Repeat}]).
+       {collector,
+        "tensorflow-collector",
+        Repeat,
+        collector_stderr_handler()}]).
 
 stats_interval_opt(Flags) ->
     case proplists:get_value("stats_interval", Flags) of
@@ -114,6 +117,17 @@ resolve_flag_vals(Flags, Env) ->
 
 train_stream_handlers() ->
     guild_runtime_support:op_stream_handlers([console, run_db_output]).
+
+collector_stderr_handler() ->
+    {fun handle_collector_stderr/2, guild_util:new_input_buffer()}.
+
+handle_collector_stderr(Bin, Buf) ->
+    {Lines, Next} = guild_util:input(Buf, Bin),
+    lists:foreach(fun log_collector_stderr/1, Lines),
+    Next.
+
+log_collector_stderr({_, [<<"I ", _/binary>>|_]}) -> ok;
+log_collector_stderr({_, Line}) -> guild_log:internal(Line).
 
 %% ===================================================================
 %% Eval op

@@ -20,8 +20,11 @@ op_tasks(Specs) ->
     [op_task(Spec) || Spec <- Specs].
 
 op_task({collector, Exe, Repeat}) ->
-    TaskOpts = [{repeat, Repeat}],
-    {guild_collector_task, start_builtin, [Exe, TaskOpts]};
+    Opts = [{repeat, Repeat}],
+    {guild_collector_task, start_builtin, [Exe, Opts]};
+op_task({collector, Exe, Repeat, StderrHandler}) ->
+    Opts = [{repeat, Repeat}, {stderr_handler, StderrHandler}],
+    {guild_collector_task, start_builtin, [Exe, Opts]};
 op_task({flags, Flags}) ->
     {guild_log_flags_task, start_link, [Flags]}.
 
