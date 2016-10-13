@@ -32,8 +32,7 @@ parser() ->
       [{pos_args, 0}]).
 
 view_options() ->
-    [{v2, "--v2", "use v2 view scheme", [hidden, flag]},
-     {port, "-p, --port",
+    [{port, "-p, --port",
       fmt("HTTP server port (default is ~b)", [?default_port]),
       [{metavar, "PORT"}]},
      {interval, "-n, --interval",
@@ -49,25 +48,15 @@ fmt(Msg, Data) -> io_lib:format(Msg, Data).
 %% ===================================================================
 
 main(Opts, []) ->
-    Version = view_scheme_version(Opts),
-    View = init_project_view(Version, Opts),
+    View = init_project_view(Opts),
     guild_app:init_support([json, exec]),
-    Server = start_http_server(Version, View, Opts),
+    Server = start_http_server(View, Opts),
     wait_for_server_and_terminate(Server).
 
-view_scheme_version(Opts) ->
-    case proplists:get_bool(v2, Opts) of
-        false -> v1;
-        true  -> v2
-    end.
-
-init_project_view(Version, Opts) ->
+init_project_view(Opts) ->
     Project = guild_cmd_support:project_from_opts(Opts),
-    {ok, View} = (view_sup_mod(Version)):start_view(Project, view_opts(Opts)),
+    {ok, View} = guild_project_view_sup:start_view(Project, view_opts(Opts)),
     View.
-
-view_sup_mod(v1) -> guild_project_view_sup;
-view_sup_mod(v2) -> guild_project_view_sup2.
 
 view_opts(Opts) ->
     [{data_poll_interval, interval_opt(Opts)}].
@@ -80,10 +69,10 @@ interval_opt(Opts) ->
 validate_interval(I) when I > 0 -> I;
 validate_interval(_) -> throw({error, "invalid value for --interval"}).
 
-start_http_server(Version, View, Opts) ->
+start_http_server(View, Opts) ->
     Port = port_opt(Opts),
     ServerOpts = server_opts(Opts),
-    Server = try_start_server(Version, View, Port, ServerOpts),
+    Server = try_start_server(View, Port, ServerOpts),
     guild_cli:out("View server running on port ~b~n", [Port]),
     Server.
 
@@ -101,16 +90,13 @@ server_opts(Opts) ->
 server_log_opt(Opts) ->
     proplists:get_value(logging, Opts).
 
-try_start_server(Version, View, Port, Opts) ->
-    case (server_mod(Version)):start_server(View, Port, Opts) of
+try_start_server(View, Port, Opts) ->
+    case guild_project_view_http:start_server(View, Port, Opts) of
         {ok, Server} ->
             Server;
         {error, {{listen, eaddrinuse}, _Stack}} ->
             port_in_use_error(Port)
     end.
-
-server_mod(v1) -> guild_project_view_http;
-server_mod(v2) -> guild_project_view_http2.
 
 port_in_use_error(Port) ->
     guild_cli:cli_error(

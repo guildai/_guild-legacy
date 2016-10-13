@@ -18,6 +18,8 @@
 
 -export([init/1, handle_msg/3]).
 
+-export([handle_view_page/2]).
+
 %% ===================================================================
 %% Start / stop server
 %% ===================================================================
@@ -47,23 +49,30 @@ create_app(View, Opts) ->
 
 routes(View) ->
     psycho_route:create_app(
-      [{{starts_with, "/assets/"}, static_app()},
-       {{starts_with, "/data/"},   data_app(View)},
-       {"/",                       view_page(fun index_page/2, View)},
-       {"/compare",                view_page(fun compare_page/2, View)},
-       {"/bye",                    view_page(fun exit_and_bye_page/2, View)}
+      [{{starts_with, "/assets/"}, static_handler()},
+       {{starts_with, "/data/"},   data_handler(View)},
+       {"/bye",                    bye_handler()},
+       {'_',                       view_page_handler(View)}
       ]).
 
-static_app() ->
+static_handler() ->
     psycho_static:create_app(guild_app:priv_dir()).
 
-data_app(View) ->
+data_handler(View) ->
     psycho_util:dispatch_app(
       {guild_project_view_data_http, app},
       [parsed_path, View]).
 
-view_page(Fun, View) ->
-    psycho_util:dispatch_app(Fun, [View, parsed_query_string]).
+bye_handler() ->
+    fun(_Env) -> handle_bye() end.
+
+handle_bye() ->
+    timer:apply_after(500, ?MODULE, stop_server, []),
+    Page = guild_dtl:render(guild_bye_page, []),
+    guild_http:ok_html(Page).
+
+view_page_handler(View) ->
+    psycho_util:dispatch_app({?MODULE, handle_view_page}, [parsed_path, View]).
 
 middleware(Opts) ->
     maybe_apply_log_middleware(Opts, []).
@@ -78,61 +87,83 @@ log_middleware() ->
     fun(Upstream) -> guild_log_http:create_app(Upstream) end.
 
 %% ===================================================================
-%% Index page
+%% View page handler
 %% ===================================================================
 
-index_page(View, Params) ->
-    handle_index_page_for_params(validate_index_page_params(Params), View).
+handle_view_page({Path, _, Params}, ProjectView) ->
+    RunId = selected_run(Params),
+    ViewVars = guild_project_view:page_vars(ProjectView, RunId),
+    handle_view_page_(page_view(Path, ViewVars), Params, ViewVars).
 
-validate_index_page_params(Params) ->
-    psycho_util:validate(Params, [{"run", [integer]}]).
+page_view(Path, ViewVars) ->
+    Result =
+        guild_util:find_apply2(
+          [fun() -> check_active_run(ViewVars) end,
+           fun() -> check_viewdef(ViewVars) end,
+           fun() -> {stop, find_page_view(Path, ViewVars)} end], []),
+    Result.
 
-handle_index_page_for_params({ok, Params}, View) ->
-    Vars = index_page_vars(View, Params),
-    Page = guild_dtl:render(guild_project_index_page, Vars),
-    guild_http:ok_html(Page);
-handle_index_page_for_params({error, Err}, _View) ->
-    guild_http:bad_request(psycho_util:format_validate_error(Err)).
-
-index_page_vars(View, Params) ->
-    Run = proplists:get_value("run", Params, latest),
-    ViewVars = guild_project_view:index_page_vars(View, [{run, Run}]),
-    apply_base_page_vars(ViewVars, Params).
-
-html_title(Vars) ->
-    case proplists:get_value(project_title, Vars) of
-        undefined -> "Guild";
-        Title -> Title ++ " - Guild"
+check_active_run(Vars) ->
+    case proplists:get_value(active_run, Vars) of
+        undefined -> {stop, {error, no_run}};
+        _         -> continue
     end.
 
-%% ===================================================================
-%% Compare page
-%% ===================================================================
+check_viewdef(Vars) ->
+    case proplists:get_value(viewdef, Vars) of
+        undefined -> {stop, {error, no_viewdef}};
+        _         -> continue
+    end.
 
-compare_page(View, Params) ->
-    Vars = compare_page_vars(View, Params),
-    Page = guild_dtl:render(guild_project_compare_page, Vars),
+find_page_view(Path, ViewVars) ->
+    Viewdef = proplists:get_value(viewdef, ViewVars, []),
+    Views = [{Name, Attrs} || {view, Name, Attrs} <- Viewdef],
+    find_page_view_(Path, Views).
+
+find_page_view_("/",    [First|_])       -> {ok, First};
+find_page_view_("/"++X, [{X, _}=View|_]) -> {ok, View};
+find_page_view_(Path,   [_|Rest])        -> find_page_view_(Path, Rest);
+find_page_view_(_Path,  [])              -> {error, path_not_found}.
+
+selected_run(Params) ->
+    case psycho_util:validate(Params, [{"run", [integer]}]) of
+        {ok, Validated} -> proplists:get_value("run", Validated, latest);
+        {error, Err} -> bad_request(psycho_util:format_validate_error(Err))
+    end.
+
+bad_request(Msg) ->
+    throw(guild_http:bad_request(Msg)).
+
+handle_view_page_({ok, PageView}, Params, ViewVars) ->
+    PageVars = view_page_vars(PageView, Params, ViewVars),
+    Page = guild_dtl:render(guild_project_view_page, PageVars),
+    guild_http:ok_html(Page);
+handle_view_page_({error, path_not_found}, _Params, _ViewVars) ->
+    guild_http:not_found();
+handle_view_page_({error, Error}, Params, ViewVars) ->
+    PageVars = [{error, Error}|view_page_vars(Params, ViewVars)],
+    Page = guild_dtl:render(guild_project_error_page, PageVars),
     guild_http:ok_html(Page).
 
-compare_page_vars(View, Params) ->
-    ViewVars = guild_project_view:compare_page_vars(View),
-    apply_base_page_vars(ViewVars, Params).
+view_page_vars(Params, ViewVars) ->
+    view_page_vars(undefined, Params, ViewVars).
 
-%% ===================================================================
-%% Base page vars
-%% ===================================================================
+view_page_vars(ActiveView, Params, ViewVars) ->
+    apply_view_render_context(
+      [{html_title,  html_title_for_view(ViewVars)},
+       {nav_title,   "Guild View"},
+       {active_view, ActiveView},
+       {params,      Params}
+       |ViewVars]).
 
-apply_base_page_vars(ViewVars, Params) ->
-    [{html_title, html_title(ViewVars)},
-     {nav_title,  "Guild View"},
-     {params,     Params}
-     |ViewVars].
+html_title_for_view(ViewVars) ->
+    case proplists:get_value(project_title, ViewVars) of
+        undefined -> "Guild";
+        ProjectTitle -> ProjectTitle ++ " - Guild"
+    end.
 
-%% ===================================================================
-%% Bye
-%% ===================================================================
+apply_view_render_context(Vars) ->
+    [{view_render_context, view_render_context(Vars)}|Vars].
 
-exit_and_bye_page(_View, _Env) ->
-    timer:apply_after(500, ?MODULE, stop_server, []),
-    Page = guild_dtl:render(guild_bye_page, []),
-    guild_http:ok_html(Page).
+view_render_context(Vars) ->
+    [{project_title, proplists:get_value(project_title, Vars)}].
