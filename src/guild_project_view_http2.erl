@@ -93,20 +93,32 @@ log_middleware() ->
 handle_view_page({Path, _, Params}, ProjectView) ->
     RunId = selected_run(Params),
     ViewVars = guild_project_view2:page_vars(ProjectView, RunId),
-    handle_view_page_(find_page_view(Path, ViewVars), Params, ViewVars).
+    handle_view_page_(page_view(Path, ViewVars), Params, ViewVars).
+
+page_view(Path, ViewVars) ->
+    Result =
+        guild_util:find_apply2(
+          [fun() -> check_active_run(ViewVars) end,
+           fun() -> check_viewdef(ViewVars) end,
+           fun() -> {stop, find_page_view(Path, ViewVars)} end], []),
+    Result.
+
+check_active_run(Vars) ->
+    case proplists:get_value(active_run, Vars) of
+        undefined -> {stop, {error, no_run}};
+        _         -> continue
+    end.
+
+check_viewdef(Vars) ->
+    case proplists:get_value(viewdef, Vars) of
+        undefined -> {stop, {error, no_viewdef}};
+        _         -> continue
+    end.
 
 find_page_view(Path, ViewVars) ->
     Viewdef = proplists:get_value(viewdef, ViewVars, []),
-    case has_active_run(ViewVars) of
-        true  -> find_page_view_(Path, viewdef_views(Viewdef));
-        false -> {error, no_run}
-    end.
-
-has_active_run(Vars) ->
-    proplists:get_value(active_run, Vars) /= undefined.
-
-viewdef_views(Viewdef) ->
-    [{Name, Attrs} || {view, Name, Attrs} <- Viewdef].
+    Views = [{Name, Attrs} || {view, Name, Attrs} <- Viewdef],
+    find_page_view_(Path, Views).
 
 find_page_view_("/",    [First|_])       -> {ok, First};
 find_page_view_("/"++X, [{X, _}=View|_]) -> {ok, View};
@@ -126,12 +138,15 @@ handle_view_page_({ok, PageView}, Params, ViewVars) ->
     PageVars = view_page_vars(PageView, Params, ViewVars),
     Page = guild_dtl:render(guild_project_view_page, PageVars),
     guild_http:ok_html(Page);
-handle_view_page_({error, no_run}, Params, ViewVars) ->
-    PageVars = view_page_vars(undefined, Params, ViewVars),
-    Page = guild_dtl:render(guild_project_no_run_page, PageVars),
-    guild_http:ok_html(Page);
 handle_view_page_({error, path_not_found}, _Params, _ViewVars) ->
-    guild_http:not_found().
+    guild_http:not_found();
+handle_view_page_({error, Error}, Params, ViewVars) ->
+    PageVars = [{error, Error}|view_page_vars(Params, ViewVars)],
+    Page = guild_dtl:render(guild_project_error_page, PageVars),
+    guild_http:ok_html(Page).
+
+view_page_vars(Params, ViewVars) ->
+    view_page_vars(undefined, Params, ViewVars).
 
 view_page_vars(ActiveView, Params, ViewVars) ->
     apply_view_render_context(

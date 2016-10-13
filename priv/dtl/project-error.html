@@ -7,6 +7,15 @@
 <div class="page-header">
   <h1>{{project_title}}</h1>
 </div>
+
+{% if error == "no_run" %}
 <p>There are no runs for this project. Use <code>guild train</code> to
   create a run and refresh this page.</p>
+
+{% elif error == "no_viewdef" %}
+<p>This project does not have a view definition. Refer to
+  <a href="https://guild.io/docs/devguide/">Guild Developers Guide</a>
+  for more information.</p>
+
+{% endif %}
 {% endblock %}

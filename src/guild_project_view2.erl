@@ -109,16 +109,13 @@ run_attrs(Run)       -> [{id, guild_run:id(Run)}].
 %% Viewdef
 %% ===================================================================
 
-viewdef(undefined, _State) ->
-    empty_viewdef();
+viewdef(undefined, _State) -> undefined;
 viewdef(Run, #state{p=Project}) ->
     {ok, Model} = run_model(Run, Project),
     case guild_project_util:view_path("view2", Model, Project) of
         {ok, Path} -> load_viewdef(Path);
-        error -> default_viewdef(Model, Project)
+        error      -> undefined
     end.
-
-empty_viewdef() -> [].
 
 run_model(Run, Project) ->
     case guild_run:attr(Run, "model") of
@@ -135,7 +132,7 @@ load_viewdef(Path) ->
         {ok, Def} -> Def;
         {error, Err} ->
             log_viewdef_error(Err, Path),
-            empty_viewdef()
+            undefined
     end.
 
 log_viewdef_error({Line, erl_parse, Msg}, File) ->
@@ -143,10 +140,6 @@ log_viewdef_error({Line, erl_parse, Msg}, File) ->
 
 default_model(Project) ->
     guild_project:section(Project, ["model"]).
-
-default_viewdef(_, _) ->
-    %% TODO: what do we show by default here?
-    empty_viewdef().
 
 %% ===================================================================
 %% JSON request

@@ -14,13 +14,13 @@
 
 -module(guild_util).
 
--export([fold_apply/2, foreach_apply/2, find_apply/2, try_apply/3,
-         priv_dir/1, new_input_buffer/0, input/2, finalize_input/1,
-         find_exe/1, split_cmd/1, split_keyvals/1, list_join/2,
-         reduce_to/2, normalize_series/3, os_pid_exists/1,
-         format_cmd_args/1, print_cmd_args/1, make_tmp_dir/0,
-         random_name/0, delete_tmp_dir/1, resolve_args/2,
-         resolve_keyvals/2]).
+-export([fold_apply/2, foreach_apply/2, find_apply/2, find_apply2/2,
+         try_apply/3, priv_dir/1, new_input_buffer/0, input/2,
+         finalize_input/1, find_exe/1, split_cmd/1, split_keyvals/1,
+         list_join/2, reduce_to/2, normalize_series/3,
+         os_pid_exists/1, format_cmd_args/1, print_cmd_args/1,
+         make_tmp_dir/0, random_name/0, delete_tmp_dir/1,
+         resolve_args/2, resolve_keyvals/2]).
 
 %% ===================================================================
 %% Common programming patterns support
@@ -39,6 +39,14 @@ find_apply([F|Rest], Args) ->
     end;
 find_apply([], _Args) ->
     error.
+
+find_apply2([F|Rest], Args) ->
+    case apply(F, Args) of
+        {stop, Val} -> Val;
+        continue -> find_apply2(Rest, Args)
+    end;
+find_apply2([], _Args) ->
+    error(not_found).
 
 try_apply([F|Rest], Args, Default) ->
     try
