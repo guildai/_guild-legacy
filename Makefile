@@ -15,13 +15,13 @@ upgrade:
 	./rebar3 upgrade
 	./rebar3 compile
 
-test-all: test-internal test-operations
-
-test-internal: compile
+test: compile
 	test/internal $(TESTS)
 
 test-operations: compile
 	test/operations
+
+test-app: test test-operations
 
 shell:
 	ERL_LIBS=local-deps:build/default/lib erl -s guild
