@@ -14,8 +14,7 @@
 
 -module(guild_project_util).
 
--export([runroot/1, runroot/2, all_runroots/1, flags/2, view_path/2,
-         view_path/3]).
+-export([runroot/1, runroot/2, all_runroots/1, flags/2]).
 
 %% ===================================================================
 %% Runroot
@@ -88,37 +87,3 @@ flags_path_for_section({[_, Name|_], _}) ->
     [["flags", cmdline], ["flags", profile], ["flags", Name], ["flags"]];
 flags_path_for_section({[_], _}) ->
     [["flags", cmdline], ["flags", profile], ["flags"]].
-
-%% ===================================================================
-%% View path
-%% ===================================================================
-
-view_path(Name, Project) ->
-    project_path_for_view(
-      guild_util:find_apply(
-        [fun() -> guild_project:attr(Project, ["project"], Name) end,
-         fun() -> default_view_path(Name, Project) end],
-        []),
-      Project).
-
-view_path(Name, Section, Project) ->
-    project_path_for_view(
-      guild_util:find_apply(
-        [fun() -> guild_project:section_attr(Section, Name) end,
-         fun() -> guild_project:attr(Project, ["project"], Name) end,
-         fun() -> default_view_path(Name, Project) end],
-        []),
-      Project).
-
-default_view_path(Name, Project) ->
-    {ok, Path} = project_path_for_view({ok, Name}, Project),
-    case filelib:is_file(Path) of
-        true -> {ok, Name};
-        false -> error
-    end.
-
-project_path_for_view({ok, Name}, Project) ->
-    ProjectDir = guild_project:project_dir(Project),
-    {ok, filename:join(ProjectDir, Name ++ ".config")};
-project_path_for_view(error, _Project) ->
-    error.
