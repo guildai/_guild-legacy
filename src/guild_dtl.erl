@@ -38,7 +38,7 @@
 
 init(Opts) ->
     compile_templates(),
-    guild_app:set_env(recompile_templates, recompile_templates_opt(Opts)).
+    guild_app:set_env(recompile_dtl, recompile_templates_opt(Opts)).
 
 recompile_templates_opt(Opts) ->
     proplists:get_bool(recompile_templates, Opts).
@@ -59,19 +59,17 @@ template_file(Name) ->
 %% ===================================================================
 
 render(Module, Vars) ->
-    maybe_recompile(recompile_templates(), Module),
+    maybe_recompile(Module),
     case Module:render(Vars) of
         {ok, Page} -> Page;
         {error, Err} -> error({render, Module, Vars, Err})
     end.
 
-recompile_templates() ->
-    guild_app:get_env(recompile_templates, false).
-
-maybe_recompile(true, Module) ->
-    compile_template(template_for_module(Module));
-maybe_recompile(_, _Module) ->
-    ok.
+maybe_recompile(Module) ->
+    case guild_app:get_env(recompile_dtl, false) of
+        true -> compile_template(template_for_module(Module));
+        false -> ok
+    end.
 
 template_for_module(Module) ->
     case lists:keyfind(Module, 2, ?templates) of
