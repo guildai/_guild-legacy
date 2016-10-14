@@ -197,11 +197,11 @@ format_env_attr(Env) ->
 snapshot_project(#state{rundir=RunDir,
                         op=#op{section=Section, project=Project}}=State) ->
     GuildDir = guild_rundir:guild_dir(RunDir),
-    copy_guild_project(Project, GuildDir),
-    copy_guild_views(Section, Project, GuildDir),
+    copy_project(Project, GuildDir),
+    copy_viewdef(Section, Project, GuildDir),
     State.
 
-copy_guild_project(Project, GuildDir) ->
+copy_project(Project, GuildDir) ->
     Src = guild_project:project_file(Project),
     copy_file(Src, GuildDir).
 
@@ -209,26 +209,10 @@ copy_file(Src, DestDir) ->
     Dest = filename:join(DestDir, filename:basename(Src)),
     {ok, _} = file:copy(Src, Dest).
 
-copy_guild_views(Section, Project, GuildDir) ->
-    Views = project_views(Section, Project),
-    lists:foreach(fun(View) -> copy_file(View, GuildDir) end, Views).
-
-project_views(Section, Project) ->
-    guild_util:fold_apply(
-      [fun(Acc) -> index_view_acc(Section, Project, Acc) end,
-       fun(Acc) -> compare_view_acc(Project, Acc) end],
-      []).
-
-index_view_acc(Section, Project, Acc) ->
-    case guild_project_util:view_path("view", Section, Project) of
-        {ok, View} -> [View|Acc];
-        error -> Acc
-    end.
-
-compare_view_acc(Project, Acc) ->
-    case guild_project_util:view_path("compare", Project) of
-        {ok, View} -> [View|Acc];
-        error -> Acc
+copy_viewdef(Section, Project, GuildDir) ->
+    case guild_viewdef:view_pathdef(Section, Project) of
+        {ok, Path} -> copy_file(Path, GuildDir);
+        error -> []
     end.
 
 %% ===================================================================
