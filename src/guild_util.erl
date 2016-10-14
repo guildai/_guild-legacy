@@ -14,13 +14,14 @@
 
 -module(guild_util).
 
--export([fold_apply/2, foreach_apply/2, find_apply/2, find_apply2/2,
-         try_apply/3, priv_dir/1, new_input_buffer/0, input/2,
-         finalize_input/1, find_exe/1, split_cmd/1, split_keyvals/1,
-         list_join/2, reduce_to/2, normalize_series/3,
-         os_pid_exists/1, format_cmd_args/1, print_cmd_args/1,
-         make_tmp_dir/0, random_name/0, delete_tmp_dir/1,
-         resolve_args/2, resolve_keyvals/2]).
+-export([fold_apply/2, foreach_apply/2, find_apply/1, find_apply/2,
+         find_apply2/2, try_apply/3, priv_dir/1, new_input_buffer/0,
+         input/2, finalize_input/1, find_exe/1, split_cmd/1,
+         split_keyvals/1, list_join/2, reduce_to/2,
+         normalize_series/3, os_pid_exists/1, format_cmd_args/1,
+         print_cmd_args/1, make_tmp_dir/0, random_name/0,
+         delete_tmp_dir/1, resolve_args/2, resolve_keyvals/2,
+         consult_string/1]).
 
 %% ===================================================================
 %% Common programming patterns support
@@ -31,6 +32,8 @@ fold_apply(Funs, Acc0) ->
 
 foreach_apply(Funs, X) ->
     lists:foreach(fun(F) -> F(X) end, Funs).
+
+find_apply(Funs) -> find_apply(Funs, []).
 
 find_apply([F|Rest], Args) ->
     case apply(F, Args) of
@@ -369,3 +372,40 @@ replace_env_refs(In, Name, Val) ->
 
 resolve_keyvals(KeyVals, Env) ->
     [{Key, resolve_arg_env_refs(Val, Env)} || {Key, Val} <- KeyVals].
+
+%% ===================================================================
+%% Consult string
+%% ===================================================================
+
+consult_string(S) ->
+    case erl_scan:string(S) of
+        {ok, Tokens, _} -> consult_tokens(Tokens);
+        {error, Err} -> {error, Err}
+    end.
+
+consult_tokens(Tokens) ->
+    parse_tokens(split_tokens_by_dot(Tokens)).
+
+split_tokens_by_dot(Tokens) ->
+    split_tokens_by_dot_acc(Tokens, [], []).
+
+split_tokens_by_dot_acc([{dot, N}|Rest], Cur, Acc) ->
+    Tokens = lists:reverse([{dot, N}|Cur]),
+    split_tokens_by_dot_acc(Rest, [], [Tokens|Acc]);
+split_tokens_by_dot_acc([Token|Rest], Cur, Acc) ->
+    split_tokens_by_dot_acc(Rest, [Token|Cur], Acc);
+split_tokens_by_dot_acc([], [], Acc) ->
+    lists:reverse(Acc);
+split_tokens_by_dot_acc([], Cur, Acc) ->
+    lists:reverse([lists:reverse(Cur)|Acc]).
+
+parse_tokens(Tokens) ->
+    parse_tokens_acc(Tokens, []).
+
+parse_tokens_acc([Tokens|Rest], Acc) ->
+    case erl_parse:parse_term(Tokens) of
+        {ok, Term} -> parse_tokens_acc(Rest, [Term|Acc]);
+        {error, Err} -> {error, Err}
+    end;
+parse_tokens_acc([], Acc) ->
+    {ok, lists:reverse(Acc)}.

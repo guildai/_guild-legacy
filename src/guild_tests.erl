@@ -36,7 +36,8 @@ run() ->
     test_normalize_series(),
     test_collector_protocol(),
     test_make_tmp_dir(),
-    test_delete_tmp_dir().
+    test_delete_tmp_dir(),
+    test_consult_string().
 
 run(Test) ->
     guild_trace:init_from_env(os:getenv("TRACE")),
@@ -470,7 +471,7 @@ test_exec_bin() ->
     filename:absname("priv/test/bin/test-exec").
 
 %% ===================================================================
-%% Test operation
+%% Operation
 %% ===================================================================
 
 test_operation() ->
@@ -985,7 +986,7 @@ test_collector_protocol() ->
     ok().
 
 %% ===================================================================
-%% Test make tmp dir
+%% Make tmp dir
 %% ===================================================================
 
 test_make_tmp_dir() ->
@@ -1024,7 +1025,7 @@ confirm_file_exists(F, Exist) ->
     end.
 
 %% ===================================================================
-%% Test delete tmp dir
+%% Delete tmp dir
 %% ===================================================================
 
 test_delete_tmp_dir() ->
@@ -1052,5 +1053,31 @@ test_delete_tmp_dir() ->
 
     %% Note we're not testing "/" or any other likely top level
     %% directory here for obvious reasons.
+
+    ok().
+
+%% ===================================================================
+%% Consult string
+%% ===================================================================
+
+test_consult_string() ->
+    start("consult_string"),
+
+    CS = fun guild_util:consult_string/1,
+
+    {ok, []} = CS(""),
+
+    {ok, [1]}    = CS("1."),
+    {ok, [1, 2]} = CS("1. 2."),
+    {ok, [1, 2]} = CS("1.\n2.\n"),
+
+    {ok, [[1, 2, 3], {3, 4, 6}]} = CS("[1, 2, 3].\n{3, 4, 6}."),
+    {ok, [[1, 2, 3], {3, 4, 6}]} = CS("[1,\n2,\n3].\n{3,\n4,\n6}."),
+
+    {error, {1, erl_parse, ["syntax error before: ", []]}} = CS("1"),
+    {error, {4, erl_parse, ["syntax error before: ", []]}} = CS("\n\n\n1"),
+    {error, {1, erl_parse, ["syntax error before: ", []]}} = CS("1. 1"),
+    {error, {4, erl_parse, ["syntax error before: ", []]}} = CS("1.\n\n\n1"),
+    {error, {5, erl_parse, ["syntax error before: ", []]}} = CS("\n1.\n\n\n1"),
 
     ok().
