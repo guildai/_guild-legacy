@@ -17,19 +17,19 @@
 -export([init_from_opts/1, init_from_env/1]).
 
 init_from_opts(Opts) ->
-    lists:foreach(fun apply_trace/1, parse_trace(trace_opt(Opts))).
-
-init_from_env(false) ->
-    ok;
-init_from_env(Env) ->
-    apply_trace(parse_trace(Env)).
+    lists:foreach(fun apply_trace/1, parse_trace_specs(trace_opt(Opts))).
 
 trace_opt(Opts) ->
     proplists:get_value(trace, Opts).
 
-parse_trace(undefined) ->
+init_from_env(false) ->
+    ok;
+init_from_env(Env) ->
+    lists:foreach(fun apply_trace/1, parse_trace_specs(Env)).
+
+parse_trace_specs(undefined) ->
     [];
-parse_trace(Str) ->
+parse_trace_specs(Str) ->
     [trace_spec(Token) || Token <- string:tokens(Str, ",")].
 
 trace_spec(Str) ->
