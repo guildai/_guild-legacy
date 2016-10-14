@@ -112,9 +112,21 @@ run_attrs(Run)       -> [{id, guild_run:id(Run)}].
 viewdef(undefined, _State) -> undefined;
 viewdef(Run, #state{p=Project}) ->
     {ok, Model} = run_model(Run, Project),
-    case guild_project_util:view_path("view", Model, Project) of
-        {ok, Path} -> load_viewdef(Path);
-        error      -> undefined
+    case find_viewdef(Model, Project) of
+        {ok, Viewdef} -> Viewdef;
+        error -> undefined
+    end.
+
+find_viewdef(Model, Project) ->
+    guild_util:find_apply(
+      [fun custom_viewdef/2,
+       fun generated_viewdef/2],
+      [Model, Project]).
+
+custom_viewdef(Model, Project) ->
+    case guild_viewdef:viewdef_path(Model, Project) of
+        {ok, Path} -> {ok, load_viewdef(Path)};
+        error      -> error
     end.
 
 run_model(Run, Project) ->
@@ -123,6 +135,9 @@ run_model(Run, Project) ->
         {ok, Name} -> named_model(Project, binary_to_list(Name));
         error      -> default_model(Project)
     end.
+
+default_model(Project) ->
+    guild_project:section(Project, ["model"]).
 
 named_model(Project, Name) ->
     guild_project:section(Project, ["model", Name]).
@@ -135,11 +150,18 @@ load_viewdef(Path) ->
             undefined
     end.
 
+log_viewdef_error(enoent, File) ->
+    guild_log:warn("~s: file does not exist~n", [File]);
 log_viewdef_error({Line, erl_parse, Msg}, File) ->
     guild_log:warn("~s:~b: ~s~n", [File, Line, Msg]).
 
-default_model(Project) ->
-    guild_project:section(Project, ["model"]).
+generated_viewdef(Model, Project) ->
+    case guild_viewdef:viewdef_section(Model, Project) of
+        {ok, View} ->
+            {ok, guild_viewdef:generate_viewdef(View, Project)};
+        error ->
+            error
+    end.
 
 %% ===================================================================
 %% JSON request
