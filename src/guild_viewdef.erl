@@ -113,19 +113,17 @@ viewdef_template_vars(Section, Project) ->
 %% ===================================================================
 
 viewdef_fields(Section, Project) ->
-    case guild_project:section_attr(Section, "fields") of
-        {ok, Raw} ->
-            Lookup = fields_lookup(Section),
-            viewdef_fields(Raw, Project, Lookup);
-        error -> []
-    end.
+    Lookup = fields_lookup(Section),
+    viewdef_fields(section_attr(Section, "fields"), Project, Lookup).
 
 fields_lookup(_Section) ->
     read_lookup(lookup_path(?default_fields_lookup)).
 
-viewdef_fields(Raw, Project, Lookup) ->
+viewdef_fields({ok, Raw}, Project, Lookup) ->
     Names = parse_names(Raw),
-    [resolve_field(Name, Project, Lookup) || Name <- Names].
+    [resolve_field(Name, Project, Lookup) || Name <- Names];
+viewdef_fields(error, _Project, _Lookup) ->
+    [].
 
 resolve_field(Name, Project, Lookup) ->
     BaseAttrs = [{"name", Name}|lookup_defaults(Name, Lookup)],
@@ -145,23 +143,25 @@ apply_project_field(Name, Project, BaseAttrs) ->
 
 viewdef_series(Section, Project) ->
     Lookup = series_lookup(Section),
-    case guild_project:section_attr(Section, "series") of
-        {ok, Raw} ->
-            {viewdef_series(Raw, Project, Lookup),
+    case section_attr(Section, "series") of
+        {ok, _}=A ->
+            {viewdef_series(A, Project, Lookup),
              []};
         error ->
-            RawA = guild_project:section_attr(Section, "series-a", ""),
-            RawB = guild_project:section_attr(Section, "series-b", ""),
-            {viewdef_series(RawA, Project, Lookup),
-             viewdef_series(RawB, Project, Lookup)}
-    end.
+            A = section_attr(Section, "series-a"),
+            B = section_attr(Section, "series-b"),
+            {viewdef_series(A, Project, Lookup),
+             viewdef_series(B, Project, Lookup)}
+        end.
 
 series_lookup(_Section) ->
     read_lookup(lookup_path(?default_series_lookup)).
 
-viewdef_series(Raw, Project, Lookup) ->
+viewdef_series({ok, Raw}, Project, Lookup) ->
     Names = parse_names(Raw),
-    [resolve_series(Name, Project, Lookup) || Name <- Names].
+    [resolve_series(Name, Project, Lookup) || Name <- Names];
+viewdef_series(error, _Project, _Lookup) ->
+    [].
 
 resolve_series(Name, Project, Lookup) ->
     BaseAttrs = [{"name", Name}|lookup_defaults(Name, Lookup)],
@@ -178,6 +178,9 @@ apply_project_series(Name, Project, BaseAttrs) ->
 %% ===================================================================
 %% General support
 %% ===================================================================
+
+section_attr(Section, Name) ->
+    guild_project:section_attr(Section, Name).
 
 lookup_path(Name) ->
     filename:join(guild_app:priv_dir("viewdefs"), Name ++ ".config").
