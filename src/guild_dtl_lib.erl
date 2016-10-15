@@ -292,5 +292,7 @@ page_view_widgets_acc([{col, _, Items}|Rest], Acc) ->
     page_view_widgets_acc(Rest, page_view_widgets_acc(Items, Acc));
 page_view_widgets_acc([{widget, Name, _}|Rest], Acc) ->
     page_view_widgets_acc(Rest, try_acc_widget(Name, Acc));
+page_view_widgets_acc([nothing|Rest], Acc) ->
+    page_view_widgets_acc(Rest, Acc);
 page_view_widgets_acc([], Acc) ->
     Acc.

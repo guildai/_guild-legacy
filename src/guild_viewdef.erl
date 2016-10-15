@@ -77,7 +77,7 @@ generate_viewdef(Section, _Project) ->
     maybe_recompile(Module),
     Vars = [],
     case Module:render(Vars) of
-        {ok, Bin} -> guild_util:parse_string(Bin);
+        {ok, Bin} -> rendered_template_to_viewdef(Bin);
         {error, Err} -> error({render, Module, Vars, Err})
     end.
 
@@ -94,3 +94,7 @@ template_for_module(Module) ->
         {_, _}=T -> T;
         false -> error({no_such_template, Module})
     end.
+
+rendered_template_to_viewdef(Bin) ->
+    Str = binary_to_list(iolist_to_binary(Bin)),
+    guild_util:consult_string(Str).
