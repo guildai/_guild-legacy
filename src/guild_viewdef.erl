@@ -10,6 +10,7 @@
 -define(viewdef_attr, "view").
 -define(default_viewdef_template, guild_default_viewdef).
 -define(default_fields_lookup, "default-fields").
+-define(default_series_lookup, "default-series").
 
 %% ===================================================================
 %% Init
@@ -101,18 +102,93 @@ rendered_template_to_viewdef(Bin) ->
     guild_util:consult_string(Str).
 
 viewdef_template_vars(Section, Project) ->
-    [{fields, viewdef_fields(Section, Project)}].
+    Fields = viewdef_fields(Section, Project),
+    {SeriesA, SeriesB} = viewdef_series(Section, Project),
+    [{fields, Fields},
+     {series_a, SeriesA},
+     {series_b, SeriesB}].
+
+%% ===================================================================
+%% Viewdef fields
+%% ===================================================================
 
 viewdef_fields(Section, Project) ->
     case guild_project:section_attr(Section, "fields") of
         {ok, Raw} ->
-            Names = parse_viewdef_fields(Raw),
             Lookup = fields_lookup(Section),
-            resolve_fields(Names, Project, Lookup);
+            viewdef_fields(Raw, Project, Lookup);
         error -> []
     end.
 
-parse_viewdef_fields(Raw) ->
+fields_lookup(_Section) ->
+    read_lookup(lookup_path(?default_fields_lookup)).
+
+viewdef_fields(Raw, Project, Lookup) ->
+    Names = parse_names(Raw),
+    [resolve_field(Name, Project, Lookup) || Name <- Names].
+
+resolve_field(Name, Project, Lookup) ->
+    BaseAttrs = [{"name", Name}|lookup_defaults(Name, Lookup)],
+    apply_project_field(Name, Project, BaseAttrs).
+
+apply_project_field(Name, Project, BaseAttrs) ->
+    case guild_project:section(Project, ["field", Name]) of
+        {ok, {_, ProjectAttrs}} ->
+            merge_attrs(ProjectAttrs, BaseAttrs);
+        error ->
+            BaseAttrs
+    end.
+
+%% ===================================================================
+%% Viewdef series
+%% ===================================================================
+
+viewdef_series(Section, Project) ->
+    Lookup = series_lookup(Section),
+    case guild_project:section_attr(Section, "series") of
+        {ok, Raw} ->
+            {viewdef_series(Raw, Project, Lookup),
+             []};
+        error ->
+            RawA = guild_project:section_attr(Section, "series-a", ""),
+            RawB = guild_project:section_attr(Section, "series-b", ""),
+            {viewdef_series(RawA, Project, Lookup),
+             viewdef_series(RawB, Project, Lookup)}
+    end.
+
+series_lookup(_Section) ->
+    read_lookup(lookup_path(?default_series_lookup)).
+
+viewdef_series(Raw, Project, Lookup) ->
+    Names = parse_names(Raw),
+    [resolve_series(Name, Project, Lookup) || Name <- Names].
+
+resolve_series(Name, Project, Lookup) ->
+    BaseAttrs = [{"name", Name}|lookup_defaults(Name, Lookup)],
+    apply_project_series(Name, Project, BaseAttrs).
+
+apply_project_series(Name, Project, BaseAttrs) ->
+    case guild_project:section(Project, ["series", Name]) of
+        {ok, {_, ProjectAttrs}} ->
+            merge_attrs(ProjectAttrs, BaseAttrs);
+        error ->
+            BaseAttrs
+    end.
+
+%% ===================================================================
+%% General support
+%% ===================================================================
+
+lookup_path(Name) ->
+    filename:join(guild_app:priv_dir("viewdefs"), Name ++ ".config").
+
+read_lookup(Path) ->
+    case file:consult(Path) of
+        {ok, Lookup} -> Lookup;
+        {error, enoent} -> []
+    end.
+
+parse_names(Raw) ->
     Split = re:split(Raw, ",", [{return, list}]),
     [strip_whitespace(S) || S <- Split].
 
@@ -123,34 +199,8 @@ strip_whitespace(S) ->
           [{capture, all_but_first, list}]),
     Stripped.
 
-fields_lookup(_Section) ->
-    Path = fields_lookup_path(?default_fields_lookup),
-    {ok, Fields} = file:consult(Path),
-    Fields.
-
-fields_lookup_path(Name) ->
-    filename:join(guild_app:priv_dir("viewdefs"), Name ++ ".config").
-
-resolve_fields(Names, Project, Lookup) ->
-    [resolve_field(Name, Project, Lookup) || Name <- Names].
-
-resolve_field(Name, Project, Lookup) ->
-    BaseAttrs = [{"name", Name}|field_defaults(Name, Lookup)],
-    apply_project_field(Name, Project, BaseAttrs).
-
-field_defaults(FieldName, Lookup) ->
+lookup_defaults(FieldName, Lookup) ->
     [{atom_to_list(AttrName), Val}
      || {AttrName, Val} <- proplists:get_value(FieldName, Lookup, [])].
 
-apply_project_field(Name, Project, BaseAttrs) ->
-    case guild_project:section(Project, ["field", Name]) of
-        {ok, {_, ProjectAttrs}} ->
-            merge_field_attrs(ProjectAttrs, BaseAttrs);
-        error ->
-            BaseAttrs
-    end.
-
-merge_field_attrs(P1, P2) -> P1 ++ P2.
-    %% P1Sorted = lists:sort(P1),
-    %% P2Sorted = lists:sort(P2),
-    %% lists:ukeymerge(1, P1Sorted, P2Sorted).
+merge_attrs(P1, P2) -> P1 ++ P2.
