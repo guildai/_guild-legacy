@@ -39,6 +39,7 @@ data_table_widget(Template) ->
                  "/assets/css/widgets.css"],
             js=["/assets/js/datatables.min.js",
                 "/assets/js/numeral.min.js",
+                "/assets/js/d3.min.js",
                 "/assets/js/widgets.js"],
             template=Template}.
 
