@@ -177,7 +177,7 @@ function timeseriesXs(data) {
 
 function timeseriesCols(data) {
     var cols = [];
-    var sortedNames = Object.keys(data).sort();
+    var sortedNames = data != null ? Object.keys(data).sort() : [];
     for (var i in sortedNames) {
         var name = sortedNames[i];
         var series = data[name];
