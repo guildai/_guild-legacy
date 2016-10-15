@@ -192,7 +192,7 @@ read_lookup(Path) ->
     end.
 
 parse_names(Raw) ->
-    Split = re:split(Raw, ",", [{return, list}]),
+    Split = re:split(Raw, "\\s+", [{return, list}]),
     [strip_whitespace(S) || S <- Split].
 
 strip_whitespace(S) ->
