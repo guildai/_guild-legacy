@@ -12,7 +12,7 @@
 %% See the License for the specific language governing permissions and
 %% limitations under the License.
 
--module(guild_list_series_cmd).
+-module(guild_list_attrs_cmd).
 
 -export([parser/0, main/2]).
 
@@ -22,9 +22,9 @@
 
 parser() ->
     cli:parser(
-      "guild list-series",
+      "guild list-attrs",
       "[OPTION]... [RUNDIR]",
-      "List series for a run in RUNIDR or the latest using --latest-run.\n"
+      "List attributes for a run in RUNIDR or the latest using --latest-run.\n"
       "\n"
       "Use 'guild list-runs' to list runs that can be used for RUNDIR.",
       guild_cmd_support:project_options([latest_run]),
@@ -36,8 +36,8 @@ parser() ->
 
 main(Opts, Args) ->
     RunDir = guild_cmd_support:run_db_for_args(Opts, Args),
-    print_stat_names(guild_run_db:series_keys(RunDir)).
+    print_attrs(guild_run_db:attrs(RunDir)).
 
-print_stat_names({ok, Names}) ->
-    Print = fun(N) -> io:format("~s~n", [N]) end,
-    lists:foreach(Print, Names).
+print_attrs({ok, Rows}) ->
+    Print = fun({Key, Val}) -> io:format("~s: ~s~n", [Key, Val]) end,
+    lists:foreach(Print, Rows).

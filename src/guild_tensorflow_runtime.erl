@@ -97,7 +97,8 @@ train_app_support() -> [json].
 train_tasks(Flags, Env) ->
     Repeat = stats_interval_opt(Flags),
     guild_runtime_support:op_tasks(
-      [{flags, resolve_flag_vals(Flags, Env)},
+      [{log_flags, resolve_flag_vals(Flags, Env)},
+       log_system_attrs,
        {collector, "op-stats", Repeat},
        {collector, "system-stats", Repeat},
        {collector, "gpu-stats", Repeat},

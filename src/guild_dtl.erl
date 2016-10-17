@@ -17,7 +17,8 @@
 -export([init/1, render/2]).
 
 -define(templates,
-        [{"bye.html",                  guild_bye_page},
+        [{"attrs-widget.html",         guild_attrs_widget},
+         {"bye.html",                  guild_bye_page},
          {"compare-table-widget.html", guild_compare_table_widget},
          {"flags-widget.html",         guild_flags_widget},
          {"output-widget.html",        guild_output_widget},

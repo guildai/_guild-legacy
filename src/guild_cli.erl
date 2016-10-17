@@ -40,6 +40,7 @@ parser_commands() ->
        "export",
        "import",
        "init",
+       "list-attrs",
        "list-models",
        "list-runs",
        "list-series",
@@ -58,9 +59,10 @@ cmd_info("evaluate")       -> {guild_eval_cmd, "evaluate a trained model"};
 cmd_info("export")         -> {guild_export_cmd, "export run results"};
 cmd_info("import")         -> {guild_import_cmd, "import run results"};
 cmd_info("init")           -> {guild_init_cmd, "initialize a Guild project"};
+cmd_info("list-attrs")     -> {guild_list_attrs_cmd, "list run attributes"};
 cmd_info("list-models")    -> {guild_list_models_cmd, "list project models"};
 cmd_info("list-runs")      -> {guild_list_runs_cmd, "list project runs"};
-cmd_info("list-series")    -> {guild_list_series_cmd, "list series for a run"};
+cmd_info("list-series")    -> {guild_list_series_cmd, "list run series names"};
 cmd_info("prepare")        -> {guild_prepare_cmd, "prepare model for training"};
 cmd_info("serve")          -> {guild_serve_cmd, "serve a trained model"};
 cmd_info("status")         -> {guild_status_cmd, "train a model"};

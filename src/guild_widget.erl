@@ -18,6 +18,7 @@
 
 -record(widget, {css=[], js=[], template}).
 
+for_name("attrs")         -> {ok, default_widget(guild_attrs_widget)};
 for_name("compare-table") -> {ok, data_table_widget(guild_compare_table_widget)};
 for_name("flags")         -> {ok, default_widget(guild_flags_widget)};
 for_name("output")        -> {ok, data_table_widget(guild_output_widget)};

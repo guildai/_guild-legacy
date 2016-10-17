@@ -33,11 +33,12 @@ handle_task([Request, Reply, Owner]) ->
     link(Owner),
     Reply(handle_request(Request)),
     {stop, normal}.
-
 handle_request({runs_json, RunRoots}) ->
     runs_json(RunRoots);
 handle_request({flags_json, Run}) ->
     flags_json(Run);
+handle_request({attrs_json, Run}) ->
+    attrs_json(Run);
 handle_request({summary_json, Run}) ->
     summary_json(Run);
 handle_request({series_json, Pattern, Run, Max}) ->
@@ -91,8 +92,7 @@ run_start_time({Attrs}) ->
 %% Flags JSON
 %% ===================================================================
 
-flags_json(undefined) ->
-    ?null_json;
+flags_json(undefined) -> ?null_json;
 flags_json(Run) ->
     try_run_db(Run, fun flags_json_for_db/1, ?null_json).
 
@@ -102,6 +102,23 @@ flags_json_for_db(Db) ->
             guild_json:encode({Flags});
         {error, Err} ->
             guild_log:internal("Error getting flags: ~p~n", [Err]),
+            ?null_json
+    end.
+
+%% ===================================================================
+%% Attrs JSON
+%% ===================================================================
+
+attrs_json(undefined) -> ?null_json;
+attrs_json(Run) ->
+    try_run_db(Run, fun attrs_json_for_db/1, ?null_json).
+
+attrs_json_for_db(Db) ->
+    case guild_run_db:attrs(Db) of
+        {ok, Attrs} ->
+            guild_json:encode({Attrs});
+        {error, Err} ->
+            guild_log:internal("Error getting attrs: ~p~n", [Err]),
             ?null_json
     end.
 

@@ -174,6 +174,8 @@ reader_request(runs, #state{runroots=RunRoots}) ->
     {runs_json, RunRoots};
 reader_request({flags, RunId}, State) ->
     {flags_json, resolve_run(RunId, State)};
+reader_request({attrs, RunId}, State) ->
+    {attrs_json, resolve_run(RunId, State)};
 reader_request({summary, Run}, State) ->
     {summary_json, resolve_run(Run, State)};
 reader_request({series, Pattern, Opts}, State) ->

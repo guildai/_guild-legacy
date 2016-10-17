@@ -20,6 +20,8 @@ app({"/data/runs", _, _}, View) ->
     view_json(View, runs);
 app({"/data/flags", _, Params}, View) ->
     view_json(View, {flags, run_opt(Params)});
+app({"/data/attrs", _, Params}, View) ->
+    view_json(View, {attrs, run_opt(Params)});
 app({"/data/summary", _, Params}, View) ->
     view_json(View, {summary, run_opt(Params)});
 app({"/data/series/" ++ Path, _, Params}, View) ->

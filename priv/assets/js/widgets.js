@@ -48,6 +48,21 @@ function initFlags(widget, flags) {
 }
 
 /********************************************************************
+ * Attrs
+ ********************************************************************/
+
+function initAttrs(widget, attrs) {
+    if (!attrs) return;
+    widget.empty();
+    for (var name in attrs) {
+        var val = attrs[name];
+        var row = $("<tr><th scope=\"row\">"+ name + "</th>" +
+                    "<td>" + val + "</td></tr>");
+        widget.append(row);
+    }
+}
+
+/********************************************************************
  * Status
  ********************************************************************/
 
