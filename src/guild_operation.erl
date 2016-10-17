@@ -210,7 +210,7 @@ copy_file(Src, DestDir) ->
     {ok, _} = file:copy(Src, Dest).
 
 copy_viewdef(Section, Project, GuildDir) ->
-    case guild_viewdef:view_pathdef(Section, Project) of
+    case guild_viewdef:viewdef_path(Section, Project) of
         {ok, Path} -> copy_file(Path, GuildDir);
         error -> []
     end.
