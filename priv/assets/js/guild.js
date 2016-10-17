@@ -1,20 +1,14 @@
 /********************************************************************
- * Index page
+ * Project view page
  ********************************************************************/
 
-function initIndexPage(selectedRun, dataRefreshInterval) {
+function initViewPage(selectedRun, dataRefreshInterval) {
     initRunsSelectChangeHandler();
-    var state = indexPageState(selectedRun, dataRefreshInterval);
-    refreshIndexPage(state);
+    var state = viewPageState(selectedRun, dataRefreshInterval);
+    refreshViewPage(state);
 }
 
-function initRunsSelectChangeHandler() {
-    $("#runs-select").on("changed.bs.select", function (e) {
-        window.location = "?run=" + $(this).val();
-    });
-}
-
-function indexPageState(selectedRun, refreshIntervalSeconds) {
+function viewPageState(selectedRun, refreshIntervalSeconds) {
     return {
         selectedRun: selectedRun,
         refreshInterval: refreshIntervalSeconds * 1000,
@@ -25,13 +19,19 @@ function indexPageState(selectedRun, refreshIntervalSeconds) {
     };
 }
 
-function refreshIndexPage(state) {
+function initRunsSelectChangeHandler() {
+    $("#runs-select").on("changed.bs.select", function (e) {
+        window.location = "?run=" + $(this).val();
+    });
+}
+
+function refreshViewPage(state) {
     fetchGuildData("/data/runs", function(runs) {
         refreshStateRuns(state, runs);
         updateRunsSelect(state);
         maybeUpdateWidgets(state);
         updateRunStatus(state);
-        scheduleNextIndexPageRefresh(state);
+        scheduleNextViewPageRefresh(state);
     });
 }
 
@@ -144,7 +144,7 @@ function updateRunStatus(state) {
     }
 }
 
-function scheduleNextIndexPageRefresh(state) {
+function scheduleNextViewPageRefresh(state) {
     if (state.run) {
         state.lastStatus = state.run.status;
     }
@@ -152,53 +152,7 @@ function scheduleNextIndexPageRefresh(state) {
 }
 
 /********************************************************************
- * Compare page
- ********************************************************************/
-
-function initComparePage() {
-    var state = comparePageState();
-    updateWidgets(state);
-}
-
-function comparePageState() {
-    return {
-        widgetsInit: false
-    };
-}
-
-/********************************************************************
- * Project view support
- ********************************************************************/
-
-function initViewPage(selectedRun, dataRefreshInterval) {
-    initRunsSelectChangeHandler();
-    var state = viewPageState(selectedRun, dataRefreshInterval);
-    refreshViewPage(state);
-}
-
-function viewPageState(selectedRun, refreshIntervalSeconds) {
-    return {
-        selectedRun: selectedRun,
-        refreshInterval: refreshIntervalSeconds * 1000,
-        runs: null,
-        run: null,
-        widgetsInit: false,
-        runStopped: false
-    };
-}
-
-function refreshViewPage(state) {
-    fetchGuildData("/data/runs", function(runs) {
-        refreshStateRuns(state, runs);
-        updateRunsSelect(state);
-        maybeUpdateWidgets(state);
-        updateRunStatus(state);
-        scheduleNextIndexPageRefresh(state);
-    });
-}
-
-/********************************************************************
- * Data
+ * Data support
  ********************************************************************/
 
 function fetchGuildData(url, callback) {
