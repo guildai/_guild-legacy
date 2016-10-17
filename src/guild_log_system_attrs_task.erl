@@ -36,12 +36,23 @@ handle_task(#state{rundir=RunDir}) ->
     {stop, normal}.
 
 sys_attrs() ->
-    [].
+    lists:foldl(fun apply_sys_attrs/2, [], guild_sys:system_attrs()).
+
+apply_sys_attrs(Attrs, Acc) ->
+    #{cpu_model:=Model,
+      cpu_cores:=Cores} = Attrs,
+    [{"cpu_model", Model},
+     {"cpu_cores", Cores}
+     |Acc].
 
 gpu_attrs() ->
     lists:foldl(fun apply_gpu_attrs/2, [], guild_sys:gpu_attrs()).
 
 apply_gpu_attrs(Attrs, Acc) ->
-    #{index:=Index, name:=Name, memory:=Memory} = Attrs,
+    #{index:=Index,
+      name:=Name,
+      memory:=Memory} = Attrs,
     Key = fun(X) -> "gpu" ++ Index ++ "_" ++ X end,
-    [{Key("name"), Name}, {Key("memory"), Memory} |Acc].
+    [{Key("name"), Name},
+     {Key("memory"), Memory}
+     |Acc].

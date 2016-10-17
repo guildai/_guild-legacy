@@ -14,23 +14,47 @@
 
 -module(guild_sys).
 
--export([start_link/0, gpu_attrs/0]).
+-export([start_link/0, gpu_attrs/0, system_attrs/0]).
 
 -export([handle_msg/3]).
 
 -behavior(e2_service).
 
--record(state, {gpu_attrs}).
+-record(state, {gpu_attrs, sys_attrs}).
+
+-define(part(I), element(I, Parts)).
+
+%% ===================================================================
+%% Start
+%% ===================================================================
 
 start_link() ->
     e2_service:start_link(?MODULE, #state{}, [registered]).
 
+%% ===================================================================
+%% API
+%% ===================================================================
+
 gpu_attrs() ->
     e2_service:call(?MODULE, gpu_attrs).
 
+system_attrs() ->
+    e2_service:call(?MODULE, sys_attrs).
+
+%% ===================================================================
+%% Messages
+%% ===================================================================
+
 handle_msg(gpu_attrs, _From, State) ->
     {Attrs, Next} = ensure_gpu_attrs(State),
+    {reply, Attrs, Next};
+handle_msg(sys_attrs, _From, State) ->
+    {Attrs, Next} = ensure_sys_attrs(State),
     {reply, Attrs, Next}.
+
+%% ===================================================================
+%% GPU attrs
+%% ===================================================================
 
 ensure_gpu_attrs(#state{gpu_attrs=undefined}=S) ->
     Attrs = gpu_attrs_(),
@@ -60,23 +84,51 @@ parse_gpu_attrs(Out) ->
 
 parse_gpu_attrs_line(Line) ->
     Parts = list_to_tuple(re:split(Line, ", ", [{return, list}])),
-    Part = fun(I) -> element(I, Parts) end,
-    #{
-       index          => Part(1),
-       name           => Part(2),
-       driver_version => Part(3),
-       bus_id         => Part(4),
-       link_gen       => Part(5),
-       link_gen_max   => Part(6),
-       link_width     => Part(7),
-       link_width_max => Part(8),
-       display_mode   => Part(9),
-       display_active => Part(10),
-       vbios_version  => Part(11),
-       pstate         => Part(12),
-       memory         => Part(13),
-       compute_mode   => Part(14),
-       power_limit    => Part(15)
+    #{index          => ?part(1),
+      name           => ?part(2),
+      driver_version => ?part(3),
+      bus_id         => ?part(4),
+      link_gen       => ?part(5),
+      link_gen_max   => ?part(6),
+      link_width     => ?part(7),
+      link_width_max => ?part(8),
+      display_mode   => ?part(9),
+      display_active => ?part(10),
+      vbios_version  => ?part(11),
+      pstate         => ?part(12),
+      memory         => ?part(13),
+      compute_mode   => ?part(14),
+      power_limit    => ?part(15)
      }.
 
 empty_gpu_attrs() -> [].
+
+%% ===================================================================
+%% Sys attrs
+%% ===================================================================
+
+ensure_sys_attrs(#state{sys_attrs=undefined}=S) ->
+    Attrs = sys_attrs_(),
+    {Attrs, S#state{sys_attrs=Attrs}};
+ensure_sys_attrs(#state{sys_attrs=Attrs}=State) ->
+    {Attrs, State}.
+
+sys_attrs_() ->
+    ensure_exec_support(),
+    case exec:run(guild_app:priv_bin("sys-attrs"), [sync, stdout, stderr]) of
+        {ok, [{stdout, Out}]} ->
+            parse_sys_attrs(Out);
+        {error, Err} ->
+            guild_log:internal(
+              "Error reading sys attrs: ~p~n", [Err]),
+            []
+    end.
+
+parse_sys_attrs(Out) ->
+    [parse_sys_attrs_line(Line) || Line <- re:split(Out, "\n", [trim])].
+
+parse_sys_attrs_line(Line) ->
+    Parts = list_to_tuple(re:split(Line, ", ", [{return, list}])),
+    #{cpu_model      => ?part(1),
+      cpu_cores      => ?part(2)
+     }.
