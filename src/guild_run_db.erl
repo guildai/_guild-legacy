@@ -17,8 +17,8 @@
 -behavior(e2_service).
 
 -export([start_link/0, open/1, open/2, log_series_values/2,
-         log_flags/2, log_properties/2, log_output/2, series/2,
-         series_keys/1, flags/1, properties/1, output/1, close/1]).
+         log_flags/2, log_attrs/2, log_output/2, series/2,
+         series_keys/1, flags/1, attrs/1, output/1, close/1]).
 
 -export([init/1, handle_msg/3, terminate/2]).
 
@@ -57,8 +57,8 @@ log_series_values(RunDir, Vals) ->
 log_flags(RunDir, Flags) ->
     e2_service:call(?MODULE, {op, RunDir, {log_flags, Flags}}).
 
-log_properties(RunDir, Props) ->
-    e2_service:call(?MODULE, {op, RunDir, {log_properties, Props}}).
+log_attrs(RunDir, Attrs) ->
+    e2_service:call(?MODULE, {op, RunDir, {log_attrs, Attrs}}).
 
 log_output(RunDir, Output) ->
     e2_service:call(?MODULE, {op, RunDir, {log_output, Output}}).
@@ -72,8 +72,8 @@ series_keys(RunDir) ->
 flags(RunDir) ->
     e2_service:call(?MODULE, {op, RunDir, flags}).
 
-properties(RunDir) ->
-    e2_service:call(?MODULE, {op, RunDir, properties}).
+attrs(RunDir) ->
+    e2_service:call(?MODULE, {op, RunDir, attrs}).
 
 output(RunDir) ->
     e2_service:call(?MODULE, {op, RunDir, output}).
@@ -148,7 +148,7 @@ sqlite3_open_db(File) ->
 
 maybe_init_schema(true, Db) ->
     SQL =
-        "create table if not exists property ("
+        "create table if not exists attr ("
         "    name text primary key,"
         "    val text)"
         "    without rowid;"
@@ -183,15 +183,15 @@ add_db(RunDir, Db, #state{dbs=Dbs}=S) ->
 %% DB ops
 %% ===================================================================
 
-db_op(Db, {log_series_vals, Vals})  -> log_series_values_(Db, Vals);
-db_op(Db, {log_flags, Flags})       -> log_flags_(Db, Flags);
-db_op(Db, {log_properties, Props})  -> log_properties_(Db, Props);
-db_op(Db, {log_output, Output})     -> log_output_(Db, Output);
-db_op(Db, {series, Pattern})        -> series_(Db, Pattern);
-db_op(Db, series_keys)              -> series_keys_(Db);
-db_op(Db, flags)                    -> flags_(Db);
-db_op(Db, properties)               -> properties_(Db);
-db_op(Db, output)                   -> output_(Db).
+db_op(Db, {log_series_vals, Vals}) -> log_series_values_(Db, Vals);
+db_op(Db, {log_flags, Flags})      -> log_flags_(Db, Flags);
+db_op(Db, {log_attrs, Attrs})      -> log_attrs_(Db, Attrs);
+db_op(Db, {log_output, Output})    -> log_output_(Db, Output);
+db_op(Db, {series, Pattern})       -> series_(Db, Pattern);
+db_op(Db, series_keys)             -> series_keys_(Db);
+db_op(Db, flags)                   -> flags_(Db);
+db_op(Db, attrs)                   -> attrs_(Db);
+db_op(Db, output)                  -> output_(Db).
 
 %% -------------------------------------------------------------------
 %% Log series vals
@@ -252,14 +252,14 @@ log_flags_(Db, Flags) ->
     exec_insert(Db, SQL, sql_arg_vals(Flags, [str, str])).
 
 %% -------------------------------------------------------------------
-%% Log properties
+%% Log attrs
 %% -------------------------------------------------------------------
 
-log_properties_(_Db, []) -> ok;
-log_properties_(Db, Props) ->
-    SQL = ["insert or replace into property values ",
-           sql_arg_placeholders(Props)],
-    exec_insert(Db, SQL, sql_arg_vals(Props, [str, str])).
+log_attrs_(_Db, []) -> ok;
+log_attrs_(Db, Attrs) ->
+    SQL = ["insert or replace into attr values ",
+           sql_arg_placeholders(Attrs)],
+    exec_insert(Db, SQL, sql_arg_vals(Attrs, [str, str])).
 
 %% -------------------------------------------------------------------
 %% Log output
@@ -284,11 +284,11 @@ flags_(Db) ->
     end.
 
 %% -------------------------------------------------------------------
-%% Properties
+%% Attrs
 %% -------------------------------------------------------------------
 
-properties_(Db) ->
-    SQL = "select name, val from property order by name",
+attrs_(Db) ->
+    SQL = "select name, val from attr order by name",
     case exec_select(Db, SQL) of
         {ok, {_, Rows}} -> {ok, Rows};
         {error, Error} -> {error, Error}

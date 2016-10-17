@@ -748,9 +748,9 @@ test_run_db() ->
 
     ok = M:log_flags(RunDir, [{"foo", "123"}, {"bar", "456"}]),
 
-    %% And some properties.
+    %% And some attrs.
 
-    ok = M:log_properties(RunDir, [{"baz", "654"}, {"bam", "321"}]),
+    ok = M:log_attrs(RunDir, [{"baz", "654"}, {"bam", "321"}]),
 
     %% And some series values.
 
@@ -775,7 +775,7 @@ test_run_db() ->
           {<<"foo">>, <<"123">>}]} = M:flags(RunDir),
 
     {ok, [{<<"bam">>, <<"321">>},
-          {<<"baz">>,<<"654">>}]} = M:properties(RunDir),
+          {<<"baz">>,<<"654">>}]} = M:attrs(RunDir),
 
     {ok, [<<"bar">>, <<"baz">>, <<"foo">>]} = M:series_keys(RunDir),
 
