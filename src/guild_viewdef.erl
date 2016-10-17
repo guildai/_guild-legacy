@@ -104,9 +104,11 @@ rendered_template_to_viewdef(Bin) ->
 viewdef_template_vars(Section, Project) ->
     Fields = viewdef_fields(Section, Project),
     {SeriesA, SeriesB} = viewdef_series(Section, Project),
+    CompareFields = viewdef_compare_fields(Section, Project, Fields),
     [{fields, Fields},
      {series_a, SeriesA},
-     {series_b, SeriesB}].
+     {series_b, SeriesB},
+     {compare_fields, CompareFields}].
 
 %% ===================================================================
 %% Viewdef fields
@@ -174,6 +176,22 @@ apply_project_series(Name, Project, BaseAttrs) ->
         error ->
             BaseAttrs
     end.
+
+%% ===================================================================
+%% Viewdef compare fields
+%% ===================================================================
+
+viewdef_compare_fields(Section, Project, DefaultFields) ->
+    Lookup = fields_lookup(Section),
+    viewdef_compare_fields(
+      section_attr(Section, "compare-fields"),
+      Project, Lookup, DefaultFields).
+
+viewdef_compare_fields({ok, Raw}, Project, Lookup, _Defaults) ->
+    Names = parse_names(Raw),
+    [resolve_field(Name, Project, Lookup) || Name <- Names];
+viewdef_compare_fields(error, _Project, _Lookup, Defaults) ->
+    Defaults.
 
 %% ===================================================================
 %% General support
