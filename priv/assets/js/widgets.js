@@ -38,13 +38,32 @@ function formatWidgetValue(value, widget) {
 
 function initFlags(widget, flags) {
     if (!flags) return;
+    var split = splitFlags(flags);
     widget.empty();
-    for (var name in flags) {
+    if (split.caption) {
+        var caption = $("<caption>" + split.caption + "</caption>");
+        widget.append(caption);
+    }
+    for (var name in split.flags) {
         var val = flags[name];
         var row = $("<tr><th scope=\"row\">"+ name + "</th>" +
                     "<td>" + val + "</td></tr>");
         widget.append(row);
     }
+}
+
+function splitFlags(flags) {
+    var split = {};
+    split.caption = null;
+    split.flags = [];
+    for (var name in flags) {
+        if (name == "description") {
+            split.caption = flags[name];
+        } else {
+            split.flags[name] = flags[name];
+        }
+    }
+    return split;
 }
 
 /********************************************************************
