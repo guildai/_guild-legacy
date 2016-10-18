@@ -19,9 +19,8 @@
          input/2, finalize_input/1, find_exe/1, split_cmd/1,
          split_keyvals/1, list_join/2, reduce_to/2,
          normalize_series/3, os_pid_exists/1, format_cmd_args/1,
-         print_cmd_args/1, make_tmp_dir/0, random_name/0,
-         delete_tmp_dir/1, resolve_args/2, resolve_keyvals/2,
-         consult_string/1]).
+         make_tmp_dir/0, random_name/0, delete_tmp_dir/1,
+         resolve_args/2, resolve_keyvals/2, consult_string/1]).
 
 %% ===================================================================
 %% Common programming patterns support
@@ -278,29 +277,6 @@ maybe_quote_arg(Arg) ->
         true -> ["\"", Arg, "\""];
         false -> Arg
     end.
-
-%% ===================================================================
-%% Print command args
-%% ===================================================================
-
-print_cmd_args([First|Rest]) ->
-    guild_cli:out("  ~s", [First]),
-    print_rest_cmd_args(Rest).
-
-print_rest_cmd_args(["-"++_=Opt, MaybeOptVal|Rest]) ->
-    guild_cli:out(" \\~n    ~s", [Opt]),
-    case MaybeOptVal of
-        "-"++_ ->
-            print_rest_cmd_args([MaybeOptVal|Rest]);
-        _ ->
-            guild_cli:out(" ~s", [MaybeOptVal]),
-            print_rest_cmd_args(Rest)
-    end;
-print_rest_cmd_args([Arg|Rest]) ->
-    guild_cli:out(" \\~n    ~s", [Arg]),
-    print_rest_cmd_args(Rest);
-print_rest_cmd_args([]) ->
-    guild_cli:out("~n").
 
 %% ===================================================================
 %% Temp dir support

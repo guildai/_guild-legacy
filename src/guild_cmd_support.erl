@@ -371,8 +371,33 @@ preview_op_cmd(Op) ->
 
 print_cmd(Args) ->
     guild_cli:out("Command:~n~n"),
-    guild_util:print_cmd_args(Args),
+    print_cmd_args(Args),
     guild_cli:out("~n").
+
+print_cmd_args([First|Rest]) ->
+    guild_cli:out("  ~s", [First]),
+    print_rest_cmd_args(Rest).
+
+print_rest_cmd_args(["-"++_=Opt, Next|Rest]) ->
+    guild_cli:out(" \\~n    ~s", [Opt]),
+    case Next of
+        "-"++_ ->
+            print_rest_cmd_args([Next|Rest]);
+        OptVal ->
+            guild_cli:out(" ~s", [maybe_quote(OptVal)]),
+            print_rest_cmd_args(Rest)
+    end;
+print_rest_cmd_args([Arg|Rest]) ->
+    guild_cli:out(" \\~n    ~s", [Arg]),
+    print_rest_cmd_args(Rest);
+print_rest_cmd_args([]) ->
+    guild_cli:out("~n").
+
+maybe_quote(Opt) ->
+    case re:run(Opt, " ", [{capture, none}]) of
+        match   -> ["\"", Opt, "\""];
+        nomatch -> Opt
+    end.
 
 print_env(undefined) -> ok;
 print_env(Env) ->
