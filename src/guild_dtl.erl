@@ -24,8 +24,6 @@
          {"output-widget.html",        guild_output_widget},
          {"page-header-widget.html",   guild_page_header_widget},
          {"placeholder-widget.html",   guild_placeholder_widget},
-         {"project-compare.html",      guild_project_compare_page},
-         {"project-index.html",        guild_project_index_page},
          {"project-error.html",        guild_project_error_page},
          {"project-view.html",         guild_project_view_page},
          {"status-widget.html",        guild_status_widget},
