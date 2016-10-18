@@ -233,7 +233,12 @@ cmd_args(CmdSpec, Flags) ->
     [Python, "-um", Module] ++ Args ++ flag_args(Flags).
 
 flag_args(Flags) ->
-    lists:concat([["--" ++ Name, Val] || {Name, Val} <- Flags]).
+    lists:concat(
+      [["--" ++ Name, Val]
+       || {Name, Val} <- Flags, is_flag_arg(Name)]).
+
+is_flag_arg("description") -> false;
+is_flag_arg(_)             -> true.
 
 base_extra_env() ->
     [{"GPU_COUNT", gpu_count_env()}].
