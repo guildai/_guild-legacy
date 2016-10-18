@@ -1,14 +1,21 @@
 /********************************************************************
- * Project view page
+ * View support
  ********************************************************************/
 
-function initViewPage(selectedRun, dataRefreshInterval) {
-    initRunsSelectChangeHandler();
-    var state = viewPageState(selectedRun, dataRefreshInterval);
-    refreshViewPage(state);
+function initView(selectedRun, dataRefreshInterval) {
+    initRunsSelect();
+    initViewChangeHandlers();
+    var state = viewState(selectedRun, dataRefreshInterval);
+    refreshViewState(state);
 }
 
-function viewPageState(selectedRun, refreshIntervalSeconds) {
+function initRunsSelect() {
+    $("#runs-select").on("changed.bs.select", function (e) {
+        window.location = "?run=" + $(this).val();
+    });
+}
+
+function viewState(selectedRun, refreshIntervalSeconds) {
     return {
         selectedRun: selectedRun,
         refreshInterval: refreshIntervalSeconds * 1000,
@@ -19,26 +26,21 @@ function viewPageState(selectedRun, refreshIntervalSeconds) {
     };
 }
 
-function initRunsSelectChangeHandler() {
-    $("#runs-select").on("changed.bs.select", function (e) {
-        window.location = "?run=" + $(this).val();
-    });
+function initViewChangeHandlers() {
+    SIGNALS.viewStateChanged = new signals.Signal();
+    SIGNALS.viewStateChanged.add(updateRunsSelect);
+    SIGNALS.viewStateChanged.add(maybeUpdateWidgets);
+    SIGNALS.viewStateChanged.add(updateRunStatus);
+    SIGNALS.viewStateChanged.add(scheduleNextViewStateRefresh);
 }
 
-function refreshViewPage(state) {
+function refreshViewState(state) {
     fetchGuildData("/data/runs", function(runs) {
-        refreshStateRuns(state, runs);
-        updateRunsSelect(state);
-        maybeUpdateWidgets(state);
-        updateRunStatus(state);
-        scheduleNextViewPageRefresh(state);
+        state.runs = runs;
+        var runId = state.run == null ? state.selectedRun : state.run.id;
+        state.run = findRun(runId, runs);
+        SIGNALS.viewStateChanged.dispatch(state);
     });
-}
-
-function refreshStateRuns(state, runs) {
-    state.runs = runs;
-    var runId = state.run == null ? state.selectedRun : state.run.id;
-    state.run = findRun(runId, runs);
 }
 
 function findRun(id, runs) {
@@ -144,11 +146,11 @@ function updateRunStatus(state) {
     }
 }
 
-function scheduleNextViewPageRefresh(state) {
+function scheduleNextViewStateRefresh(state) {
     if (state.run) {
         state.lastStatus = state.run.status;
     }
-    setTimeout(refreshIndexPage, state.refreshInterval, state);
+    window.setTimeout(refreshViewState, state.refreshInterval, state);
 }
 
 /********************************************************************

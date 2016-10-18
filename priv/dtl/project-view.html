@@ -30,7 +30,7 @@
  $(function() {
      var selectedRun = {{params.run|default:null}};
      var syncInterval = {{view_opts.data_poll_interval|default:5}}
-     initViewPage(selectedRun, syncInterval);
+     initView(selectedRun, syncInterval);
  });
 </script>
 {% endblock %}
