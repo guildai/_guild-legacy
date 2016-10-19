@@ -32,8 +32,7 @@ parser() ->
       [{pos_args, 0}]).
 
 view_options() ->
-    [{guild2, "--guild2", "run with alt guild.js (wip)", [hidden, flag]},
-     {port, "-p, --port",
+    [{port, "-p, --port",
       fmt("HTTP server port (default is ~b)", [?default_port]),
       [{metavar, "PORT"}]},
      {interval, "-n, --interval",
@@ -60,8 +59,7 @@ init_project_view(Opts) ->
     View.
 
 view_opts(Opts) ->
-    [{data_poll_interval, interval_opt(Opts)},
-     {guild2, proplists:get_bool(guild2, Opts)}].
+    [{data_poll_interval, interval_opt(Opts)}].
 
 interval_opt(Opts) ->
     validate_interval(

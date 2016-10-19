@@ -1,43 +1,197 @@
 /********************************************************************
+ * Run select
+ ********************************************************************/
+
+RUN_STATUS = "run_status";
+
+function initRunSelect(widget, state) {
+    widget.on("changed.bs.select", function (e) {
+        window.location = "?run=" + $(this).val();
+    });
+    fetch("/data/runs", widget, updateRunSelect, state);
+}
+
+function updateRunSelect(widget, runs, state) {
+    state.run = selectedRun(runs, state);
+    notify(RUN_STATUS, state.run, state);
+    refreshRunSelect(widget, runs, state.run);
+    if (runStopped(state.run)) {
+        removeCallbacks(RUN_STATUS, state);
+    }
+    scheduleNextFetch("/data/runs", widget, updateRunSelect, state);
+}
+
+function selectedRun(runs, state) {
+    var runId = state.run == null ? state.selectedRun : state.run.id;
+    return findRun(runId, runs);
+}
+
+function findRun(id, runs) {
+    if (id) {
+        for (var i in runs) {
+            var run = runs[i];
+            if (run.id == id) {
+                return run;
+            }
+        }
+    } else {
+        if (runs.length > 0) {
+            return runs[0];
+        }
+    }
+    return null;
+}
+
+function refreshRunSelect(widget, runs, selected) {
+    var changed = false;
+    for (var i = runs.length - 1; i >= 0; i--) {
+        var run = runs[i];
+        var curOpt = currentRunSelectOption(run.id);
+        var isSelected = selected && run.id == selected.id;
+        if (curOpt == null) {
+            widget.prepend(selectOptionForRun(run, isSelected));
+            changed = true;
+        } else {
+            var newOpt = selectOptionForRun(run, isSelected);
+            if (runSelectOptionChanged(curOpt, newOpt)) {
+                newOpt.insertBefore(curOpt);
+                curOpt.remove();
+                changed = true;
+            }
+        }
+    }
+    if (changed) {
+        widget.selectpicker("refresh");
+    }
+}
+
+function currentRunSelectOption(runId) {
+    var option = document.getElementById("run-option-" + runId);
+    return option != null ? $(option) : null;
+}
+
+function selectOptionForRun(run, isSelected) {
+    var option = $("<option>");
+    var label = runLabel(run);
+    option.append(label);
+    option.attr("id", "run-option-" + run.id);
+    option.attr("value", run.id);
+    option.attr("data-content", runOptionContent(label, run));
+    if (isSelected) {
+        option.attr("selected", "");
+    }
+    return option;
+}
+
+function runLabel(run) {
+    var label = "";
+    if (run.started) {
+        var started = new Date(run.started);
+        label += started.toDateString() + ", " + started.toLocaleTimeString();
+    }
+    if (run.model) {
+        if (label) {
+            label += " - ";
+        }
+        label += run.model;
+    }
+    return label;
+}
+
+function runOptionContent(label, run) {
+    var uiAttrs = runStatusUIAttrs(run.status, run.exit_status);
+    var iconCls = "fa fa-" + uiAttrs.icon;
+    if (uiAttrs.spin) {
+        iconCls += " fa-spin";
+    }
+    return "<span><i class='" + iconCls + "' style='margin-right:10px'></i>"
+        + label + "</span>";
+}
+
+function runSelectOptionChanged(a, b) {
+    return a.attr("data-content") != b.attr("data-content");
+}
+
+function runStopped(run) {
+    return run && run.status != "running";
+}
+
+// TODO This is an idea for a dispatcher that's dependent on
+// RUN_STATUS - or whatever we end up doing there. I'm not sure if
+// this goes here on in guild.js. It might make sense here since our
+// runs select is defining the behavior of setting run in state and
+// notifying listeners.
+//
+function registerRunSourceCallback(source, widget0, callback, state0) {
+    var handleRun = function(widget, run, state) {
+        fetch(runSource(source, run), widget, callback, state);
+    };
+    registerWidgetCallback(RUN_STATUS, widget0, handleRun, state0);
+}
+
+/********************************************************************
+ * Run status UI rules
+ ********************************************************************/
+
+var runStatusUIRules = [
+    [["running"],    {label: "Running",    color: "blue-600",  icon: "circle-o-notch", spin: true}],
+    [["stopped", 0], {label: "Completed",  color: "green-700", icon: "check-circle-o"}],
+    [["stopped"],    {label: "Error",      color: "red-800",   icon: "exclamation-triangle"}],
+    [["crashed"],    {label: "Terminated", color: "red-800",   icon: "times-circle"}],
+    [[],             {label: "--",         color: "grey-600",  icon: "question-circle-o"}]
+];
+
+function runStatusUIAttrs(status, exitCode) {
+    for (var i in runStatusUIRules) {
+        var rule = runStatusUIRules[i][0];
+        var parts = rule.length;
+        if ((parts == 0)
+            || (parts == 1
+                && rule[0] == status)
+            || (parts == 2
+                && rule[0] == status
+                && rule[1] == exitCode))
+        {
+            return runStatusUIRules[i][1];
+        }
+    }
+    throw "unreachable";
+}
+
+/********************************************************************
  * Value panel
  ********************************************************************/
 
-function initValuePanel(widget, data) {
-    updateValuePanel(widget, data);
+function initValuePanel(widget, state) {
+    var source = "/data/" + widget.attr("data-widget-source");
+    registerRunSourceCallback(source, widget, updateValuePanel, state);
 }
 
-function updateValuePanel(widget, data) {
-    var value = valueForPanel(data);
-    if (value != undefined) {
-        widget.text(formatWidgetValue(value, widget));
+function updateValuePanel(widget, data, state) {
+    var value = widgetValue(widget, data);
+    setPanelLabel(widget, value);
+}
+
+function setPanelLabel(widget, label) {
+    if (label != undefined) {
+        widget.text(label);
     } else {
         widget.text("--");
     }
 }
 
-function valueForPanel(data) {
-    if (typeof data === "object" && data != null) {
-        // A reduced value from stats is provided as a dict of
-        // name+values - use the first value since we can only show
-        // one
-        return data[Object.keys(data)[0]];
-    } else {
-        return data;
-    }
-}
-
-function formatWidgetValue(value, widget) {
-    var format = widget.attr("data-widget-format");
-    return format ? formatValue(value, format) : value;
-}
-
-
 /********************************************************************
  * Flags
  ********************************************************************/
 
-function initFlags(widget, flags) {
-    if (!flags) return;
+function initFlags(widget, state) {
+    registerRunSourceCallback("/data/flags", widget, initFlags_, state);
+}
+
+function initFlags_(widget, flags) {
+    // TODO: let's unregister the callback so we avoid pointlessly
+    // fetching the data
+    if (widget.data("initialized")) return;
     var split = splitFlags(flags);
     widget.empty();
     if (split.caption) {
@@ -50,6 +204,7 @@ function initFlags(widget, flags) {
                     "<td>" + val + "</td></tr>");
         widget.append(row);
     }
+    widget.data("initialized", true);
 }
 
 function splitFlags(flags) {
@@ -70,8 +225,14 @@ function splitFlags(flags) {
  * Attrs
  ********************************************************************/
 
-function initAttrs(widget, attrs) {
-    if (!attrs) return;
+function initAttrs(widget, state) {
+    registerRunSourceCallback("/data/attrs", widget, initAttrs_, state);
+}
+
+function initAttrs_(widget, attrs) {
+    // TODO: let's unregister the callback so we avoid pointlessly
+    // fetching the data
+    if (widget.data("initialized")) return;
     widget.empty();
     for (var name in attrs) {
         var val = attrs[name];
@@ -79,18 +240,18 @@ function initAttrs(widget, attrs) {
                     "<td>" + val + "</td></tr>");
         widget.append(row);
     }
+    widget.data("initialized", true);
 }
 
 /********************************************************************
  * Status
  ********************************************************************/
 
-function initStatus(widget, _null, state) {
-    updateStatus(widget, null, state);
+function initStatus(widget, state) {
+    registerWidgetCallback(RUN_STATUS, widget, updateStatus, state);
 }
 
-function updateStatus(widget, _null, state) {
-    var run = state.run;
+function updateStatus(widget, run) {
     if (!run) return;
     var attrs = runStatusUIAttrs(run.status, run.exit_status);
     if (widget.data("label") != attrs.label ) {
@@ -116,24 +277,31 @@ function statusIcon(icon, spin, color) {
  * Timeseries
  ********************************************************************/
 
-function initTimeseries(widget, data) {
+function initTimeseries(widget, state) {
+    var source = "/data/" + widget.attr("data-widget-source");
+    registerRunSourceCallback(source, widget, updateTimeseries, state);
+}
+
+function updateTimeseries(widget, data, state) {
+    if (!widget.data("initialized")) {
+        initTimeseries_(widget, state);
+        widget.data("initialized", true);
+    }
+    updateTimeseries_(widget, data);
+}
+
+function initTimeseries_(widget, state) {
     var label = widget.attr("data-widget-label");
     var format = timeseriesFormatFun(widget);
-    var chart = initTimeseriesChart(widget, label, format);
-    initTimeseriesRedrawHandler(chart, widget);
+    chart = initTimeseriesChart(widget, label, format);
+    initTimeseriesRedrawHandler(chart, widget, state);
     widget.data("chart", chart);
-    updateTimeseries(widget, data);
+    widget.data("initialized", true);
 }
 
 function timeseriesFormatFun(widget) {
     var format = widget.attr("data-widget-format");
-    if (format) {
-        return function(x) {
-            return numeral(x).format(format);
-        };
-    } else {
-        return null;
-    }
+    return format ? function(x) { return numeral(x).format(format); } : null;
 }
 
 function initTimeseriesChart(widget, label, formatFun) {
@@ -181,8 +349,8 @@ function initTimeseriesChart(widget, label, formatFun) {
     });
 }
 
-function initTimeseriesRedrawHandler(chart, widget) {
-    SIGNALS.fullscreenToggle.add(function(panel) {
+function initTimeseriesRedrawHandler(chart, widget, state) {
+    var handler = function(panel) {
         var parent = widget.closest(".panel");
         if (parent[0] == panel[0]) {
             if (panel.hasClass("panel-fullscreen")) {
@@ -191,10 +359,11 @@ function initTimeseriesRedrawHandler(chart, widget) {
                 chart.resize({height: 320});
             }
         }
-    });
+    };
+    registerCallback(FULL_SCREEN_TOGGLE, handler, state);
 }
 
-function updateTimeseries(widget, data) {
+function updateTimeseries_(widget, data) {
     var chart = widget.data("chart");
     xs = timeseriesXs(data);
     columns = timeseriesCols(data);
@@ -231,7 +400,19 @@ function timeseriesCols(data) {
  * Output
  ********************************************************************/
 
-function initOutput(widget, output) {
+function initOutput(widget, state) {
+    registerRunSourceCallback("/data/output", widget, updateOutput, state);
+}
+
+function updateOutput(widget, data, state) {
+    if (!widget.data("initialized")) {
+        initOutputDataTable(widget);
+        widget.data("initialized", true);
+    }
+    appendNewOutput(widget, data);
+}
+
+function initOutputDataTable(widget) {
     // Setting data on a data table directly fails - something appears
     // to reset the value - so we wrap the table in a div and set data
     // there.
@@ -239,7 +420,7 @@ function initOutput(widget, output) {
     var table = $("<table class=\"output table table-sm table-hover\" width=\"100%\"></table>");
     widget.append(table);
     var dataTable = table.DataTable({
-        data: output,
+        data: [],
         columns: [
             { title: "Time",
               data: function(row) {
@@ -275,16 +456,10 @@ function initOutput(widget, output) {
         }
     });
     widget.data("dataTable", dataTable);
-    widget.data("lastTime", lastOutputTime(output));
+    widget.data("lastTime", 0);
 }
 
-function lastOutputTime(output) {
-    return (output != null && output.length > 0)
-        ? output[output.length - 1][0]
-        : 0;
-}
-
-function updateOutput(widget, output) {
+function appendNewOutput(widget, output) {
     if (!output) {
         return;
     }
@@ -306,13 +481,46 @@ function findNextOutputRow(output, time) {
     return len;
 }
 
+function lastOutputTime(output) {
+    return (output != null && output.length > 0)
+        ? output[output.length - 1][0]
+        : 0;
+}
+
 /********************************************************************
  * Compare table
  ********************************************************************/
 
-function initCompareTable(widget) {
+function initCompareTable(widget, state) {
+    initCompareDataTable(widget);
+    fetch(compareDataSource(widget), widget, updateCompareTable, state);
+}
+
+function initCompareDataTable(widget) {
     var coldefs = compareTableColdefs(widget);
-    initCompareTableData(coldefs, widget);
+    var columns = compareTableColumns(coldefs);
+    var dataTable = widget.DataTable({
+        data: [],
+        columns: columns,
+        order: [[0, 'desc']],
+        scrollY: "360px",
+        scrollCollapse: true,
+        paging: false,
+        deferRender: true,
+        language: {
+            info: "_TOTAL_ runs",
+            infoFiltered: " (filtered from _MAX_)",
+            infoEmpty: "_TOTAL_ runs",
+            search: "",
+            searchPlaceholder: "Filter",
+            zeroRecords: "No runs"
+        },
+        dom: "<'row'<'col-sm-12'f>>" +
+            "<'row'<'col-sm-12'tr>>" +
+            "<'row'<'col-sm-12'i>>"
+    });
+    widget.data("dataTable", dataTable);
+    widget.data("coldefs", coldefs);
 }
 
 function compareTableColdefs(widget) {
@@ -335,32 +543,87 @@ function compareTableColdefs(widget) {
     return coldefs;
 }
 
-function initCompareTableData(coldefs, widget) {
-    var dataUrl = compareDataUrl(coldefs);
-    var timeout = window.setTimeout(function() { blockUI("Loading data"); }, 1500);
-    fetchGuildData(dataUrl, function(runs) {
-        window.clearTimeout(timeout);
-        unblockUI();
-        var rows = compareDataRows(runs, coldefs);
-        initCompareTableWidget(widget, coldefs, rows);
-      });
+function compareTableColumns(coldefs) {
+    var columns = [
+        compareTableRunCol(),
+        compareTableStatusCol(),
+    ];
+    for (var i = 0; i < coldefs.length; i++) {
+        columns.push(compareTableCol(coldefs[i]));
+    }
+    return columns;
 }
 
-function compareDataUrl(coldefs) {
+function compareTableRunCol() {
+    return {
+        title: "Run",
+        orderSequence: ["desc", "asc"],
+        render: {
+            display: function(run) {
+                return "<a href=\"/?run=" + run.id + "\">" + runLabel(run) + "</a>";
+            },
+            sort: function(run) {
+                return run.started;
+            }
+        }
+    };
+}
+
+function compareTableStatusCol() {
+    return {
+        orderSequence: ["asc", "desc"],
+        title: "Status"
+    };
+}
+
+function compareTableCol(coldef) {
+    return {
+        title: coldef.title,
+        orderSequence: ["desc", "asc"],
+        render: {
+            display: compareTableColRenderer(coldef)
+        }
+    };
+}
+
+function compareTableColRenderer(coldef) {
+    var format = coldef.format;
+    return function(val) {
+        if (val == null || val == undefined) {
+            return "--";
+        } else if (format) {
+            return tryFormat(val, format);
+        } else {
+            return val;
+        }
+    };
+}
+
+function compareDataSource(widget) {
+    var coldefs = widget.data("coldefs");
     var sources = coldefs.map(function(coldef) {
         return coldef.source;
     });
     return "/data/compare?sources=" + sources.join();
 }
 
-function compareDataRows(runs, coldefs) {
+function updateCompareTable(widget, data, state) {
+    var table = widget.data("dataTable");
+    var coldefs = widget.data("coldefs");
+    var rows = compareDataRows(data, coldefs);
+    table.rows.add(rows);
+    table.columns.adjust();
+    table.draw();
+}
+
+function compareDataRows(data, coldefs) {
     var rows = [];
-    for (var i in runs) {
-        var run = runs[i].run;
-        var row = [[run.id, run.started, runLabel(run)], runStatus(run)];
+    for (var i = 0; i < data.length; i++) {
+        var run = data[i].run;
+        var row = [run, runStatus(run)];
         rows.push(row);
         for (var j in coldefs) {
-            row.push(coldefValue(coldefs[j], runs[i]));
+            row.push(coldefValue(coldefs[j], data[i]));
         }
     }
     return rows;
@@ -372,141 +635,27 @@ function runStatus(run) {
 }
 
 function coldefValue(coldef, data) {
-    var source = data[coldef.source];
-    return (
-        ensureValidTableVal(
-            valueForPanel(
-                maybeReduce(
-                    maybeAttr(source, coldef.attribute),
-                    coldef.reduce))));
+    var rawVal = data[coldef.source];
+    var widgetProxy = coldefWidgetProxy(coldef);
+    var val = widgetReduce(widgetProxy, widgetAttr(widgetProxy, rawVal));
+    return ensureLegalDataTableVal(ensureFormattable(val));
 }
 
-function ensureValidTableVal(val) {
+function coldefWidgetProxy(coldef) {
+    // Treat a coldef like a widget for calculating values
+    return {
+        attr: function(name) {
+            if (name == "data-widget-attribute") {
+                return coldef.attribute;
+            } else if (name == "data-widget-reduce") {
+                return coldef.reduce;
+            } else {
+                return undefined;
+            }
+        }
+    };
+}
+
+function ensureLegalDataTableVal(val) {
     return val != undefined ? val : null;
 }
-
-function initCompareTableWidget(widget, coldefs, data) {
-    var columns = compareTableColumns(coldefs);
-    widget.DataTable({
-        data: data,
-        columns: columns,
-        order: [[0, 'desc']],
-        scrollY: "360px",
-        scrollCollapse: true,
-        paging: false,
-        deferRender: true,
-        language: {
-            info: "_TOTAL_ runs",
-            infoFiltered: " (filtered from _MAX_)",
-            infoEmpty: "_TOTAL_ runs",
-            search: "",
-            searchPlaceholder: "Filter",
-            zeroRecords: "No runs"
-        },
-        dom: "<'row'<'col-sm-12'f>>" +
-            "<'row'<'col-sm-12'tr>>" +
-            "<'row'<'col-sm-12'i>>"
-    });
-}
-
-function compareTableColumns(coldefs) {
-    var columns = [
-        { title: "Run",
-          render: {
-              display: function(val) {
-                  var id = val[0];
-                  var label = val[2];
-                  return "<a href=\"/?run=" + id + "\">" + label + "</a>";
-              },
-              sort: function(val) {
-                  var start = val[1];
-                  return start;
-              }
-          }
-        },
-        { title: "Status" }
-    ];
-    for (var i in coldefs) {
-        columns.push(compareTableColumn(coldefs[i]));
-    }
-    return columns;
-}
-
-function compareTableColumn(coldef) {
-    return {
-        title: coldef.title,
-        render: {
-            display: compareTableColRenderer(coldef)
-        }
-    };
-}
-
-function compareTableColRenderer(coldef) {
-    var format = coldef.format;
-    return function(val) {
-        if (val == null) {
-            return "--";
-        } else if (format) {
-            return formatValue(val, format);
-        } else {
-            return val;
-        }
-    };
-}
-
-/********************************************************************
- * Core panel support
- ********************************************************************/
-
-function toggleCollapseIconForElement(el, curState) {
-    var icon = expandCollapseIconForElement(el);
-    if (curState == "expanded") {
-        icon.removeClass("fa-angle-down");
-        icon.addClass("fa-angle-up");
-    } else {
-        icon.removeClass("fa-angle-up");
-        icon.addClass("fa-angle-down");
-    }
-}
-
-function expandCollapseIconForElement(el) {
-    return $("[data-toggle='collapse'][href='#" + el.attr("id") + "'] i");
-}
-
-function initPanelShowHide() {
-    $(".collapse").on("show.bs.collapse", function() {
-        toggleCollapseIconForElement($(this), "expanded");
-    });
-    $(".collapse").on("hide.bs.collapse", function() {
-        toggleCollapseIconForElement($(this), "collapsed");
-    });
-}
-
-function initPanelExpand() {
-    SIGNALS.fullscreenToggle = new signals.Signal();
-    $("[data-toggle='expand']").click(function (e) {
-        e.preventDefault();
-        var panel = $(this).closest('.panel');
-        toggleExpandIconForPanel(panel);
-        panel.toggleClass('panel-fullscreen');
-        SIGNALS.fullscreenToggle.dispatch(panel);
-    });
-}
-
-function toggleExpandIconForPanel(panel) {
-    var icon = $("i", panel);
-    var expanded = !panel.data("expanded");
-    if (expanded) {
-        icon.removeClass("fa-expand");
-        icon.addClass("fa-compress");
-    } else {
-        icon.removeClass("fa-compress");
-        icon.addClass("fa-expand");
-    }
-    panel.data("expanded", expanded);
-}
-
-$(function() {
-    initPanelShowHide();
-    initPanelExpand();
-});

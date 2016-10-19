@@ -246,7 +246,7 @@ navbar_item_link(Item, Params) ->
     View = proplists:get_value(view, Item, ""),
     case proplists:get_value("run", Params) of
         undefined -> "/" ++ View;
-        RunId -> "/" ++ View ++ "?" ++ RunId
+        RunId -> "/" ++ View ++ "?run=" ++ RunId
     end.
 
 %% ===================================================================

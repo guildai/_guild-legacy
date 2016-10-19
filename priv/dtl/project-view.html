@@ -24,11 +24,7 @@
 
 {% block scripts %}
 {% for js in active_view|page_view_js %}
-{% if view_opts.guild2 and js == '/assets/js/widgets.js' %}
-<script src="/assets/js/widgets2.js"></script>
-{% else %}
 <script src="{{js}}"></script>
-{% endif %}
 {% endfor %}
 <script>
  $(function() {
