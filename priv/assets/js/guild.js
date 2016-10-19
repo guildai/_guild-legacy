@@ -15,6 +15,10 @@
 
 var guild = guild || {};
 
+/********************************************************************
+ * View support
+ ********************************************************************/
+
 guild.view = new function() {
 
     var FULL_SCREEN_TOGGLE = "full_screen_toggle";
@@ -89,6 +93,10 @@ guild.view = new function() {
     this.FULL_SCREEN_TOGGLE = FULL_SCREEN_TOGGLE;
     this.init = init;
 };
+
+/********************************************************************
+ * Widget support
+ ********************************************************************/
 
 guild.widget = new function() {
 
@@ -177,6 +185,10 @@ guild.widget = new function() {
     this.runSource = runSource;
 };
 
+/********************************************************************
+ * Event support
+ ********************************************************************/
+
 guild.event = new function() {
 
     var register = function(event, callback, state) {
@@ -241,15 +253,34 @@ guild.util = new function() {
     this.runSource = runSource;
 };
 
+/********************************************************************
+ * Data support
+ ********************************************************************/
+
 guild.data = new function() {
 
+    var waiting = {};
+
     var fetch = function(url, callback) {
-        console.log("Fetching " + url);
-        $.ajax({
-            url: encodeDataUrl(url),
-            success: callback,
-            dataType: "json"
-        });
+        if (url in waiting) {
+            waiting[url].push(callback);
+        } else {
+            waiting[url] = [callback];
+            $.ajax({
+                url: encodeDataUrl(url),
+                success: fetchHandler(url),
+                dataType: "json"
+            });
+        }
+    };
+
+    var fetchHandler = function(url) {
+        return function(data) {
+            waiting[url].map(function(callback) {
+                callback(data);
+            });
+            delete waiting[url];
+        };
     };
 
     var encodeDataUrl = function(url) {
@@ -266,6 +297,10 @@ guild.data = new function() {
     this.fetch = fetch;
     this.scheduleFetch = scheduleFetch;
 };
+
+/********************************************************************
+ * Reduce functions
+ ********************************************************************/
 
 guild.reduce = new function() {
 
