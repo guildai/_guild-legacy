@@ -8,17 +8,17 @@ function initRunSelect(widget, state) {
     widget.on("changed.bs.select", function (e) {
         window.location = "?run=" + $(this).val();
     });
-    fetch("/data/runs", widget, updateRunSelect, state);
+    guild.data.fetch("/data/runs", widget, updateRunSelect, state);
 }
 
 function updateRunSelect(widget, runs, state) {
     state.run = selectedRun(runs, state);
-    notify(RUN_STATUS, state.run, state);
+    guild.event.notify(RUN_STATUS, state.run, state);
     refreshRunSelect(widget, runs, state.run);
     if (runStopped(state.run)) {
-        removeCallbacks(RUN_STATUS, state);
+        guild.event.unregisterAll(RUN_STATUS, state);
     }
-    scheduleNextFetch("/data/runs", widget, updateRunSelect, state);
+    guild.data.scheduleNextFetch("/data/runs", widget, updateRunSelect, state);
 }
 
 function selectedRun(runs, state) {
@@ -124,9 +124,9 @@ function runStopped(run) {
 //
 function registerRunSourceCallback(source, widget0, callback, state0) {
     var handleRun = function(widget, run, state) {
-        fetch(runSource(source, run), widget, callback, state);
+        guild.data.fetch(guild.util.runSource(source, run), widget, callback, state);
     };
-    registerWidgetCallback(RUN_STATUS, widget0, handleRun, state0);
+    guild.widget.registerCallback(RUN_STATUS, widget0, handleRun, state0);
 }
 
 /********************************************************************
@@ -168,7 +168,7 @@ function initValuePanel(widget, state) {
 }
 
 function updateValuePanel(widget, data, state) {
-    var value = widgetValue(widget, data);
+    var value = guild.widget.formattedValue(widget, data);
     setPanelLabel(widget, value);
 }
 
@@ -248,7 +248,7 @@ function initAttrs_(widget, attrs) {
  ********************************************************************/
 
 function initStatus(widget, state) {
-    registerWidgetCallback(RUN_STATUS, widget, updateStatus, state);
+    guild.widget.registerCallback(RUN_STATUS, widget, updateStatus, state);
 }
 
 function updateStatus(widget, run) {
@@ -360,7 +360,7 @@ function initTimeseriesRedrawHandler(chart, widget, state) {
             }
         }
     };
-    registerCallback(FULL_SCREEN_TOGGLE, handler, state);
+    guild.event.register(guild.view.FULL_SCREEN_TOGGLE, handler, state);
 }
 
 function updateTimeseries_(widget, data) {
@@ -417,7 +417,9 @@ function initOutputDataTable(widget) {
     // to reset the value - so we wrap the table in a div and set data
     // there.
     var formatTime = d3.time.format("%b %d %H:%M:%S.%L");
-    var table = $("<table class=\"output table table-sm table-hover\" width=\"100%\"></table>");
+    var table =
+        $("<table class=\"output table table-sm table-hover\" "
+          + "width=\"100%\"></table>");
     widget.append(table);
     var dataTable = table.DataTable({
         data: [],
@@ -493,7 +495,7 @@ function lastOutputTime(output) {
 
 function initCompareTable(widget, state) {
     initCompareDataTable(widget);
-    fetch(compareDataSource(widget), widget, updateCompareTable, state);
+    guild.data.fetch(compareDataSource(widget), widget, updateCompareTable, state);
 }
 
 function initCompareDataTable(widget) {
@@ -592,7 +594,7 @@ function compareTableColRenderer(coldef) {
         if (val == null || val == undefined) {
             return "--";
         } else if (format) {
-            return tryFormat(val, format);
+            return guild.util.tryFormat(val, format);
         } else {
             return val;
         }
@@ -635,10 +637,10 @@ function runStatus(run) {
 }
 
 function coldefValue(coldef, data) {
-    var rawVal = data[coldef.source];
+    var raw = data[coldef.source];
     var widgetProxy = coldefWidgetProxy(coldef);
-    var val = widgetReduce(widgetProxy, widgetAttr(widgetProxy, rawVal));
-    return ensureLegalDataTableVal(ensureFormattable(val));
+    var val = guild.widget.value(widgetProxy, raw);
+    return val != undefined ? val : null;
 }
 
 function coldefWidgetProxy(coldef) {
@@ -654,8 +656,4 @@ function coldefWidgetProxy(coldef) {
             }
         }
     };
-}
-
-function ensureLegalDataTableVal(val) {
-    return val != undefined ? val : null;
 }

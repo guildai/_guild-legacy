@@ -30,7 +30,7 @@
  $(function() {
      var selectedRun = {{params.run|default:null}};
      var syncInterval = {{view_opts.data_poll_interval|default:5}}
-     initView(selectedRun, syncInterval);
+     guild.view.init(selectedRun, syncInterval);
  });
 </script>
 {% endblock %}
