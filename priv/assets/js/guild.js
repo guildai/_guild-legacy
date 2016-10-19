@@ -1,4 +1,19 @@
-var guild = {};
+/* Copyright 2106 TensorHub, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+var guild = guild || {};
 
 guild.view = new function() {
 
@@ -77,10 +92,16 @@ guild.view = new function() {
 
 guild.widget = new function() {
 
+    var registered = {};
+
+    var register = function(name, funs) {
+        registered[name] = funs;
+    };
+
     var initAll = function(state) {
-        $("[data-widget-init]").each(function() {
+        $("[data-widget]").each(function() {
             var widget = $(this);
-            var init = window[widget.attr("data-widget-init")];
+            var init = registered[widget.attr("data-widget")];
             if (init) {
                 init(widget, state);
             }
@@ -143,10 +164,17 @@ guild.widget = new function() {
         }
     };
 
+    var runSource = function(widget, run) {
+        var base = "/data/" + widget.attr("data-widget-source");
+        return guild.util.runSource(base, run);
+    };
+
+    this.register = register;
     this.initAll = initAll;
     this.registerCallback = registerCallback;
     this.formattedValue = formattedValue;
     this.value = value;
+    this.runSource = runSource;
 };
 
 guild.event = new function() {
@@ -166,6 +194,13 @@ guild.event = new function() {
         }
     };
 
+    var unregister = function(event, callback, state) {
+        var signal = state.signals[event];
+        if (signal != undefined) {
+            signal.remove(callback);
+        }
+    };
+
     var unregisterAll = function(event, state) {
         var signal = state.signals[event];
         if (signal) {
@@ -175,6 +210,7 @@ guild.event = new function() {
 
     this.register = register;
     this.notify = notify;
+    this.unregister = unregister;
     this.unregisterAll = unregisterAll;
 };
 
@@ -207,14 +243,11 @@ guild.util = new function() {
 
 guild.data = new function() {
 
-    var fetch = function(url, widget, callback, state) {
-        var dispatch = function(data) {
-            callback(widget, data, state);
-        };
+    var fetch = function(url, callback) {
         console.log("Fetching " + url);
         $.ajax({
             url: encodeDataUrl(url),
-            success: dispatch,
+            success: callback,
             dataType: "json"
         });
     };
@@ -223,15 +256,15 @@ guild.data = new function() {
         return url.replace("/./", "/.{1}/").replace("/../", "/.{2}/");
     };
 
-    var scheduleNextFetch = function(url, widget, callback, state) {
+    var scheduleFetch = function(url, callback, when) {
         var scheduledFetch = function() {
-            guild.data.fetch(url, widget, callback, state);
+            guild.data.fetch(url, callback);
         };
-        window.setTimeout(scheduledFetch, state.refreshInterval);
+        window.setTimeout(scheduledFetch, when);
     };
 
     this.fetch = fetch;
-    this.scheduleNextFetch = scheduleNextFetch;
+    this.scheduleFetch = scheduleFetch;
 };
 
 guild.reduce = new function() {

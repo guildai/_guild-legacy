@@ -9,13 +9,13 @@
       <div class="{% if icon %}col-xs-9{% else %}col-xs-12{% endif %} text-right">
         <div class="label-value label-value-{{value_font|default:'default'}}">
           <span
+              data-widget="value-panel"
               {# value existing has special meaning - it overrides source even if empty #}
               {% if value|default_if_none:false %}data-widget-value="{{value}}"{% endif %}
               data-widget-source="{{source}}"
               data-widget-attribute="{{attribute}}"
               data-widget-format="{{format}}"
               data-widget-reduce="{{reduce}}"
-              data-widget-init="initValuePanel"
           >--</span>
         </div>
         <div class="label-caption">{{label}}</div>
