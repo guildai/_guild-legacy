@@ -470,7 +470,7 @@ guild.widget.register("output", function(widget, state) {
             $("<table class=\"output table table-sm table-hover\" "
               + "width=\"100%\"></table>");
         widget.append(table);
-        var dataTable = table.DataTable({
+        var table = table.DataTable({
             data: [],
             columns: [
                 { title: "Time",
@@ -506,7 +506,7 @@ guild.widget.register("output", function(widget, state) {
                 }
             }
         });
-        widget.data("dataTable", dataTable);
+        widget.data("table", table);
         widget.data("lastTime", 0);
     };
 
@@ -514,7 +514,7 @@ guild.widget.register("output", function(widget, state) {
     var update = function(output) {
         if (!output) return;
         var lastTime = widget.data("lastTime");
-        var table = widget.data("dataTable");
+        var table = widget.data("table");
         var nextRow = findNextOutputRow(output, lastTime);
         table.rows.add(output.slice(nextRow));
         table.draw("full-hold");
@@ -548,13 +548,13 @@ guild.widget.register("compare-table", function(widget, state) {
 
     var init = function() {
         initWidget();
-        guild.data.fetch(compareSource(), update);
+        guild.data.fetch(widget.data("dataSource"), update);
     };
 
     var initWidget = function() {
-        var coldefs = compareTableColdefs(widget);
-        var columns = compareTableColumns(coldefs);
-        var dataTable = widget.DataTable({
+        var coldefs = initColdefs(widget);
+        var columns = initColumns(coldefs);
+        var table = widget.DataTable({
             data: [],
             columns: columns,
             order: [[0, 'desc']],
@@ -574,11 +574,12 @@ guild.widget.register("compare-table", function(widget, state) {
                 "<'row'<'col-sm-12'tr>>" +
                 "<'row'<'col-sm-12'i>>"
         });
-        widget.data("dataTable", dataTable);
+        widget.data("table", table);
         widget.data("coldefs", coldefs);
+        widget.data("dataSource", dataSource(coldefs));
     };
 
-    var compareTableColdefs = function() {
+    var initColdefs = function() {
         var coldefsId = widget.attr("data-coldefs");
         var coldefsEl = document.getElementById(coldefsId);
         if (coldefsEl == null) {
@@ -598,25 +599,25 @@ guild.widget.register("compare-table", function(widget, state) {
         return coldefs;
     };
 
-    var compareTableColumns = function(coldefs) {
+    var initColumns = function(coldefs) {
         var columns = [
-            compareTableRunCol(),
-            compareTableStatusCol(),
+            runColumn()
         ];
         for (var i = 0; i < coldefs.length; i++) {
-            columns.push(compareTableCol(coldefs[i]));
+            columns.push(coldefColumn(coldefs[i]));
         }
         return columns;
     };
 
-    var compareTableRunCol = function() {
+    var runColumn = function() {
         return {
             title: "Run",
             orderSequence: ["desc", "asc"],
             render: {
                 display: function(run) {
-                    return ("<a href=\"/?run=" + run.id + "\">"
-                            + run_support.runLabel(run) + "</a>");
+                    var link = runLink(run);
+                    var icon = statusIcon(run);
+                    return icon + " " + link;
                 },
                 sort: function(run) {
                     return run.started;
@@ -625,24 +626,32 @@ guild.widget.register("compare-table", function(widget, state) {
         };
     };
 
-    var compareTableStatusCol = function() {
-        return {
-            orderSequence: ["asc", "desc"],
-            title: "Status"
-        };
+    var runLink = function(run) {
+        var label = run_support.runLabel(run);
+        return "<a href=\"/?run=" + run.id + "\">" + label + "</a> ";
     };
 
-    var compareTableCol = function(coldef) {
+    var statusIcon = function(run) {
+        var attrs = run_support.runStatusUIAttrs(run);
+        var iconClass = " fa-" + attrs.icon;
+        var spinClass = attrs.spin ? " fa-spin" : "";
+        return "<i class=\"fa fa-fw mdc-text-black"
+            + iconClass
+            + spinClass
+            + " status-icon\"></i>";
+    };
+
+    var coldefColumn = function(coldef) {
         return {
             title: coldef.title,
             orderSequence: ["desc", "asc"],
             render: {
-                display: compareTableColRenderer(coldef)
+                display: coldefRenderer(coldef)
             }
         };
     };
 
-    var compareTableColRenderer = function(coldef) {
+    var coldefRenderer = function(coldef) {
         var format = coldef.format;
         return function(val) {
             if (val == null || val == undefined) {
@@ -655,8 +664,7 @@ guild.widget.register("compare-table", function(widget, state) {
         };
     };
 
-    var compareSource = function() {
-        var coldefs = widget.data("coldefs");
+    var dataSource = function(coldefs) {
         var sources = coldefs.map(function(coldef) {
             return coldef.source;
         });
@@ -664,30 +672,60 @@ guild.widget.register("compare-table", function(widget, state) {
     };
 
     var update = function(data) {
-        var table = widget.data("dataTable");
-        var coldefs = widget.data("coldefs");
-        var rows = compareDataRows(data, coldefs);
-        table.rows.add(rows);
-        table.columns.adjust();
-        table.draw();
+        refreshWidget(data);
+        guild.data.scheduleFetch(
+            widget.data("dataSource"),
+            update, state.refreshInterval);
     };
 
-    var compareDataRows = function(data, coldefs) {
-        var rows = [];
-        for (var i = 0; i < data.length; i++) {
-            var run = data[i].run;
-            var row = [run, runStatus(run)];
-            rows.push(row);
-            for (var j in coldefs) {
-                row.push(coldefValue(coldefs[j], data[i]));
+    var refreshWidget = function(data) {
+        var table = widget.data("table");
+        var coldefs = widget.data("coldefs");
+        var rows = initRows(data, coldefs);
+        deleteMissingRows(table, rows);
+        addOrUpdateRows(table, rows);
+    };
+
+    var deleteMissingRows = function(table, rows) {
+        var ids = {};
+        rows.map(function(row) { ids[row[0].id] = null; });
+        var missing = [];
+        table.rows().every(function(index) {
+            var id = table.row(index).data()[0].id;
+            if (!(id in ids)) {
+                missing.push(index);
+            }
+        });
+        if (missing.length > 0) {
+            table.rows(missing).remove().draw();
+        }
+    };
+
+    var addOrUpdateRows = function(table, rows) {
+        for (var i in rows) {
+            var newRowData = rows[i];
+            var curRowIndex = findTableRow(table, newRowData[0].id);
+            if (curRowIndex != null) {
+                updateRowData(table, curRowIndex, newRowData);
+            } else {
+                var newRow = table.row.add(newRowData);
+                newRow.draw();
             }
         }
-        return rows;
+        table.columns.adjust();
     };
 
-    var runStatus = function(run) {
-        var attrs = run_support.runStatusUIAttrs(run);
-        return attrs.label;
+    var initRows = function(data, coldefs) {
+        return data.map(function(item) { return initRow(item, coldefs); });
+    };
+
+    var initRow = function(item, coldefs) {
+        var row = [];
+        row.push(item.run);
+        for (var i in coldefs) {
+            row.push(coldefValue(coldefs[i], item));
+        }
+        return row;
     };
 
     var coldefValue = function(coldef, data) {
@@ -710,6 +748,35 @@ guild.widget.register("compare-table", function(widget, state) {
                 }
             }
         };
+    };
+
+    var findTableRow = function(table, id) {
+        var indexes = table.rows().indexes();
+        for (var i = 0; i < indexes.length; i++) {
+            var rowData = table.row(i).data();
+            if (rowData[0].id == id) {
+                return i;
+            }
+        }
+        return null;
+    };
+
+    var updateRowData = function(table, rowIndex, newData) {
+        for (var i = 0; i < newData.length; i++) {
+            var curVal = table.cell(rowIndex, i).data();
+            var newVal = newData[i];
+            if (rowCellChanged(i, curVal, newVal)) {
+                table.cell(rowIndex, i).data(newVal);
+            }
+        }
+    };
+
+    var rowCellChanged = function(index, curVal, newVal) {
+        if (index == 0) {
+            return curVal.status != newVal.status;
+        } else {
+            return curVal != newVal;
+        }
     };
 
     init();
