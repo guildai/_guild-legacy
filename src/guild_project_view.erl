@@ -16,7 +16,7 @@
 
 -behavior(e2_service).
 
--export([start_link/2, page_vars/2, json/2]).
+-export([start_link/2, page_vars/2, json/2, project_run/2]).
 
 -export([init/1, handle_msg/3]).
 
@@ -51,6 +51,9 @@ page_vars(View, RunId) ->
 json(View, Request) ->
     e2_service:call(View, {json, Request}).
 
+project_run(View, RunId) ->
+    e2_service:call(View, {project_run, RunId}).
+
 %% ===================================================================
 %% Message dispatch
 %% ===================================================================
@@ -58,7 +61,9 @@ json(View, Request) ->
 handle_msg({page_vars, RunId}, _From, State) ->
     handle_page_vars(RunId, State);
 handle_msg({json, Request}, From, State) ->
-    handle_json_request(Request, From, State).
+    handle_json_request(Request, From, State);
+handle_msg({project_run, RunId}, _From, State) ->
+    handle_project_run(RunId, State).
 
 %% ===================================================================
 %% Page vars
@@ -199,6 +204,13 @@ run_opt(Opts) ->
 
 max_epochs_opt(Opts) ->
     proplists:get_value(max_epochs, Opts, ?max_series_epochs).
+
+%% ===================================================================
+%% Project run
+%% ===================================================================
+
+handle_project_run(RunId, State) ->
+    {reply, resolve_run(RunId, State), State}.
 
 %% ===================================================================
 %% Utils

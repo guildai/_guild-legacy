@@ -16,6 +16,10 @@
 
 -export([app/2]).
 
+%% ===================================================================
+%% App
+%% ===================================================================
+
 app({"/data/runs", _, _}, View) ->
     view_json(View, runs);
 app({"/data/flags", _, Params}, View) ->
@@ -30,6 +34,8 @@ app({"/data/output", _, Params}, View) ->
     view_json(View, {output, run_opt(Params)});
 app({"/data/compare", _, Params}, View) ->
     view_json(View, {compare, sources_opt(Params)});
+app({"/data/image", _, Params}, View) ->
+    handle_image_request(Params, View);
 app(_, _V) -> guild_http:not_found().
 
 view_json(V, Req) ->
@@ -70,3 +76,38 @@ split_sources(Sources) ->
     lists:usort(string:tokens(Sources, ",")).
 
 decode(Part) -> http_uri:decode(Part).
+
+%% ===================================================================
+%% Images
+%% ===================================================================
+
+handle_image_request(Params, View) ->
+    Run = resolve_run(run_opt(Params), View),
+    Index = index_opt(Params),
+    ensure_tensorflow_working(),
+    Resp = guild_tensorflow_port:load_image(guild_run:dir(Run), Index),
+    guild_http:ok_text(io_lib:format("~p~n", [Resp])).
+
+resolve_run(RunId, View) ->
+    case guild_project_view:project_run(View, RunId) of
+        undefined -> no_such_run_error(RunId);
+        Run -> Run
+    end.
+
+no_such_run_error(RunId) ->
+    throw(guild_http:bad_request(io_lib:format("no such run ~s", [RunId]))).
+
+index_opt(Params) ->
+    Schema = [{"index", [required, integer]}],
+    case psycho_util:validate(Params, Schema) of
+        {ok, Validated} -> proplists:get_value("index", Validated);
+        {error, Err} -> validate_error(Err)
+    end.
+
+ensure_tensorflow_working() ->
+    %% TEMP bootstrapping of tensorflow port support
+    guild_app:init_support(exec),
+    case guild_app:start_child(guild_tensorflow_port) of
+        {ok, _} -> ok;
+        {error, {already_started, _}} -> ok
+    end.

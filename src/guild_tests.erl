@@ -37,7 +37,8 @@ run() ->
     test_collector_protocol(),
     test_make_tmp_dir(),
     test_delete_tmp_dir(),
-    test_consult_string().
+    test_consult_string(),
+    test_tensorflow_port().
 
 run(Test) ->
     guild_trace:init_from_env(os:getenv("TRACE")),
@@ -1079,5 +1080,23 @@ test_consult_string() ->
     {error, {1, erl_parse, ["syntax error before: ", []]}} = CS("1. 1"),
     {error, {4, erl_parse, ["syntax error before: ", []]}} = CS("1.\n\n\n1"),
     {error, {5, erl_parse, ["syntax error before: ", []]}} = CS("\n1.\n\n\n1"),
+
+    ok().
+
+%% ===================================================================
+%% Tensorflow port
+%% ===================================================================
+
+test_tensorflow_port() ->
+    start("tensorflow_port"),
+
+    guild_app:init_support(exec),
+
+    {ok, _} = guild_tensorflow_port:start_link(),
+
+    RunDir = filename:join(guild_app:test_dir(), "sample-rundir"),
+
+    {ok, [<<"TODO">>]} = guild_tensorflow_port:load_image(RunDir, 0),
+    {ok, [<<"TODO">>]} = guild_tensorflow_port:load_image(RunDir, 1),
 
     ok().

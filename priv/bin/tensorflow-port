@@ -1,0 +1,44 @@
+#!/usr/bin/python
+
+import sys
+
+STDIN = sys.stdin
+STDOUT = sys.stdout
+
+class Request(object):
+
+    def __init__(self, line):
+        parts = line.split("\t")
+        self.ref = parts[0]
+        self.name = parts[1]
+        self.args = parts[2:]
+
+def read_request():
+    return Request(STDIN.readline())
+
+def handle_request(req):
+    if req.name == "load_image":
+        handle_load_image(req)
+    else:
+        raise ValueError(req.name)
+
+def handle_load_image(req):
+    send_response(req, "ok", ["TODO"])
+
+def request_error(req, error):
+    send_response(req, "error", [error])
+
+def send_response(req, status, parts):
+    STDOUT.write(req.ref)
+    STDOUT.write("\n")
+    STDOUT.write(status)
+    STDOUT.write("\n")
+    for part in parts:
+        STDOUT.write(part)
+        STDOUT.write("\n")
+    STDOUT.write("\n")
+    STDOUT.flush()
+
+if __name__ == "__main__":
+    while True:
+        handle_request(read_request())
