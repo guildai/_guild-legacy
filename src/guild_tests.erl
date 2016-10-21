@@ -38,7 +38,7 @@ run() ->
     test_make_tmp_dir(),
     test_delete_tmp_dir(),
     test_consult_string(),
-    test_tensorflow_port().
+    test_tensorflow_load_image().
 
 run(Test) ->
     guild_trace:init_from_env(os:getenv("TRACE")),
@@ -1084,19 +1084,27 @@ test_consult_string() ->
     ok().
 
 %% ===================================================================
-%% Tensorflow port
+%% Tensorflow load image
 %% ===================================================================
 
-test_tensorflow_port() ->
-    start("tensorflow_port"),
+test_tensorflow_load_image() ->
+    start("tensorflow_load_image"),
 
     guild_app:init_support(exec),
-
     {ok, _} = guild_tensorflow_port:start_link(),
+
+    Load = fun guild_tensorflow_port:load_image/2,
+
+    %% Image from a non-existing directory
+
+    {error, <<"not found">>} = Load("", 1),
 
     RunDir = filename:join(guild_app:test_dir(), "sample-rundir"),
 
-    {ok, [<<"TODO">>]} = guild_tensorflow_port:load_image(RunDir, 0),
-    {ok, [<<"TODO">>]} = guild_tensorflow_port:load_image(RunDir, 1),
+    {ok, #{tag:=<<"images/image/0">>, bytes:=<<137,80,78,_/binary>>}}
+        = Load(RunDir, 0),
+
+    {ok, #{tag:=<<"images/image/1">>, bytes:=<<137,80,78,_/binary>>}}
+        = Load(RunDir, 1),
 
     ok().

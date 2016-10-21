@@ -1,36 +1,169 @@
 #!/usr/bin/python
+"""Erlang port-like application to provide TensorFlow support
 
+This is not a true external port but is used in a similar way, taking
+requests from stdin and responding over stdout. The protocol is text
+line based using single LF (ASCII 10) chars as line delimiters.
+
+A request consists of a single tab (ASCII 9) separated list of
+parts. A request must contain two parts and may contain more.
+
+Separators:
+
+  TAB:            ASCII 9
+  LF:             ASCII 10
+
+Request:
+
+  REQUEST:        REFERENCE + TAB + NAME [ + TAB + ARG ]* + LF
+
+  REFERENCE:      A value that is unique to the request
+
+  NAME:           The name of the request
+
+  ARG:            A string representation of a request argument
+
+A response consists of a single response line followed by zero or more
+response parts, each terminated by a line. The response itself is
+terminated by a final line.
+
+The response line is the request reference and response status
+separated by a tab.
+
+Response:
+
+  RESPONSE:       RESPONSE LINE + LF [ + PART + LF ]* + LF
+
+  RESPONSE LINE:  REFERENCE + TAB + STATUS
+
+  STATUS:         'ok' | 'error'
+
+  PART:           A string representation of a response part
+
+Request arguments and response parts are specific to a request type,
+which is identified by its name.
+
+Arguments must not contain tabs or line endings. Parts must not
+contain line endings. In general these values should be encoded to
+avoid either of these separators.
+"""
+import os
 import sys
 
 STDIN = sys.stdin
 STDOUT = sys.stdout
+STDERR = sys.stderr
+
+class ErrorResponse(BaseException):
+
+    def __init__(self, req, msg):
+        self.req = req
+        self.msg = msg
+
+class ProtocolError(Exception):
+    pass
 
 class Request(object):
 
     def __init__(self, line):
         parts = line.split("\t")
+        if len(parts) < 2:
+            raise ProtocolError("request line " + repr(line))
         self.ref = parts[0]
         self.name = parts[1]
         self.args = parts[2:]
 
+class Image(object):
+
+    def __init__(self, event_file, tag, tf_image):
+        self.event_file = event_file
+        self.tag = tag
+        self.height = tf_image.height
+        self.width = tf_image.width
+        self.colorspace = tf_image.colorspace
+        self.image_bytes = tf_image.encoded_image_string
+
 def read_request():
-    return Request(STDIN.readline())
+    line = STDIN.readline().strip()
+    return Request(line) if line else None
 
 def handle_request(req):
-    if req.name == "load_image":
+    if req.name == "load-image":
         handle_load_image(req)
     else:
-        raise ValueError(req.name)
+        raise ProtocolError("unknown " + repr(req.name))
 
 def handle_load_image(req):
-    send_response(req, "ok", ["TODO"])
+    path, index = validate_load_image_args(req)
+    cur = 0
+    for image in iter_images(path):
+        if cur == index:
+            send_response(req, "ok", image_response(image))
+            break
+        else:
+            cur += 1
+    else:
+        raise ErrorResponse(req, "not found")
 
-def request_error(req, error):
-    send_response(req, "error", [error])
+def validate_load_image_args(req):
+    if len(req.args) != 2:
+        raise ProtocolError("load_image args %r" % req.args)
+    path = req.args[0]
+    if not os.path.exists(path):
+        raise ErrorResponse(req, "not found")
+    index = int(req.args[1])
+    if index < 0:
+        raise ErrorResponse(req, "not found")
+    return path, index
+
+def iter_images(path):
+    from tensorflow.python.summary.impl import event_file_loader
+    for event_file in find_event_files(path):
+        loader = event_file_loader.EventFileLoader(event_file)
+        for event in loader.Load():
+            if event.HasField("summary"):
+                for value in event.summary.value:
+                    if value.HasField("image"):
+                        yield Image(event_file, value.tag, value.image)
+
+def find_event_files(root_dir):
+    import glob
+    pattern = "*.tfevents*"
+    for path in glob.iglob(os.path.join(root_dir, pattern)):
+        yield path
+    for path in glob.iglob(os.path.join(root_dir, "**", pattern)):
+        yield path
+
+def image_response(image):
+    return [
+        image.event_file,
+        image.tag,
+        encode_image_dimensions(image.height, image.width, image.colorspace),
+        encode_image_type(image.image_bytes),
+        encode_image_bytes(image.image_bytes)
+    ]
+
+def encode_image_dimensions(h, w, d):
+    return "%i %i %i" % (h, w, d)
+
+def encode_image_type(image_bytes):
+    import imghdr
+    guessed = imghdr.what(None, image_bytes)
+    return guessed if guessed else ""
+
+def encode_image_bytes(image_bytes):
+    import base64
+    return base64.b64encode(image_bytes)
+
+def not_found_response():
+    return ["not_found"]
+
+def handle_error(e):
+    send_response(e.req, "error", [e.msg])
 
 def send_response(req, status, parts):
     STDOUT.write(req.ref)
-    STDOUT.write("\n")
+    STDOUT.write("\t")
     STDOUT.write(status)
     STDOUT.write("\n")
     for part in parts:
@@ -41,4 +174,10 @@ def send_response(req, status, parts):
 
 if __name__ == "__main__":
     while True:
-        handle_request(read_request())
+        req = read_request()
+        if not req:
+            break
+        try:
+            handle_request(req)
+        except ErrorResponse, e:
+            handle_error(e)

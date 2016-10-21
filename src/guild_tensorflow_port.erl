@@ -85,15 +85,13 @@ dispatch_port_call(Call, #state{exec_ospid=OSPid}) ->
     ok = exec:send(OSPid, Request),
     Ref.
 
-request_ref() -> rand:uniform(1000000).
+request_ref() -> integer_to_binary(rand:uniform(1000000)).
 
 encode_request(Ref, Call) ->
-    iolist_to_binary([encode_ref(Ref), $\t, encode_call(Call), $\n]).
-
-encode_ref(Ref) -> erlang:integer_to_list(Ref).
+    iolist_to_binary([Ref, $\t, encode_call(Call), $\n]).
 
 encode_call({load_image, Dir, Index}) ->
-    ["load_image", $\t, Dir, $\t, integer_to_list(Index)].
+    ["load-image", $\t, Dir, $\t, integer_to_list(Index)].
 
 add_caller(From, Ref, Call, #state{callers=Callers}=S) ->
     S#state{callers=[{Ref, Call, From}|Callers]}.
@@ -113,30 +111,54 @@ handle_split_stdout([EOF, Rest], State) ->
 buffer(Bin, #state{buf=Buf}=S) -> S#state{buf=[Bin|Buf]}.
 
 handle_response(#state{callers=[{Ref, Call, From}|Rest], buf=Buf}=S, NextBuf) ->
-    {Ref, Resp} = decode_buffer(lists:reverse(Buf), Call),
+    {Ref, Resp} = decode_response(lists:reverse(Buf), Call),
     e2_service:reply(From, Resp),
     {noreply, S#state{callers=Rest, buf=new_buf(NextBuf)}}.
 
-decode_buffer(Buf, Call) ->
-    [RefBin, StatusBin|Rest] = (re:split(Buf, "\n")),
-    Ref = binary_to_integer(RefBin),
+decode_response(Buf, Call) ->
+    [Line|Parts] = (re:split(Buf, "\n")),
+    [Ref, StatusBin] = re:split(Line, "\t"),
     Status = binary_to_existing_atom(StatusBin, latin1),
-    {Ref, decode_call_result(Status, Call, Rest)}.
+    {Ref, decode_call_result(Status, Call, Parts)}.
 
-decode_call_result(ok, {load_image, _, _}, Rest) ->
-    {ok, Rest};
-decode_call_result(error, _, Msg) ->
-    {error, Msg}.
+decode_call_result(ok, {load_image, _, _}, Parts) ->
+    {ok, decode_image(Parts)};
+decode_call_result(error, _, Error) ->
+    {error, decode_error(Error)}.
 
 new_buf(<<>>) -> [];
 new_buf(Next) -> [Next].
 
 %% ===================================================================
+%% Response decoders
+%% ===================================================================
+
+decode_error(Msg) -> iolist_to_binary(Msg).
+
+decode_image([File, Tag, EncDim, Type, EncBytes]) ->
+    Dim = decode_image_dim(EncDim),
+    Bytes = decode_image_bytes(EncBytes),
+    #{file => File,
+      tag => Tag,
+      dim => Dim,
+      type => Type,
+      bytes => Bytes}.
+
+decode_image_dim(Enc) ->
+    [H, W, D] = re:split(Enc, " ", []),
+    {binary_to_integer(H), binary_to_integer(W), binary_to_integer(D)}.
+
+decode_image_bytes(Enc) -> base64:decode(Enc).
+
+%% ===================================================================
 %% Stderr
 %% ===================================================================
 
+handle_stderr(<<"I ", _/binary>>, State) ->
+    %% Ignore information logging from TensorFlow
+    {noreply, State};
 handle_stderr(Bin, State) ->
-    io:format(standard_error, "~s", [Bin]),
+    io:format(standard_error, "~p", [Bin]),
     {noreply, State}.
 
 %% ===================================================================
