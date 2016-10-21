@@ -83,10 +83,10 @@ decode(Part) -> http_uri:decode(Part).
 
 handle_image_request(Params, View) ->
     Run = resolve_run(run_opt(Params), View),
+    RunDir = guild_run:dir(Run),
     Index = index_opt(Params),
     ensure_tensorflow_working(),
-    Resp = guild_tensorflow_port:load_image(guild_run:dir(Run), Index),
-    guild_http:ok_text(io_lib:format("~p~n", [Resp])).
+    handle_image(guild_tensorflow_port:load_image(RunDir, Index)).
 
 resolve_run(RunId, View) ->
     case guild_project_view:project_run(View, RunId) of
@@ -105,9 +105,18 @@ index_opt(Params) ->
     end.
 
 ensure_tensorflow_working() ->
-    %% TEMP bootstrapping of tensorflow port support
+    %% TEMP bootstrapping of tensorflow port support - when this
+    %% stabilizes we need to move long running runtime-specific
+    %% services into the supervisory tree, lazily initialized.
     guild_app:init_support(exec),
     case guild_app:start_child(guild_tensorflow_port) of
         {ok, _} -> ok;
         {error, {already_started, _}} -> ok
     end.
+
+handle_image({ok, #{type:=Type, bytes:=Bytes}}) ->
+    MIME = ["image/", Type],
+    Len = size(Bytes),
+    {{200, "OK"}, [{"Content-Type", MIME}, {"Content-Length", Len}], Bytes};
+handle_image({error, <<"not found">>}) ->
+    guild_http:not_found().
