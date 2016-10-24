@@ -77,13 +77,13 @@ not_found(Page) ->
     {{404, "Not Found"}, [{"Content-Type", "text/html"}], Page}.
 
 bad_request() ->
-    bad_request("Bad Request").
+    bad_request("Bad Request\n").
 
 bad_request(Msg) ->
-    {{400, "Bad Request"}, [{"Content-Type", "text/plain"}], Msg}.
+    {{400, "Bad request"}, [{"Content-Type", "text/plain"}], Msg}.
 
 internal_error() ->
-    internal_error("Internal Error").
+    internal_error("Internal error\n").
 
 internal_error(Msg) ->
     {{500, "Internal Error"}, [{"Content-Type", "text/plain"}], Msg}.
