@@ -14,29 +14,32 @@
 
 -module(guild_project_view_data_http).
 
--export([app/2]).
+-export([app/3]).
 
 %% ===================================================================
 %% App
 %% ===================================================================
 
-app({"/data/runs", _, _}, View) ->
+app("GET", {"/data/runs", _, _}, View) ->
     view_json(View, runs);
-app({"/data/flags", _, Params}, View) ->
+app("GET", {"/data/flags", _, Params}, View) ->
     view_json(View, {flags, run_opt(Params)});
-app({"/data/attrs", _, Params}, View) ->
+app("GET", {"/data/attrs", _, Params}, View) ->
     view_json(View, {attrs, run_opt(Params)});
-app({"/data/summary", _, Params}, View) ->
+app("GET", {"/data/summary", _, Params}, View) ->
     view_json(View, {summary, run_opt(Params)});
-app({"/data/series/" ++ Path, _, Params}, View) ->
+app("GET", {"/data/series/" ++ Path, _, Params}, View) ->
     view_json(View, {series, decode(Path), series_opts(Params)});
-app({"/data/output", _, Params}, View) ->
+app("GET", {"/data/output", _, Params}, View) ->
     view_json(View, {output, run_opt(Params)});
-app({"/data/compare", _, Params}, View) ->
+app("GET", {"/data/compare", _, Params}, View) ->
     view_json(View, {compare, sources_opt(Params)});
-app({"/data/image", _, Params}, View) ->
+app("GET", {"/data/image", _, Params}, View) ->
     handle_image_request(Params, View);
-app(_, _V) -> guild_http:not_found().
+app("GET", _, _) ->
+    guild_http:not_found();
+app(_, _, _) ->
+    guild_http:bad_request().
 
 view_json(V, Req) ->
     guild_http:ok_json(guild_project_view:json(V, Req)).

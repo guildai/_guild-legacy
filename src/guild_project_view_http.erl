@@ -51,6 +51,7 @@ routes(View) ->
     psycho_route:create_app(
       [{{starts_with, "/assets/"}, static_handler()},
        {{starts_with, "/data/"},   data_handler(View)},
+       {{starts_with, "/model/"},  model_op_handler(View)},
        {"/bye",                    bye_handler()},
        {'_',                       view_page_handler(View)}
       ]).
@@ -61,7 +62,12 @@ static_handler() ->
 data_handler(View) ->
     psycho_util:dispatch_app(
       {guild_project_view_data_http, app},
-      [parsed_path, View]).
+      [method, parsed_path, View]).
+
+model_op_handler(View) ->
+    psycho_util:dispatch_app(
+      {guild_project_view_model_http, app},
+      [method, parsed_path, env, View]).
 
 bye_handler() ->
     fun(_Env) -> handle_bye() end.
