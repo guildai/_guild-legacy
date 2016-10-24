@@ -78,8 +78,17 @@ def read_raw_gpu_stats():
     raw = list(csv.reader(p.stdout))
     result = p.wait()
     if result != 0:
-        raise AssertionError(raw)
+        read_gpu_stats_error(raw)
     return raw
+
+def read_gpu_stats_error(raw):
+    sys.stderr.write("WARNING: cannot read GPU stats, ")
+    for l1 in raw:
+        for l2 in l1:
+            sys.stderr.write(l2)
+    sys.stderr.write("\n")
+    sys.stderr.flush()
+    sys.exit(0)
 
 def calc_gpu_stats(raw):
     # See STATS for list of stat names/indexes

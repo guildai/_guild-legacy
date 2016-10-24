@@ -26,7 +26,7 @@ try:
     import psutil
 except ImportError:
     sys.stderr.write(
-        "WARNING: psutil not installed, cannot collect op stats "
+        "WARNING: cannot collect op stats, psutils not installed "
         "(see https://github.com/giampaolo/psutil)\n")
     sys.exit(127)
 

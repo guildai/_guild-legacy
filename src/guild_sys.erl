@@ -70,10 +70,15 @@ gpu_attrs_() ->
         {error, [{exit_status, 32512}|_]} ->
             empty_gpu_attrs();
         {error, Err} ->
-            guild_log:internal(
-              "Error reading gpu attrs: ~p~n", [Err]),
+            log_gpu_attrs_error(Err),
             []
     end.
+
+log_gpu_attrs_error(Err) ->
+    guild_log:internal(
+      io_lib:format(
+        "WARNING: cannot read GPU attrs, ~s~n",
+        [guild_util:format_exec_error(Err)])).
 
 ensure_exec_support() ->
     %% Exec support is lazy as it starts a port process.
@@ -119,10 +124,15 @@ sys_attrs_() ->
         {ok, [{stdout, Out}]} ->
             parse_sys_attrs(Out);
         {error, Err} ->
-            guild_log:internal(
-              "Error reading sys attrs: ~p~n", [Err]),
+            log_sys_attrs_error(Err),
             []
     end.
+
+log_sys_attrs_error(Err) ->
+    guild_log:internal(
+      io_lib:format(
+        "WARNING: cannot read sys attrs, ~s~n",
+        [guild_util:format_exec_error(Err)])).
 
 parse_sys_attrs(Out) ->
     [parse_sys_attrs_line(Line) || Line <- re:split(Out, "\n", [trim])].

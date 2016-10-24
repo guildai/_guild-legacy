@@ -20,7 +20,8 @@
          split_keyvals/1, list_join/2, reduce_to/2,
          normalize_series/3, os_pid_exists/1, format_cmd_args/1,
          make_tmp_dir/0, random_name/0, delete_tmp_dir/1,
-         resolve_args/2, resolve_keyvals/2, consult_string/1]).
+         resolve_args/2, resolve_keyvals/2, consult_string/1,
+         format_exec_error/1]).
 
 %% ===================================================================
 %% Common programming patterns support
@@ -385,3 +386,21 @@ parse_tokens_acc([Tokens|Rest], Acc) ->
     end;
 parse_tokens_acc([], Acc) ->
     {ok, lists:reverse(Acc)}.
+
+%% ===================================================================
+%% Formt exec error
+%% ===================================================================
+
+format_exec_error(Err) ->
+    {status, Status} = exec:status(proplists:get_value(exit_status, Err)),
+    StdOut = strip(proplists:get_value(stdout, Err, [])),
+    StdErr = strip(proplists:get_value(stderr, Err, [])),
+    case {StdOut, StdErr} of
+        {[], _} -> io_lib:format("~s (~b)", [StdErr, Status]);
+        {_, []} -> io_lib:format("~s (~b)", [StdOut, Status]);
+        {_, _}  -> io_lib:format("~s ~s (~b)", [StdOut, StdErr, Status])
+    end.
+
+strip(S0) ->
+    {match, [S]} = re:run(S0, "^\s*(.*?)\s*$", [{capture, [1], list}]),
+    S.

@@ -24,7 +24,7 @@ try:
     import psutil
 except ImportError:
     sys.stderr.write(
-        "WARNING: psutil not installed, cannot collect system stats "
+        "WARNING: cannot collect system stats, psutil not installed "
         "(see https://github.com/giampaolo/psutil)\n")
     sys.exit(127)
 
