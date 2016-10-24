@@ -1,7 +1,13 @@
 -module(guild_viewdef).
 
+-behavior(erlydtl_library).
+
 -export([init/1, viewdef_section/2, viewdef_path/2,
          generate_viewdef/2]).
+
+-export([version/0, inventory/1]).
+
+-export([field_class/2]).
 
 -define(templates,
         [{"default.config", guild_default_viewdef}]).
@@ -29,7 +35,8 @@ compile_templates() ->
 
 compile_template({Name, Module}) ->
     File = template_file(Name),
-    guild_dtl_util:compile_template(File, Module, []).
+    Opts = [{default_libraries, [?MODULE]}],
+    guild_dtl_util:compile_template(File, Module, Opts).
 
 template_file(Name) ->
     filename:join(guild_app:priv_dir("viewdefs"), Name).
@@ -225,3 +232,22 @@ lookup_defaults(FieldName, Lookup) ->
      || {AttrName, Val} <- proplists:get_value(FieldName, Lookup, [])].
 
 merge_attrs(P1, P2) -> P1 ++ P2.
+
+%% ===================================================================
+%% Template support
+%% ===================================================================
+
+version() -> 1.
+
+inventory(filters) ->
+    [field_class];
+inventory(tags) ->
+    [].
+
+field_class(_Field, Fields) ->
+    case length(Fields) of
+        1 -> "col-md-12";
+        2 -> "col-md-6";
+        3 -> "col-md-4";
+        _ -> "col-md-3 col-sm-6"
+    end.
