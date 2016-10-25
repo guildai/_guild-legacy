@@ -16,52 +16,66 @@
 
 -export([parser/0, main/2]).
 
+-define(default_port, 6444).
+
+%% ===================================================================
+%% Parser
+%% ===================================================================
+
 parser() ->
     cli:parser(
-      "guild train",
+      "guild view",
       "[OPTION]... [RUNDIR]",
-      "Serve a trained model in RUNIDR or the latest using --latest-run.\n"
+      "Serve a trained model in RUNDIR or the latest using --latest-run.\n."
       "\n"
-      "Use 'guild list-runs' to list runs that can be used for RUNDIR.\n"
-      "\n"
-      "The model applicable to the run must have a train operation "
-      "operation defined.",
-      guild_cmd_support:project_options([flag_support, latest_run])
-      ++ eval_options(),
+      "Use 'guild list-runs' to list runs that can be used for RUNDIR.",
+      serve_options() ++ guild_cmd_support:project_options([latest_run]),
       [{pos_args, {0, 1}}]).
 
-eval_options() ->
-    [{preview, "--preview", "print serve details but do not train", [flag]}].
+serve_options() ->
+    [{port, "-p, --port",
+      fmt("HTTP server port (default is ~b)", [?default_port]),
+      [{metavar, "PORT"}]}].
+
+fmt(Msg, Data) -> io_lib:format(Msg, Data).
 
 %% ===================================================================
 %% Main
 %% ===================================================================
 
 main(Opts, Args) ->
-    serve_or_preview(init_op(Opts, Args), Opts).
+    {Run, Project, _, _} = guild_cmd_support:run_for_args(Args, Opts),
+    guild_app:init_support([json, exec]),
+    Server = start_http_server(Project, Run, Opts),
+    wait_for_server_and_terminate(Server).
 
-init_op(Opts, Args) ->
-    {Run, Project, Model, Runtime} = guild_cmd_support:run_for_args(Args, Opts),
-    guild_runtime:init_serve_op(Runtime, Run, Model, Project).
+start_http_server(Project, Run, Opts) ->
+    Port = guild_cmd_support:port_opt(Opts, ?default_port),
+    Server = start_server(Project, Run, Port),
+    guild_cli:out("Serving model on port ~b~n", [Port]),
+    Server.
 
-serve_or_preview({ok, Op}, Opts) ->
-    case proplists:get_bool(preview, Opts) of
-        false -> serve(Op);
-        true  -> preview(Op)
-    end;
-serve_or_preview({error, Err}, _Opts) ->
-    init_op_error(Err).
+start_server(Project, Run, Port) ->
+    case guild_model_serve_http:start_server(Project, Run, Port) of
+        {ok, Server} ->
+            Server;
+        {error, {{listen, eaddrinuse}, _Stack}} ->
+            port_in_use_error(Port)
+    end.
 
-init_op_error(servable) ->
+port_in_use_error(Port) ->
     guild_cli:cli_error(
-      "model does not support a serve operation\n"
-      "Try 'guild serve --help' for more information.");
-init_op_error(Err) ->
-    guild_cli:cli_error(guild_cmd_support:runtime_error_msg(Err)).
+      io_lib:format(
+        "port ~b is being used by another application\n"
+        "Try 'guild serve --port PORT' with a different port.",
+        [Port])).
 
-serve(Op) ->
-    guild_cmd_support:exec_operation(guild_serve_op, Op).
+wait_for_server_and_terminate(Pid) ->
+    guild_proc:reg(Pid),
+    Exit = guild_proc:wait_for({proc, Pid}),
+    handle_server_exit(Exit).
 
-preview(Op) ->
-    guild_cli:out_par("This command will use the settings below.~n~n"),
-    guild_cmd_support:preview_op_cmd(Op).
+handle_server_exit({_, normal}) ->
+    guild_cli:out("Server stopped by user~n");
+handle_server_exit({_, Other}) ->
+    {error, io_lib:format("Unexpected server exit: ~p", [Other])}.

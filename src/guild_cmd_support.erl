@@ -19,9 +19,9 @@
          project_dir_desc/1, project_dir_opt/1, latest_rundir/1,
          rundir_from_args/3, validate_rundir/1, run_for_args/2,
          model_section_for_name/2, model_section_for_args/2,
-         run_db_for_args/2, exec_operation/2, operation_result/1,
-         runtime_error_msg/1, init_error_tty/1, runtime_for_section/2,
-         preview_op_cmd/1]).
+         run_db_for_args/2, port_opt/2, exec_operation/2,
+         operation_result/1, runtime_error_msg/1, init_error_tty/1,
+         runtime_for_section/2, preview_op_cmd/1]).
 
 %% ===================================================================
 %% Project support
@@ -290,6 +290,17 @@ run_db_for_args(Opts, Args) ->
 missing_db_error(RunDir) ->
     guild_cli:cli_error(
       io_lib:format("~s does not contain run data", [RunDir])).
+
+%% ===================================================================
+%% Server port opt
+%% ===================================================================
+
+port_opt(Opts, Default) ->
+    validate_port(
+      cli_opt:int_val(port, Opts, Default, "invalid value for --port")).
+
+validate_port(P) when P > 0, P < 65535 -> P;
+validate_port(_) -> throw({error, "invalid value for --port"}).
 
 %% ===================================================================
 %% Exec operation

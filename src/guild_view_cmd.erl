@@ -17,7 +17,7 @@
 -export([parser/0, main/2]).
 
 -define(default_port, 6333).
--define(default_interval, 5).
+-define(default_refresh_interval, 5).
 
 %% ===================================================================
 %% Parser
@@ -36,7 +36,8 @@ view_options() ->
       fmt("HTTP server port (default is ~b)", [?default_port]),
       [{metavar, "PORT"}]},
      {interval, "-n, --interval",
-      fmt("refresh interval in seconds (default is ~b)", [?default_interval]),
+      fmt("refresh interval in seconds (default is ~b)",
+          [?default_refresh_interval]),
       [{metavar, "SECONDS"}]},
      {logging, "-l, --logging",
       "enable logging", [flag]}].
@@ -64,25 +65,18 @@ view_opts(Opts) ->
 interval_opt(Opts) ->
     validate_interval(
       cli_opt:int_val(
-        interval, Opts, ?default_interval, "invalid value for --interval")).
+        interval, Opts, ?default_refresh_interval,
+        "invalid value for --interval")).
 
 validate_interval(I) when I > 0 -> I;
 validate_interval(_) -> throw({error, "invalid value for --interval"}).
 
 start_http_server(View, Opts) ->
-    Port = port_opt(Opts),
+    Port = guild_cmd_support:port_opt(Opts, ?default_port),
     ServerOpts = server_opts(Opts),
-    Server = try_start_server(View, Port, ServerOpts),
+    Server = start_server(View, Port, ServerOpts),
     guild_cli:out("View server running on port ~b~n", [Port]),
     Server.
-
-port_opt(Opts) ->
-    validate_port(
-      cli_opt:int_val(
-        port, Opts, ?default_port, "invalid value for --port")).
-
-validate_port(P) when P > 0, P < 65535 -> P;
-validate_port(_) -> throw({error, "invalid value for --port"}).
 
 server_opts(Opts) ->
     [recompile_templates, {log, server_log_opt(Opts)}].
@@ -90,7 +84,7 @@ server_opts(Opts) ->
 server_log_opt(Opts) ->
     proplists:get_value(logging, Opts).
 
-try_start_server(View, Port, Opts) ->
+start_server(View, Port, Opts) ->
     case guild_project_view_http:start_server(View, Port, Opts) of
         {ok, Server} ->
             Server;

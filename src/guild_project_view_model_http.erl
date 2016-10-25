@@ -18,33 +18,36 @@
 
 -export([handle_model_run/4]).
 
--define(util, guild_project_view_http_util).
-
 %% ===================================================================
 %% App
 %% ===================================================================
 
 app("POST", {"/model/run", _, Params}, Env, View) ->
-    {recv_body, {?MODULE, handle_model_run, [Params, View]}, Env};
+    {Project, Run} = resolve_project_run(Params, View),
+    {recv_body, {?MODULE, handle_model_run, [Project, Run]}, Env};
 app(_, _, _, _) ->
     guild_http:bad_request().
+
+resolve_project_run(Params, View) ->
+    RunId = guild_project_view_http_util:run_opt(Params),
+    guild_project_view_http_util:resolve_project_run(RunId, View).
 
 %% ===================================================================
 %% Model run
 %% ===================================================================
 
-handle_model_run(Params, View, Body, _Env) ->
-    {Project, Run} = ?util:resolve_project_run(?util:run_opt(Params), View),
+handle_model_run(Project, Run, Body, _Env) ->
     ModelPath = model_path(Run, Project),
-    ?util:ensure_tensorflow_port(),
-    handle_image(guild_tensorflow_port:run_model(ModelPath, Body)).
+    guild_project_view_http_util:ensure_tensorflow_port(),
+    Result = guild_tensorflow_port:run_model(ModelPath, Body),
+    handle_model_run_result(Result).
 
 model_path(Run, _Project) ->
     filename:join(guild_run:dir(Run), "model/export").
 
-handle_image({ok, JSON}) ->
+handle_model_run_result({ok, JSON}) ->
     guild_http:ok_json(JSON);
-handle_image({error, <<"not found">>}) ->
+handle_model_run_result({error, <<"not found">>}) ->
     guild_http:not_found();
-handle_image({error, Err}) ->
+handle_model_run_result({error, Err}) ->
     guild_http:bad_request([Err, "\n"]).
