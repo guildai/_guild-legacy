@@ -77,7 +77,7 @@ not_found(Page) ->
     {{404, "Not Found"}, [{"Content-Type", "text/html"}], Page}.
 
 bad_request() ->
-    bad_request("Bad Request\n").
+    bad_request("Bad request\n").
 
 bad_request(Msg) ->
     {{400, "Bad request"}, [{"Content-Type", "text/plain"}], Msg}.
