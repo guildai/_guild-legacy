@@ -1,9 +1,24 @@
 #!/usr/bin/python
-"""Erlang port-like application to provide TensorFlow support
 
-This is not a true external port but is used in a similar way, taking
-requests from stdin and responding over stdout. The protocol is text
-line based using single LF (ASCII 10) chars as line delimiters.
+# Copyright 2016 TensorHub, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""Port style application providing TensorFlow support
+
+This is not a true Erlang external port but is used in a similar way,
+taking requests from stdin and responding over stdout. The protocol is
+text line based using single LF (ASCII 10) chars as line delimiters.
 
 A request consists of a single tab (ASCII 9) separated list of
 parts. A request must contain two parts and may contain more.
@@ -46,6 +61,7 @@ which is identified by its name.
 Arguments must not contain tabs or line endings. Parts must not
 contain line endings. In general these values should be encoded to
 avoid either of these separators.
+
 """
 import os
 import sys
@@ -53,6 +69,10 @@ import sys
 STDIN = sys.stdin
 STDOUT = sys.stdout
 STDERR = sys.stderr
+
+# ===================================================================
+# Protocol
+# ===================================================================
 
 class ErrorResponse(BaseException):
 
@@ -73,6 +93,36 @@ class Request(object):
         self.name = parts[1]
         self.args = parts[2:]
 
+def read_request():
+    line = STDIN.readline().strip()
+    return Request(line) if line else None
+
+def handle_request(req):
+    if req.name == "load-image":
+        handle_load_image(req)
+    elif req.name == "run-model":
+        handle_run_model(req)
+    else:
+        raise ProtocolError("unknown " + repr(req.name))
+
+def send_response(req, status, parts):
+    STDOUT.write(req.ref)
+    STDOUT.write("\t")
+    STDOUT.write(status)
+    STDOUT.write("\n")
+    for part in parts:
+        STDOUT.write(part)
+        STDOUT.write("\n")
+    STDOUT.write("\n")
+    STDOUT.flush()
+
+def not_found_response():
+    return ["not_found"]
+
+# ===================================================================
+# Load image
+# ===================================================================
+
 class Image(object):
 
     def __init__(self, event_file, tag, tf_image):
@@ -82,16 +132,6 @@ class Image(object):
         self.width = tf_image.width
         self.colorspace = tf_image.colorspace
         self.image_bytes = tf_image.encoded_image_string
-
-def read_request():
-    line = STDIN.readline().strip()
-    return Request(line) if line else None
-
-def handle_request(req):
-    if req.name == "load-image":
-        handle_load_image(req)
-    else:
-        raise ProtocolError("unknown " + repr(req.name))
 
 def handle_load_image(req):
     path, index = validate_load_image_args(req)
@@ -107,7 +147,7 @@ def handle_load_image(req):
 
 def validate_load_image_args(req):
     if len(req.args) != 2:
-        raise ProtocolError("load_image args %r" % req.args)
+        raise ProtocolError("load_image requires 2 arguments")
     path = req.args[0]
     if not os.path.exists(path):
         raise ErrorResponse(req, "not found")
@@ -155,22 +195,26 @@ def encode_image_bytes(image_bytes):
     import base64
     return base64.b64encode(image_bytes)
 
-def not_found_response():
-    return ["not_found"]
+# ===================================================================
+# Run model
+# ===================================================================
 
-def handle_error(e):
-    send_response(e.req, "error", [e.msg])
+def handle_run_model(req):
+    model_path, json_req = validate_run_model_args(req)
+    send_response(req, "ok", ["TODO"])
 
-def send_response(req, status, parts):
-    STDOUT.write(req.ref)
-    STDOUT.write("\t")
-    STDOUT.write(status)
-    STDOUT.write("\n")
-    for part in parts:
-        STDOUT.write(part)
-        STDOUT.write("\n")
-    STDOUT.write("\n")
-    STDOUT.flush()
+def validate_run_model_args(req):
+    if len(req.args) != 2:
+        raise ProtocolError("run_model requires 2 arguments")
+    model_path = req.args[0]
+    if not os.path.exists(model_path):
+        raise ErrorResponse(req, "not found")
+    json_req = req.args[1]
+    return model_path, json_req
+
+# ===================================================================
+# Main loop
+# ===================================================================
 
 if __name__ == "__main__":
     while True:
@@ -180,4 +224,4 @@ if __name__ == "__main__":
         try:
             handle_request(req)
         except ErrorResponse, e:
-            handle_error(e)
+            send_response(e.req, "error", [e.msg])

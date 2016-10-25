@@ -16,13 +16,16 @@
 
 -export([app/4]).
 
+-export([handle_model_run/4]).
+
+-define(util, guild_project_view_http_util).
+
 %% ===================================================================
 %% App
 %% ===================================================================
 
 app("POST", {"/model/run", _, Params}, Env, View) ->
-    Dispatch = fun(Data, _) -> handle_model_run(Params, Data, View) end,
-    {recv_body, Dispatch, Env};
+    {recv_body, {?MODULE, handle_model_run, [Params, View]}, Env};
 app(_, _, _, _) ->
     guild_http:bad_request().
 
@@ -30,13 +33,18 @@ app(_, _, _, _) ->
 %% Model run
 %% ===================================================================
 
-handle_model_run(_Params, Body, _View) ->
-    case guild_json:try_decode(Body) of
-        {ok, {Obj}} ->
-            Encoded = guild_json:encode({Obj}),
-            {{200, "OK"}, [{"Content-Type", "application/json"}], Encoded};
-        {ok, _} ->
-            guild_http:bad_request("request must be a JSON object");
-        {error, _} ->
-            guild_http:bad_request("request body must be valid JSON")
-    end.
+handle_model_run(Params, View, Body, _Env) ->
+    {Project, Run} = ?util:resolve_project_run(?util:run_opt(Params), View),
+    ModelPath = model_path(Run, Project),
+    ?util:ensure_tensorflow_port(),
+    handle_image(guild_tensorflow_port:run_model(ModelPath, Body)).
+
+model_path(Run, _Project) ->
+    filename:join(guild_run:dir(Run), "model/export").
+
+handle_image({ok, Resp}) ->
+    guild_http:ok_text(io_lib:format("~p", [Resp]));
+%% handle_image({ok, JSON}) ->
+%%     guild_http:ok_json(JSON);
+handle_image({error, <<"not found">>}) ->
+    guild_http:not_found().

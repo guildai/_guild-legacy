@@ -76,26 +76,16 @@ decode(Part) -> http_uri:decode(Part).
 %% ===================================================================
 
 handle_image_request(Params, View) ->
-    Run = ?util:resolve_run(?util:run_opt(Params), View),
+    {_, Run} = ?util:resolve_project_run(?util:run_opt(Params), View),
     RunDir = guild_run:dir(Run),
     Index = index_opt(Params),
-    ensure_tensorflow_working(),
+    ?util:ensure_tensorflow_port(),
     handle_image(guild_tensorflow_port:load_image(RunDir, Index)).
 
 index_opt(Params) ->
     Schema = [{"index", [required, integer]}],
     Validated = guild_http:validate_params(Params, Schema),
     proplists:get_value("index", Validated).
-
-ensure_tensorflow_working() ->
-    %% TEMP bootstrapping of tensorflow port support - when this
-    %% stabilizes we need to move long running runtime-specific
-    %% services into the supervisory tree, lazily initialized.
-    guild_app:init_support(exec),
-    case guild_app:start_child(guild_tensorflow_port) of
-        {ok, _} -> ok;
-        {error, {already_started, _}} -> ok
-    end.
 
 handle_image({ok, #{type:=Type, bytes:=Bytes}}) ->
     MIME = ["image/", Type],

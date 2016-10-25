@@ -209,8 +209,17 @@ max_epochs_opt(Opts) ->
 %% Project run
 %% ===================================================================
 
-handle_project_run(RunId, State) ->
-    {reply, resolve_run(RunId, State), State}.
+handle_project_run(RunId, #state{p=Project}=State) ->
+    %% This is a somewhat odd interface, at least for the time being -
+    %% we want to get the data payload for a run ID and we're
+    %% including everything a caller might need to work with a run,
+    %% including the project itself. This is currently used for the
+    %% "serve" functionality, which isn't currently integrated into
+    %% the established view + runtime backend pattern that's used for
+    %% other view functions. (If this interface stands the test of
+    %% time, we can delete this comment.)
+    Run = resolve_run(RunId, State),
+    {reply, {Project, Run}, State}.
 
 %% ===================================================================
 %% Utils

@@ -16,7 +16,7 @@
 
 -behavior(e2_service).
 
--export([start_link/0, load_image/2]).
+-export([start_link/0, load_image/2, run_model/2]).
 
 -export([init/1, handle_msg/3]).
 
@@ -57,6 +57,9 @@ init_state({ExecPid, ExecOSPid}) ->
 load_image(RunDir, Index) ->
     e2_service:call(?MODULE, {call, {load_image, RunDir, Index}}).
 
+run_model(ModelPath, Request) ->
+    e2_service:call(?MODULE, {call, {run_model, ModelPath, Request}}).
+
 %% ===================================================================
 %% Message dispatch
 %% ===================================================================
@@ -91,7 +94,12 @@ encode_request(Ref, Call) ->
     iolist_to_binary([Ref, $\t, encode_call(Call), $\n]).
 
 encode_call({load_image, Dir, Index}) ->
-    ["load-image", $\t, Dir, $\t, integer_to_list(Index)].
+    ["load-image", $\t, Dir, $\t, integer_to_list(Index)];
+encode_call({run_model, ModelPath, Request}) ->
+    ["run-model", $\t, ModelPath, $\t, encode_json_arg(Request)].
+
+encode_json_arg(JSON) ->
+    re:replace(JSON, "[\n\r\t]", " ", [global]).
 
 add_caller(From, Ref, Call, #state{callers=Callers}=S) ->
     S#state{callers=[{Ref, Call, From}|Callers]}.
@@ -121,11 +129,6 @@ decode_response(Buf, Call) ->
     Status = binary_to_existing_atom(StatusBin, latin1),
     {Ref, decode_call_result(Status, Call, Parts)}.
 
-decode_call_result(ok, {load_image, _, _}, Parts) ->
-    {ok, decode_image(Parts)};
-decode_call_result(error, _, Error) ->
-    {error, decode_error(Error)}.
-
 new_buf(<<>>) -> [];
 new_buf(Next) -> [Next].
 
@@ -133,7 +136,12 @@ new_buf(Next) -> [Next].
 %% Response decoders
 %% ===================================================================
 
-decode_error(Msg) -> iolist_to_binary(Msg).
+decode_call_result(ok, {load_image, _, _}, Parts) ->
+    {ok, decode_image(Parts)};
+decode_call_result(ok, {run_model, _, _}, Parts) ->
+    {ok, decode_model_run_response(Parts)};
+decode_call_result(error, _, Error) ->
+    {error, decode_error(Error)}.
 
 decode_image([File, Tag, EncDim, Type, EncBytes]) ->
     Dim = decode_image_dim(EncDim),
@@ -150,6 +158,11 @@ decode_image_dim(Enc) ->
 
 decode_image_bytes(Enc) -> base64:decode(Enc).
 
+decode_model_run_response(Parts) ->
+    Parts.
+
+decode_error(Msg) -> iolist_to_binary(Msg).
+
 %% ===================================================================
 %% Stderr
 %% ===================================================================
@@ -158,7 +171,7 @@ handle_stderr(<<"I ", _/binary>>, State) ->
     %% Ignore information logging from TensorFlow
     {noreply, State};
 handle_stderr(Bin, State) ->
-    io:format(standard_error, "~p", [Bin]),
+    io:format(standard_error, "~s", [Bin]),
     {noreply, State}.
 
 %% ===================================================================
