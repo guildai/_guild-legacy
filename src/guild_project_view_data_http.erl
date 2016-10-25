@@ -16,6 +16,8 @@
 
 -export([app/3]).
 
+-define(util, guild_project_view_http_util).
+
 %% ===================================================================
 %% App
 %% ===================================================================
@@ -23,15 +25,15 @@
 app("GET", {"/data/runs", _, _}, View) ->
     view_json(View, runs);
 app("GET", {"/data/flags", _, Params}, View) ->
-    view_json(View, {flags, run_opt(Params)});
+    view_json(View, {flags, ?util:run_opt(Params)});
 app("GET", {"/data/attrs", _, Params}, View) ->
-    view_json(View, {attrs, run_opt(Params)});
+    view_json(View, {attrs, ?util:run_opt(Params)});
 app("GET", {"/data/summary", _, Params}, View) ->
-    view_json(View, {summary, run_opt(Params)});
+    view_json(View, {summary, ?util:run_opt(Params)});
 app("GET", {"/data/series/" ++ Path, _, Params}, View) ->
     view_json(View, {series, decode(Path), series_opts(Params)});
 app("GET", {"/data/output", _, Params}, View) ->
-    view_json(View, {output, run_opt(Params)});
+    view_json(View, {output, ?util:run_opt(Params)});
 app("GET", {"/data/compare", _, Params}, View) ->
     view_json(View, {compare, sources_opt(Params)});
 app("GET", {"/data/image", _, Params}, View) ->
@@ -44,30 +46,19 @@ app(_, _, _) ->
 view_json(V, Req) ->
     guild_http:ok_json(guild_project_view:json(V, Req)).
 
-run_opt(Params) ->
-    Schema = [{"run", [integer]}],
-    case psycho_util:validate(Params, Schema) of
-        {ok, [{_, Run}]} -> Run;
-        {ok, []}         -> latest;
-        {error, Err}     -> validate_error(Err)
-    end.
-
-validate_error(Err) ->
-    throw(guild_http:bad_request(psycho_util:format_validate_error(Err))).
-
 series_opts(Params) ->
-    [{run, run_opt(Params)}] ++ max_epoch_opts(Params).
+    [{run, ?util:run_opt(Params)}] ++ max_epoch_opts(Params).
 
 max_epoch_opts(Params) ->
     Schema = [{"max_epochs", [{any, [integer, "all"]}]}],
-    case psycho_util:validate(Params, Schema) of
-        {ok, [{_, "all"}]} -> [{max_epochs, all}];
-        {ok, [{_, Max}]}   -> [{max_epochs, Max}];
-        {ok, []}           -> [];
-        {error, _}         -> max_epoch_validate_error()
+    Error = fun max_epoch_validate_error/1,
+    case guild_http:validate_params(Params, Schema, Error) of
+        [{_, "all"}] -> [{max_epochs, all}];
+        [{_, Max}]   -> [{max_epochs, Max}];
+        []           -> []
     end.
 
-max_epoch_validate_error() ->
+max_epoch_validate_error(_) ->
     throw(
       guild_http:bad_request(
         "max_epochs must be a valid integer or 'all'")).
@@ -85,27 +76,16 @@ decode(Part) -> http_uri:decode(Part).
 %% ===================================================================
 
 handle_image_request(Params, View) ->
-    Run = resolve_run(run_opt(Params), View),
+    Run = ?util:resolve_run(?util:run_opt(Params), View),
     RunDir = guild_run:dir(Run),
     Index = index_opt(Params),
     ensure_tensorflow_working(),
     handle_image(guild_tensorflow_port:load_image(RunDir, Index)).
 
-resolve_run(RunId, View) ->
-    case guild_project_view:project_run(View, RunId) of
-        undefined -> no_such_run_error(RunId);
-        Run -> Run
-    end.
-
-no_such_run_error(RunId) ->
-    throw(guild_http:bad_request(io_lib:format("no such run ~s", [RunId]))).
-
 index_opt(Params) ->
     Schema = [{"index", [required, integer]}],
-    case psycho_util:validate(Params, Schema) of
-        {ok, Validated} -> proplists:get_value("index", Validated);
-        {error, Err} -> validate_error(Err)
-    end.
+    Validated = guild_http:validate_params(Params, Schema),
+    proplists:get_value("index", Validated).
 
 ensure_tensorflow_working() ->
     %% TEMP bootstrapping of tensorflow port support - when this

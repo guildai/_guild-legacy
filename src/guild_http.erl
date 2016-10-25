@@ -16,19 +16,10 @@
 
 -export([start_link/3]).
 
--export([ok_html/1,
-         ok_html/2,
-         ok_text/1,
-         ok_json/1,
-         error_html/1,
-         redirect/1,
-         redirect/2,
-         not_found/0,
-         not_found/1,
-         bad_request/0,
-         bad_request/1,
-         internal_error/0,
-         internal_error/1]).
+-export([ok_html/1, ok_html/2, ok_text/1, ok_json/1, error_html/1,
+         redirect/1, redirect/2, not_found/0, not_found/1,
+         bad_request/0, bad_request/1, internal_error/0,
+         internal_error/1, validate_params/2, validate_params/3]).
 
 %% ===================================================================
 %% Start
@@ -87,3 +78,19 @@ internal_error() ->
 
 internal_error(Msg) ->
     {{500, "Internal Error"}, [{"Content-Type", "text/plain"}], Msg}.
+
+%% ===================================================================
+%% Param validation helpers
+%% ===================================================================
+
+validate_params(Params, Schema) ->
+    validate_params(Params, Schema, fun validate_error_throw_bad_request/1).
+
+validate_error_throw_bad_request(Err) ->
+    throw(guild_http:bad_request(psycho_util:format_validate_error(Err))).
+
+validate_params(Params, Schema, HandleError) ->
+    case psycho_util:validate(Params, Schema) of
+        {ok, Validated} -> Validated;
+        {error, Err} -> HandleError(Err)
+    end.
