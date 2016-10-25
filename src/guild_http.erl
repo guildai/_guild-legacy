@@ -62,7 +62,7 @@ redirect(Location, Headers) ->
     {{302, "See Other"}, [{"Location", Location}|Headers]}.
 
 not_found() ->
-    {{404, "Not Found"}, [{"Content-Type", "text/plain"}], "Not Found"}.
+    {{404, "Not Found"}, [{"Content-Type", "text/plain"}], "Not found\n"}.
 
 not_found(Page) ->
     {{404, "Not Found"}, [{"Content-Type", "text/html"}], Page}.
