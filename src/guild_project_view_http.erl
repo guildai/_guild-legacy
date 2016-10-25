@@ -18,7 +18,7 @@
 
 -export([init/1, handle_msg/3]).
 
--export([handle_view_page/2]).
+-export([handle_view_page/3]).
 
 %% ===================================================================
 %% Start / stop server
@@ -78,7 +78,9 @@ handle_bye() ->
     guild_http:ok_html(Page).
 
 view_page_handler(View) ->
-    psycho_util:dispatch_app({?MODULE, handle_view_page}, [parsed_path, View]).
+    psycho_util:dispatch_app(
+      {?MODULE, handle_view_page},
+      [method, parsed_path, View]).
 
 middleware(Opts) ->
     maybe_apply_log_middleware(Opts, []).
@@ -96,10 +98,12 @@ log_middleware() ->
 %% View page handler
 %% ===================================================================
 
-handle_view_page({Path, _, Params}, ProjectView) ->
+handle_view_page("GET", {Path, _, Params}, ProjectView) ->
     RunId = selected_run(Params),
     ViewVars = guild_project_view:page_vars(ProjectView, RunId),
-    handle_view_page_(page_view(Path, ViewVars), Params, ViewVars).
+    handle_view_page_(page_view(Path, ViewVars), Params, ViewVars);
+handle_view_page(_, _, _) ->
+    guild_http:bad_request().
 
 page_view(Path, ViewVars) ->
     Result =
