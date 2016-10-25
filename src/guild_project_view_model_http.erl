@@ -22,7 +22,7 @@
 
 app("POST", {"/model/run", _, Params}, Env, View) ->
     Dispatch = fun(Data, _) -> handle_model_run(Params, Data, View) end,
-    {recv_form_data, Dispatch, Env};
+    {recv_body, Dispatch, Env};
 app(_, _, _, _) ->
     guild_http:bad_request().
 
@@ -30,5 +30,13 @@ app(_, _, _, _) ->
 %% Model run
 %% ===================================================================
 
-handle_model_run(Params, {ok, Data}, _View) ->
-    guild_http:ok_text(io_lib:format("Params: ~p~nData: ~p~n", [Params, Data])).
+handle_model_run(_Params, Body, _View) ->
+    case guild_json:try_decode(Body) of
+        {ok, {Obj}} ->
+            Encoded = guild_json:encode({Obj}),
+            {{200, "OK"}, [{"Content-Type", "application/json"}], Encoded};
+        {ok, _} ->
+            guild_http:bad_request("request must be a JSON object");
+        {error, _} ->
+            guild_http:bad_request("request body must be valid JSON")
+    end.
