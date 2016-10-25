@@ -63,6 +63,10 @@ contain line endings. In general these values should be encoded to
 avoid either of these separators.
 
 """
+import base64
+import glob
+import imghdr
+import json
 import os
 import sys
 
@@ -167,7 +171,6 @@ def iter_images(path):
                         yield Image(event_file, value.tag, value.image)
 
 def find_event_files(root_dir):
-    import glob
     pattern = "*.tfevents*"
     for path in glob.iglob(os.path.join(root_dir, pattern)):
         yield path
@@ -187,21 +190,31 @@ def encode_image_dimensions(h, w, d):
     return "%i %i %i" % (h, w, d)
 
 def encode_image_type(image_bytes):
-    import imghdr
     guessed = imghdr.what(None, image_bytes)
     return guessed if guessed else ""
 
 def encode_image_bytes(image_bytes):
-    import base64
     return base64.b64encode(image_bytes)
 
 # ===================================================================
 # Run model
 # ===================================================================
 
+class Model(object):
+    pass
+
+active_session = None
+
 def handle_run_model(req):
-    model_path, json_req = validate_run_model_args(req)
-    send_response(req, "ok", ["TODO"])
+    model_path, instances = validate_run_model_args(req)
+    sess = session_for_model_path(model_path)
+    output_tensors, output_keys = model_output_tensors(sess)
+    inputs = model_input_feed_dict(sess, instances)
+    try:
+        result = sess.run(output_tensors, feed_dict=inputs)
+    except ValueError, e:
+        raise ErrorResponse(req, str(e))
+    send_response(req, "ok", run_image_response(result, output_keys))
 
 def validate_run_model_args(req):
     if len(req.args) != 2:
@@ -209,8 +222,58 @@ def validate_run_model_args(req):
     model_path = req.args[0]
     if not os.path.exists(model_path):
         raise ErrorResponse(req, "not found")
-    json_req = req.args[1]
-    return model_path, json_req
+    try:
+        instances = json.loads(req.args[1])
+    except ValueError:
+        raise ErrorResponse(req, "run request must be valid JSON")
+    if type(instances) != list:
+        raise ErrorResponse(req, "run request must be a list")
+    return model_path, instances
+
+def session_for_model_path(path):
+    if active_session is None or active_session.path != path:
+        init_active_session_for_model_path(path)
+    assert active_session.path == path
+    return active_session
+
+def init_active_session_for_model_path(path):
+    global active_session
+    import tensorflow as tf
+    if active_session is not None:
+        active_session.close()
+    tf.reset_default_graph() # import_meta_graph imports into default graph
+    saver = tf.train.import_meta_graph(path + ".meta")
+    config = tf.ConfigProto(gpu_options=tf.GPUOptions(allow_growth=True))
+    active_session = tf.Session(config=config)
+    saver.restore(active_session, path)
+    active_session.path = path
+
+def model_output_tensors(sess):
+    tensor_map = {}
+    for val in sess.graph.get_collection("outputs"):
+        tensor_map.update(json.loads(val))
+    keys = tensor_map.keys()
+    tensors = [sess.graph.get_tensor_by_name(tensor_map[key]) for key in keys]
+    return tensors, keys
+
+def model_input_feed_dict(sess, instances):
+    tensor_map = {}
+    for val in sess.graph.get_collection("inputs"):
+        tensor_map.update(json.loads(val))
+    tensor = lambda name: sess.graph.get_tensor_by_name(name)
+    tensor_value = lambda key: [inst[key] for inst in instances]
+    return {
+        tensor(tensor_name): tensor_value(key)
+        for key, tensor_name in tensor_map.items()
+    }
+
+def run_image_response(outputs, keys):
+    items = [{} for _ in outputs[0]]
+    for key_index, values in enumerate(outputs):
+        key = keys[key_index]
+        for item_index, value in enumerate(values):
+            items[item_index][key] = value.tolist()
+    return [json.dumps(items)]
 
 # ===================================================================
 # Main loop

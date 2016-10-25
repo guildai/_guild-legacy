@@ -42,9 +42,9 @@ handle_model_run(Params, View, Body, _Env) ->
 model_path(Run, _Project) ->
     filename:join(guild_run:dir(Run), "model/export").
 
-handle_image({ok, Resp}) ->
-    guild_http:ok_text(io_lib:format("~p", [Resp]));
-%% handle_image({ok, JSON}) ->
-%%     guild_http:ok_json(JSON);
+handle_image({ok, JSON}) ->
+    guild_http:ok_json(JSON);
 handle_image({error, <<"not found">>}) ->
-    guild_http:not_found().
+    guild_http:not_found();
+handle_image({error, Err}) ->
+    guild_http:bad_request([Err, "\n"]).
