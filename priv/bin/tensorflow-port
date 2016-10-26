@@ -216,6 +216,9 @@ def init_session(vars_path):
     saver.restore(session, vars_path)
     return session
 
+class ModelError(Exception):
+    pass
+
 class Model(object):
 
     _serving_path = None
@@ -244,6 +247,8 @@ class Model(object):
         tensor_map = {}
         for val in graph.get_collection("outputs"):
             tensor_map.update(json.loads(val))
+        if not tensor_map:
+            raise ModelError("no outputs")
         keys = tensor_map.keys()
         tensors = [graph.get_tensor_by_name(tensor_map[key]) for key in keys]
         return tensors, keys
@@ -284,8 +289,12 @@ active_model = Model()
 
 def handle_load_model(req):
     model_path = validate_load_model_args(req)
-    active_model.ensure_serving_path(model_path)
-    send_response(req, "ok", [])
+    try:
+        active_model.ensure_serving_path(model_path)
+    except ModelError, e:
+        send_response(req, "error", [str(e)])
+    else:
+        send_response(req, "ok", [])
 
 def validate_load_model_args(req):
     if len(req.args) != 1:
@@ -301,9 +310,13 @@ def validate_load_model_args(req):
 
 def handle_run_model(req):
     model_path, instances = validate_run_model_args(req)
-    active_model.ensure_serving_path(model_path)
-    outputs = active_model.run(instances)
-    send_response(req, "ok", [json.dumps(outputs)])
+    try:
+        active_model.ensure_serving_path(model_path)
+        outputs = active_model.run(instances)
+    except ModelError, e:
+        send_response(req, "error", [str(e)])
+    else:
+        send_response(req, "ok", [json.dumps(outputs)])
 
 def validate_run_model_args(req):
     if len(req.args) != 2:

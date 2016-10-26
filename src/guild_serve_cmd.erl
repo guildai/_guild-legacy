@@ -57,19 +57,24 @@ start_http_server(Project, Run, Port) ->
             Server;
         {error, {{listen, eaddrinuse}, _Stack}} ->
             port_in_use_error(Port);
-        {error, exported_model_not_found} ->
-            exported_model_not_found_error()
+        {error, {port_init, Err}} ->
+            port_init_error(Err)
     end.
 
 port_in_use_error(Port) ->
-    guild_cli:cli_error(
-      io_lib:format(
-        "port ~b is being used by another application\n"
-        "Try 'guild serve --port PORT' with a different port.",
-        [Port])).
+    cli_error(
+      "port ~b is being used by another application\n"
+      "Try 'guild serve --port PORT' with a different port.",
+      [Port]).
 
-exported_model_not_found_error() ->
-    guild_cli:cli_error("run does not contain an exported model").
+port_init_error(<<"not found">>) ->
+    cli_error("the specified run does not contain an exported model");
+port_init_error(<<"no outputs">>) ->
+    cli_error("the exported model does not define any outputs").
+
+cli_error(Msg) -> guild_cli:cli_error(Msg).
+
+cli_error(Msg, Args) -> guild_cli:cli_error(io_lib:format(Msg, Args)).
 
 wait_for_server_and_terminate(Pid) ->
     guild_proc:reg(Pid),
