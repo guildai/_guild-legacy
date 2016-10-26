@@ -16,7 +16,7 @@
 
 -export([app/4]).
 
--export([handle_model_run/4]).
+-export([handle_model_init/2, handle_model_run/4]).
 
 %% ===================================================================
 %% App
@@ -25,29 +25,40 @@
 app("POST", {"/model/run", _, Params}, Env, View) ->
     {Project, Run} = resolve_project_run(Params, View),
     {recv_body, {?MODULE, handle_model_run, [Project, Run]}, Env};
+app("POST", {"/model/init", _, Params}, _Env, View) ->
+    {Project, Run} = resolve_project_run(Params, View),
+    handle_model_init(Project, Run);
 app(_, _, _, _) ->
     guild_http:bad_request().
 
 resolve_project_run(Params, View) ->
-    RunId = guild_project_view_http_util:run_opt(Params),
-    guild_project_view_http_util:resolve_project_run(RunId, View).
+    RunId = guild_project_view_http:run_opt(Params),
+    guild_project_view_http:resolve_project_run(RunId, View).
+
+%% ===================================================================
+%% Model init
+%% ===================================================================
+
+handle_model_init(Project, Run) ->
+    load_model_response(
+      guild_tensorflow_port:load_project_model(Project, Run)).
+
+load_model_response(ok) ->
+    guild_http:ok_no_content();
+load_model_response({error, <<"not found">>}) ->
+    guild_http:not_found().
 
 %% ===================================================================
 %% Model run
 %% ===================================================================
 
 handle_model_run(Project, Run, Body, _Env) ->
-    ModelPath = model_path(Run, Project),
-    guild_project_view_http_util:ensure_tensorflow_port(),
-    Result = guild_tensorflow_port:run_model(ModelPath, Body),
-    handle_model_run_result(Result).
+    run_model_response(
+      guild_tensorflow_port:run_project_model(Project, Run, Body)).
 
-model_path(Run, _Project) ->
-    filename:join(guild_run:dir(Run), "model/export").
-
-handle_model_run_result({ok, JSON}) ->
+run_model_response({ok, JSON}) ->
     guild_http:ok_json(JSON);
-handle_model_run_result({error, <<"not found">>}) ->
+run_model_response({error, <<"not found">>}) ->
     guild_http:not_found();
-handle_model_run_result({error, Err}) ->
+run_model_response({error, Err}) ->
     guild_http:bad_request([Err, "\n"]).

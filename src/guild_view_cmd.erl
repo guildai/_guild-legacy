@@ -50,8 +50,11 @@ fmt(Msg, Data) -> io_lib:format(Msg, Data).
 
 main(Opts, []) ->
     View = init_project_view(Opts),
-    guild_app:init_support([json, exec]),
-    Server = start_http_server(View, Opts),
+    Port = guild_cmd_support:port_opt(Opts, ?default_port),
+    ServerOpts = server_opts(Opts),
+    guild_app:init_support([json, exec, {app_child, guild_tensorflow_port}]),
+    Server = start_http_server(View, Port, ServerOpts),
+    guild_cli:out("View server running on port ~b~n", [Port]),
     wait_for_server_and_terminate(Server).
 
 init_project_view(Opts) ->
@@ -71,20 +74,13 @@ interval_opt(Opts) ->
 validate_interval(I) when I > 0 -> I;
 validate_interval(_) -> throw({error, "invalid value for --interval"}).
 
-start_http_server(View, Opts) ->
-    Port = guild_cmd_support:port_opt(Opts, ?default_port),
-    ServerOpts = server_opts(Opts),
-    Server = start_server(View, Port, ServerOpts),
-    guild_cli:out("View server running on port ~b~n", [Port]),
-    Server.
-
 server_opts(Opts) ->
     [recompile_templates, {log, server_log_opt(Opts)}].
 
 server_log_opt(Opts) ->
     proplists:get_value(logging, Opts).
 
-start_server(View, Port, Opts) ->
+start_http_server(View, Port, Opts) ->
     case guild_project_view_http:start_server(View, Port, Opts) of
         {ok, Server} ->
             Server;

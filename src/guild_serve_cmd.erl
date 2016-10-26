@@ -45,22 +45,20 @@ fmt(Msg, Data) -> io_lib:format(Msg, Data).
 
 main(Opts, Args) ->
     {Run, Project, _, _} = guild_cmd_support:run_for_args(Args, Opts),
-    guild_app:init_support([json, exec]),
-    Server = start_http_server(Project, Run, Opts),
+    Port = guild_cmd_support:port_opt(Opts, ?default_port),
+    guild_app:init_support([json, exec, {app_child, guild_tensorflow_port}]),
+    Server = start_http_server(Project, Run, Port),
+    guild_cli:out("Serving model on port ~b~n", [Port]),
     wait_for_server_and_terminate(Server).
 
-start_http_server(Project, Run, Opts) ->
-    Port = guild_cmd_support:port_opt(Opts, ?default_port),
-    Server = start_server(Project, Run, Port),
-    guild_cli:out("Serving model on port ~b~n", [Port]),
-    Server.
-
-start_server(Project, Run, Port) ->
+start_http_server(Project, Run, Port) ->
     case guild_model_serve_http:start_server(Project, Run, Port) of
         {ok, Server} ->
             Server;
         {error, {{listen, eaddrinuse}, _Stack}} ->
-            port_in_use_error(Port)
+            port_in_use_error(Port);
+        {error, exported_model_not_found} ->
+            exported_model_not_found_error()
     end.
 
 port_in_use_error(Port) ->
@@ -70,12 +68,15 @@ port_in_use_error(Port) ->
         "Try 'guild serve --port PORT' with a different port.",
         [Port])).
 
+exported_model_not_found_error() ->
+    guild_cli:cli_error("run does not contain an exported model").
+
 wait_for_server_and_terminate(Pid) ->
     guild_proc:reg(Pid),
     Exit = guild_proc:wait_for({proc, Pid}),
     handle_server_exit(Exit).
 
 handle_server_exit({_, normal}) ->
-    guild_cli:out("Server stopped by user~n");
+    guild_cli:out("Server stopped by user\n");
 handle_server_exit({_, Other}) ->
     {error, io_lib:format("Unexpected server exit: ~p", [Other])}.

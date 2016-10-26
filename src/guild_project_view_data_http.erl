@@ -16,8 +16,6 @@
 
 -export([app/3]).
 
--define(util, guild_project_view_http_util).
-
 %% ===================================================================
 %% App
 %% ===================================================================
@@ -25,15 +23,15 @@
 app("GET", {"/data/runs", _, _}, View) ->
     view_json(View, runs);
 app("GET", {"/data/flags", _, Params}, View) ->
-    view_json(View, {flags, ?util:run_opt(Params)});
+    view_json(View, {flags, run_opt(Params)});
 app("GET", {"/data/attrs", _, Params}, View) ->
-    view_json(View, {attrs, ?util:run_opt(Params)});
+    view_json(View, {attrs, run_opt(Params)});
 app("GET", {"/data/summary", _, Params}, View) ->
-    view_json(View, {summary, ?util:run_opt(Params)});
+    view_json(View, {summary, run_opt(Params)});
 app("GET", {"/data/series/" ++ Path, _, Params}, View) ->
     view_json(View, {series, decode(Path), series_opts(Params)});
 app("GET", {"/data/output", _, Params}, View) ->
-    view_json(View, {output, ?util:run_opt(Params)});
+    view_json(View, {output, run_opt(Params)});
 app("GET", {"/data/compare", _, Params}, View) ->
     view_json(View, {compare, sources_opt(Params)});
 app("GET", {"/data/image", _, Params}, View) ->
@@ -43,11 +41,13 @@ app("GET", _, _) ->
 app(_, _, _) ->
     guild_http:bad_request().
 
+run_opt(Params) -> guild_project_view_http:run_opt(Params).
+
 view_json(V, Req) ->
     guild_http:ok_json(guild_project_view:json(V, Req)).
 
 series_opts(Params) ->
-    [{run, ?util:run_opt(Params)}] ++ max_epoch_opts(Params).
+    [{run, run_opt(Params)}] ++ max_epoch_opts(Params).
 
 max_epoch_opts(Params) ->
     Schema = [{"max_epochs", [{any, [integer, "all"]}]}],
@@ -76,11 +76,11 @@ decode(Part) -> http_uri:decode(Part).
 %% ===================================================================
 
 handle_image_request(Params, View) ->
-    {_, Run} = ?util:resolve_project_run(?util:run_opt(Params), View),
+    RunId = run_opt(Params),
+    {_, Run} = guild_project_view_http:resolve_project_run(RunId, View),
     RunDir = guild_run:dir(Run),
     Index = index_opt(Params),
-    ?util:ensure_tensorflow_port(),
-    handle_image(guild_tensorflow_port:load_image(RunDir, Index)).
+    handle_image(guild_tensorflow_port:get_image(RunDir, Index)).
 
 index_opt(Params) ->
     Schema = [{"index", [required, integer]}],

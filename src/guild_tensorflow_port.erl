@@ -16,7 +16,8 @@
 
 -behavior(e2_service).
 
--export([start_link/0, load_image/2, run_model/2]).
+-export([start_link/0, read_image/2, load_model/1,
+         load_project_model/2, run_model/2, run_project_model/3]).
 
 -export([init/1, handle_msg/3]).
 
@@ -54,11 +55,26 @@ init_state({ExecPid, ExecOSPid}) ->
 %% API
 %% ===================================================================
 
-load_image(RunDir, Index) ->
-    e2_service:call(?MODULE, {call, {load_image, RunDir, Index}}).
+read_image(RunDir, Index) ->
+    e2_service:call(?MODULE, {call, {read_image, RunDir, Index}}).
+
+load_model(ModelPath) ->
+    e2_service:call(?MODULE, {call, {load_model, ModelPath}}).
+
+load_project_model(Project, Run) ->
+    load_model(project_model_path(Project, Run)).
 
 run_model(ModelPath, Request) ->
     e2_service:call(?MODULE, {call, {run_model, ModelPath, Request}}).
+
+run_project_model(Project, Run, Request) ->
+    ModelPath = project_model_path(Project, Run),
+    run_model(ModelPath, Request).
+
+project_model_path(_Project, Run) ->
+    %% As this module is a holding place for future TF runtime
+    %% support, we're including Guild project knowledge here.
+    filename:join(guild_run:dir(Run), "model/export").
 
 %% ===================================================================
 %% Message dispatch
@@ -91,18 +107,57 @@ dispatch_port_call(Call, #state{exec_ospid=OSPid}) ->
 request_ref() -> integer_to_binary(rand:uniform(1000000)).
 
 encode_request(Ref, Call) ->
-    iolist_to_binary([Ref, $\t, encode_call(Call), $\n]).
+    iolist_to_binary([Ref, $\t, encode_request(Call), $\n]).
 
-encode_call({load_image, Dir, Index}) ->
-    ["load-image", $\t, Dir, $\t, integer_to_list(Index)];
-encode_call({run_model, ModelPath, Request}) ->
+add_caller(From, Ref, Call, #state{callers=Callers}=S) ->
+    S#state{callers=[{Ref, Call, From}|Callers]}.
+
+%% ===================================================================
+%% Request encoders
+%% ===================================================================
+
+encode_request({read_image, Dir, Index}) ->
+    ["read-image", $\t, Dir, $\t, integer_to_list(Index)];
+encode_request({load_model, ModelPath}) ->
+    ["load-model", $\t, ModelPath];
+encode_request({run_model, ModelPath, Request}) ->
     ["run-model", $\t, ModelPath, $\t, encode_json_arg(Request)].
 
 encode_json_arg(JSON) ->
     re:replace(JSON, "[\n\r\t]", " ", [global]).
 
-add_caller(From, Ref, Call, #state{callers=Callers}=S) ->
-    S#state{callers=[{Ref, Call, From}|Callers]}.
+%% ===================================================================
+%% Response decoders
+%% ===================================================================
+
+decode_call_result(ok, {read_image, _, _}, Parts) ->
+    {ok, decode_image(Parts)};
+decode_call_result(ok, {load_model, _}, []) ->
+    ok;
+decode_call_result(ok, {run_model, _, _}, Parts) ->
+    {ok, decode_model_run_response(Parts)};
+decode_call_result(error, _, Error) ->
+    {error, decode_error(Error)}.
+
+decode_image([File, Tag, EncDim, Type, EncBytes]) ->
+    Dim = decode_image_dim(EncDim),
+    Bytes = decode_image_bytes(EncBytes),
+    #{file => File,
+      tag => Tag,
+      dim => Dim,
+      type => Type,
+      bytes => Bytes}.
+
+decode_image_dim(Enc) ->
+    [H, W, D] = re:split(Enc, " ", []),
+    {binary_to_integer(H), binary_to_integer(W), binary_to_integer(D)}.
+
+decode_image_bytes(Enc) -> base64:decode(Enc).
+
+decode_model_run_response(Parts) ->
+    Parts.
+
+decode_error(Msg) -> iolist_to_binary(Msg).
 
 %% ===================================================================
 %% Stdout
@@ -131,37 +186,6 @@ decode_response(Buf, Call) ->
 
 new_buf(<<>>) -> [];
 new_buf(Next) -> [Next].
-
-%% ===================================================================
-%% Response decoders
-%% ===================================================================
-
-decode_call_result(ok, {load_image, _, _}, Parts) ->
-    {ok, decode_image(Parts)};
-decode_call_result(ok, {run_model, _, _}, Parts) ->
-    {ok, decode_model_run_response(Parts)};
-decode_call_result(error, _, Error) ->
-    {error, decode_error(Error)}.
-
-decode_image([File, Tag, EncDim, Type, EncBytes]) ->
-    Dim = decode_image_dim(EncDim),
-    Bytes = decode_image_bytes(EncBytes),
-    #{file => File,
-      tag => Tag,
-      dim => Dim,
-      type => Type,
-      bytes => Bytes}.
-
-decode_image_dim(Enc) ->
-    [H, W, D] = re:split(Enc, " ", []),
-    {binary_to_integer(H), binary_to_integer(W), binary_to_integer(D)}.
-
-decode_image_bytes(Enc) -> base64:decode(Enc).
-
-decode_model_run_response(Parts) ->
-    Parts.
-
-decode_error(Msg) -> iolist_to_binary(Msg).
 
 %% ===================================================================
 %% Stderr

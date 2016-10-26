@@ -16,9 +16,9 @@
 
 -export([start_link/3]).
 
--export([ok_html/1, ok_html/2, ok_text/1, ok_json/1, error_html/1,
-         redirect/1, redirect/2, not_found/0, not_found/1,
-         bad_request/0, bad_request/1, internal_error/0,
+-export([ok_html/1, ok_html/2, ok_text/1, ok_json/1, ok_no_content/0,
+         error_html/1, redirect/1, redirect/2, not_found/0,
+         not_found/1, bad_request/0, bad_request/1, internal_error/0,
          internal_error/1, validate_params/2, validate_params/3]).
 
 %% ===================================================================
@@ -51,6 +51,9 @@ ok_text(Page) ->
 
 ok_json(JSON) ->
     {{200, "OK"}, [{"Content-Type", "application/json"}], JSON}.
+
+ok_no_content() ->
+    {{204, "No Content"}, [], []}.
 
 error_html(Page) ->
     {{500, "Internal Error"}, [{"Content-Type", "text/html"}], Page}.

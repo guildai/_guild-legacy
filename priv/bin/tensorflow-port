@@ -101,14 +101,6 @@ def read_request():
     line = STDIN.readline().strip()
     return Request(line) if line else None
 
-def handle_request(req):
-    if req.name == "load-image":
-        handle_load_image(req)
-    elif req.name == "run-model":
-        handle_run_model(req)
-    else:
-        raise ProtocolError("unknown " + repr(req.name))
-
 def send_response(req, status, parts):
     STDOUT.write(req.ref)
     STDOUT.write("\t")
@@ -124,7 +116,21 @@ def not_found_response():
     return ["not_found"]
 
 # ===================================================================
-# Load image
+# Request dispatch
+# ===================================================================
+
+def handle_request(req):
+    if req.name == "read-image":
+        handle_read_image(req)
+    elif req.name == "load-model":
+        handle_load_model(req)
+    elif req.name == "run-model":
+        handle_run_model(req)
+    else:
+        raise ProtocolError("unknown " + repr(req.name))
+
+# ===================================================================
+# Read image
 # ===================================================================
 
 class Image(object):
@@ -137,8 +143,8 @@ class Image(object):
         self.colorspace = tf_image.colorspace
         self.image_bytes = tf_image.encoded_image_string
 
-def handle_load_image(req):
-    path, index = validate_load_image_args(req)
+def handle_read_image(req):
+    path, index = validate_read_image_args(req)
     cur = 0
     for image in iter_images(path):
         if cur == index:
@@ -149,9 +155,9 @@ def handle_load_image(req):
     else:
         raise ErrorResponse(req, "not found")
 
-def validate_load_image_args(req):
+def validate_read_image_args(req):
     if len(req.args) != 2:
-        raise ProtocolError("load_image requires 2 arguments")
+        raise ProtocolError("read-image requires 2 arguments")
     path = req.args[0]
     if not os.path.exists(path):
         raise ErrorResponse(req, "not found")
@@ -197,28 +203,111 @@ def encode_image_bytes(image_bytes):
     return base64.b64encode(image_bytes)
 
 # ===================================================================
+# Model support
+# ===================================================================
+
+def init_session(vars_path):
+    import tensorflow as tf
+    graph = tf.Graph()
+    with graph.as_default():
+        saver = tf.train.import_meta_graph(vars_path + ".meta", True)
+    config = tf.ConfigProto(gpu_options=tf.GPUOptions(allow_growth=True))
+    session = tf.Session(config=config, graph=graph)
+    saver.restore(session, vars_path)
+    return session
+
+class Model(object):
+
+    _serving_path = None
+    _session = None
+    _output_tensors = []
+    _output_keys = []
+    _input_tensor_map = {}
+
+    def ensure_serving_path(self, path):
+        if self._serving_path != path:
+            self._reset_for_path(path)
+
+    def _reset_for_path(self, path):
+        self._serving_path = None
+        if self._session:
+            self._session.close()
+        session = init_session(path)
+        self._session = session
+        output_tensors, output_keys = self._graph_outputs(session.graph)
+        self._output_tensors = output_tensors
+        self._output_keys = output_keys
+        self._input_tensor_map = self._graph_inputs(session.graph)
+        self._serving_path = path
+
+    def _graph_outputs(_self, graph):
+        tensor_map = {}
+        for val in graph.get_collection("outputs"):
+            tensor_map.update(json.loads(val))
+        keys = tensor_map.keys()
+        tensors = [graph.get_tensor_by_name(tensor_map[key]) for key in keys]
+        return tensors, keys
+
+    def _graph_inputs(_self, graph):
+        tensor_map = {}
+        for val in graph.get_collection("inputs"):
+            tensor_map.update(json.loads(val))
+        return {
+            key: graph.get_tensor_by_name(tensor_name)
+            for key, tensor_name in tensor_map.items()
+        }
+
+    def run(self, instances):
+        inputs = self._inputs_feed_dict(instances)
+        run_result = self._session.run(self._output_tensors, feed_dict=inputs)
+        return self._run_result_outputs(run_result)
+
+    def _inputs_feed_dict(self, instances):
+        return {
+            tensor: [inst[key] for inst in instances]
+            for key, tensor in self._input_tensor_map.items()
+        }
+
+    def _run_result_outputs(self, run_result):
+        items = [{}] * len(run_result[0]) if run_result else []
+        for key_index, values in enumerate(run_result):
+            key = self._output_keys[key_index]
+            for item_index, value in enumerate(values):
+                items[item_index][key] = value.tolist()
+        return items
+
+active_model = Model()
+
+# ===================================================================
+# Load model
+# ===================================================================
+
+def handle_load_model(req):
+    model_path = validate_load_model_args(req)
+    active_model.ensure_serving_path(model_path)
+    send_response(req, "ok", [])
+
+def validate_load_model_args(req):
+    if len(req.args) != 1:
+        raise ProtocolError("load-model requires 1 argument")
+    model_path = req.args[0]
+    if not os.path.exists(model_path):
+        raise ErrorResponse(req, "not found")
+    return model_path
+
+# ===================================================================
 # Run model
 # ===================================================================
 
-class Model(object):
-    pass
-
-active_session = None
-
 def handle_run_model(req):
     model_path, instances = validate_run_model_args(req)
-    sess = session_for_model_path(model_path)
-    output_tensors, output_keys = model_output_tensors(sess)
-    inputs = model_input_feed_dict(sess, instances)
-    try:
-        result = sess.run(output_tensors, feed_dict=inputs)
-    except ValueError, e:
-        raise ErrorResponse(req, str(e))
-    send_response(req, "ok", run_image_response(result, output_keys))
+    active_model.ensure_serving_path(model_path)
+    outputs = active_model.run(instances)
+    send_response(req, "ok", [json.dumps(outputs)])
 
 def validate_run_model_args(req):
     if len(req.args) != 2:
-        raise ProtocolError("run_model requires 2 arguments")
+        raise ProtocolError("run-model requires 2 arguments")
     model_path = req.args[0]
     if not os.path.exists(model_path):
         raise ErrorResponse(req, "not found")
@@ -229,51 +318,6 @@ def validate_run_model_args(req):
     if type(instances) != list:
         raise ErrorResponse(req, "run request must be a list")
     return model_path, instances
-
-def session_for_model_path(path):
-    if active_session is None or active_session.path != path:
-        init_active_session_for_model_path(path)
-    assert active_session.path == path
-    return active_session
-
-def init_active_session_for_model_path(path):
-    global active_session
-    import tensorflow as tf
-    if active_session is not None:
-        active_session.close()
-    tf.reset_default_graph() # import_meta_graph imports into default graph
-    saver = tf.train.import_meta_graph(path + ".meta")
-    config = tf.ConfigProto(gpu_options=tf.GPUOptions(allow_growth=True))
-    active_session = tf.Session(config=config)
-    saver.restore(active_session, path)
-    active_session.path = path
-
-def model_output_tensors(sess):
-    tensor_map = {}
-    for val in sess.graph.get_collection("outputs"):
-        tensor_map.update(json.loads(val))
-    keys = tensor_map.keys()
-    tensors = [sess.graph.get_tensor_by_name(tensor_map[key]) for key in keys]
-    return tensors, keys
-
-def model_input_feed_dict(sess, instances):
-    tensor_map = {}
-    for val in sess.graph.get_collection("inputs"):
-        tensor_map.update(json.loads(val))
-    tensor = lambda name: sess.graph.get_tensor_by_name(name)
-    tensor_value = lambda key: [inst[key] for inst in instances]
-    return {
-        tensor(tensor_name): tensor_value(key)
-        for key, tensor_name in tensor_map.items()
-    }
-
-def run_image_response(outputs, keys):
-    items = [{} for _ in outputs[0]]
-    for key_index, values in enumerate(outputs):
-        key = keys[key_index]
-        for item_index, value in enumerate(values):
-            items[item_index][key] = value.tolist()
-    return [json.dumps(items)]
 
 # ===================================================================
 # Main loop

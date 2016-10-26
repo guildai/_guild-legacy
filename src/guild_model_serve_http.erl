@@ -17,8 +17,19 @@
 -export([start_server/3, app/5]).
 
 start_server(Project, Run, Port) ->
+    ModelInitResult = init_tensorflow_port_model(Project, Run),
+    maybe_start_server(ModelInitResult, Project, Run, Port).
+
+init_tensorflow_port_model(Project, Run) ->
+    guild_tensorflow_port:load_project_model(Project, Run).
+
+maybe_start_server(ok, Project, Run, Port) ->
     App = psycho_util:dispatch_app(?MODULE, [method, path, Project, Run, env]),
-    guild_http_sup:start_server(Port, App, []).
+    guild_http_sup:start_server(Port, App, []);
+maybe_start_server({error, Err}, _Project, _Run, _Port) ->
+    model_init_error(Err).
+
+model_init_error(<<"not found">>) -> {error, exported_model_not_found}.
 
 app("POST", "/run", Project, Run, Env) ->
     Handler = {guild_project_view_model_http, handle_model_run, [Project, Run]},

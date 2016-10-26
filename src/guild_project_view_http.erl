@@ -18,7 +18,7 @@
 
 -export([init/1, handle_msg/3]).
 
--export([handle_view_page/3]).
+-export([handle_view_page/3, run_opt/1, resolve_project_run/2]).
 
 %% ===================================================================
 %% Start / stop server
@@ -177,3 +177,25 @@ apply_view_render_context(Vars) ->
 
 view_render_context(Vars) ->
     [{project_title, proplists:get_value(project_title, Vars)}].
+
+%% ===================================================================
+%% Utils used by HTTP handler delegates
+%% ===================================================================
+
+run_opt(Params) ->
+    Schema = [{"run", [integer]}],
+    case guild_http:validate_params(Params, Schema) of
+        [{_, Run}] -> Run;
+        []         -> latest
+    end.
+
+resolve_project_run(RunId, View) ->
+    %% See implementation note in guild_project_view for more
+    %% information about this interface.
+    case guild_project_view:project_run(View, RunId) of
+        {_, undefined} -> no_such_run_error(RunId);
+        {Project, Run} -> {Project, Run}
+    end.
+
+no_such_run_error(RunId) ->
+    throw(guild_http:bad_request(io_lib:format("no such run ~s", [RunId]))).
