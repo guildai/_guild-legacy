@@ -1,5 +1,5 @@
 #-*-conf-*-
-#
+
 # This is an annotated Guild project file. Review the comments below
 # and modify the attributes as needed for your project. Feel free to
 # delete comments as you become familiar with the project structure.
@@ -32,13 +32,16 @@ runroot                 = runs
 
 [model]
 
-# Default model
-
 # Model sections provide information about a model to be
 # trained. Guild projects may contain multiple model sections. To
 # differentiate model sections from one another, provide quoted model
 # names in the section headers (see "mnist" example below). This model
 # is considerd the default model.
+
+# You may provide a short (one line) description of the model. This is
+# particularly useful if you define more than one model.
+#
+description = Default model
 
 # The runtime attributre is required for all operations. Currently
 # Guild only supports 'tensorflow' for this value.
@@ -96,13 +99,10 @@ serve                   =
 # prepare               =
 # train_requires        =
 # evaluate              =
-# serve                 =
 
 ####################################################################
 
 [flags]
-
-# Default flags
 
 # Flag sections define the flags associated with a model. Flag
 # sections are associated with models using their names. This section
@@ -132,6 +132,12 @@ serve                   =
 #              train, evaluate, and serve operations)
 #  GPU_COUNT   the number of GPUs detected on the system
 
+# You may provide an optional description attribute. Use this to
+# describe the set of flags - it will not be passed through as a
+# command line option.
+#
+description = Default flags
+
 data_dir                = data
 train_dir               = $RUNDIR/train
 batch_size              = 128
@@ -140,8 +146,6 @@ max_steps               = 1000
 ####################################################################
 
 [flags "quick"]
-
-# Train with fewer steps
 
 # Named flag sections may be used as profiles for an operation. In
 # this example, the section defines a relatively smaller number of
@@ -156,15 +160,29 @@ max_steps               = 1000
 #
 # Profiles can be used any operation that supports flags.
 
+description = Train with fewer steps
+
 max_steps               = 100
 
 ####################################################################
 
 [flags "long"]
 
-# Train with more steps
-
-# This flags section defines a relatively larger number of steps to
-# train on.
+description = Train with more steps
 
 max_steps               = 10000
+
+####################################################################
+
+[view]
+
+# View sections are used to define what is displayed in Guild view for
+# a model. Like flag sections view sections may be named to associate
+# them with models.
+
+fields                  =
+
+series-a                =
+
+series-b                =
+                        
