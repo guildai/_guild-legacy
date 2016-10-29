@@ -138,7 +138,8 @@ parse_sys_attrs(Out) ->
     [parse_sys_attrs_line(Line) || Line <- re:split(Out, "\n", [trim])].
 
 parse_sys_attrs_line(Line) ->
-    Parts = list_to_tuple(re:split(Line, ", ", [{return, list}])),
-    #{cpu_model      => ?part(1),
-      cpu_cores      => ?part(2)
+    Parts = list_to_tuple(re:split(Line, "\t", [{return, list}])),
+    #{cpu_model => ?part(1),
+      cpu_cores => ?part(2),
+      mem_total => ?part(3)
      }.

@@ -32,4 +32,14 @@ cpu-cores() {
     fi
 }
 
-echo "$(cpu-desc), $(cpu-cores)"
+mem-total() {
+    if [ "" = "Darwin" ]; then
+        # TODO: use sysctl hw.memsize
+        echo ""
+    else
+        local mem_kb=`cat /proc/meminfo | grep MemTotal | awk '{ print $2 }'`
+        echo "$(( $mem_kb / 1024 )) MB"
+    fi
+}
+
+printf "$(cpu-desc)\t$(cpu-cores)\t$(mem-total)"

@@ -39,11 +39,11 @@ sys_attrs() ->
     lists:foldl(fun apply_sys_attrs/2, [], guild_sys:system_attrs()).
 
 apply_sys_attrs(Attrs, Acc) ->
-    #{cpu_model:=Model,
-      cpu_cores:=Cores} = Attrs,
-    [{"cpu_model", Model},
-     {"cpu_cores", Cores}
-     |Acc].
+    Sorted =
+        lists:sort(
+          [{atom_to_list(Name), Val}
+           || {Name, Val} <- maps:to_list(Attrs)]),
+    Sorted ++ Acc.
 
 gpu_attrs() ->
     lists:foldl(fun apply_gpu_attrs/2, [], guild_sys:gpu_attrs()).
