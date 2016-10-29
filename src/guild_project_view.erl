@@ -114,19 +114,19 @@ run_attrs(Run)       -> [{id, guild_run:id(Run)}].
 %% Viewdef
 %% ===================================================================
 
-viewdef(undefined, _State) -> undefined;
+viewdef(undefined, _State) ->
+    undefined;
 viewdef(Run, #state{p=Project}) ->
-    {ok, Model} = run_model(Run, Project),
-    case find_viewdef(Model, Project) of
-        {ok, Viewdef} -> Viewdef;
+    case run_model(Run, Project) of
+        {ok, Model} -> viewdef_for_model(Model, Project);
         error -> undefined
     end.
 
-find_viewdef(Model, Project) ->
+viewdef_for_model(Model, Project) ->
     guild_util:find_apply(
       [fun custom_viewdef/2,
        fun generated_viewdef/2],
-      [Model, Project]).
+      [Model, Project], undefined).
 
 custom_viewdef(Model, Project) ->
     case guild_viewdef:viewdef_path(Model, Project) of
