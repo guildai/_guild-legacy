@@ -328,12 +328,6 @@ guild.reduce = new function() {
         }, data);
     };
 
-    var steps0 = function(data) {
-        return mapSeries(function(series) {
-            return seriesSteps0(series);
-        }, data);
-    };
-
     var duration = function(data) {
         return mapSeries(function(series) {
             return seriesDuration(series);
@@ -392,6 +386,5 @@ guild.reduce = new function() {
     this.average = average;
     this.last = last;
     this.steps = steps;
-    this.steps0 = steps0;
     this.duration = duration;
 };
