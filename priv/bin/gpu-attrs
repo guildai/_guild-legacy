@@ -42,4 +42,5 @@ props=(
     power.limit
 )
 
-$SMI --format=csv,noheader --query-gpu=$(comma_list ${props[@]})
+$SMI --format=csv,noheader --query-gpu=$(comma_list ${props[@]}) \
+    | sed 's/ MiB/ MB/'
