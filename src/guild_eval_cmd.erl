@@ -31,7 +31,8 @@ parser() ->
       [{pos_args, {0, 1}}]).
 
 eval_options() ->
-    [{preview, "--preview", "print evaluate details but do not train", [flag]}].
+    [{preview, "--preview", "print evaluate details but do not train", [flag]},
+     {debug, "--debug", "show errors", [hidden, flag]}].
 
 %% ===================================================================
 %% Main
@@ -46,7 +47,7 @@ init_op(Opts, Args) ->
 
 eval_or_preview({ok, Op}, Opts) ->
     case proplists:get_bool(preview, Opts) of
-        false -> eval(Op);
+        false -> eval(Op, Opts);
         true  -> preview(Op)
     end;
 eval_or_preview({error, Err}, _Opts) ->
@@ -59,8 +60,11 @@ init_op_error(evaluatable) ->
 init_op_error(Err) ->
     guild_cli:cli_error(guild_cmd_support:runtime_error_msg(Err)).
 
-eval(Op) ->
+eval(Op, Opts) ->
+    guild_cmd_support:init_error_tty(debug_flag(Opts)),
     guild_cmd_support:exec_operation(guild_eval_op, Op).
+
+debug_flag(Opts) -> proplists:get_bool(debug, Opts).
 
 preview(Op) ->
     guild_cli:out_par("This command will use the settings below.~n~n"),
