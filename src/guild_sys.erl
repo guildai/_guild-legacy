@@ -22,8 +22,6 @@
 
 -record(state, {gpu_attrs, sys_attrs}).
 
--define(part(I), element(I, Parts)).
-
 %% ===================================================================
 %% Start
 %% ===================================================================
@@ -86,6 +84,8 @@ ensure_exec_support() ->
 
 parse_gpu_attrs(Out) ->
     [parse_gpu_attrs_line(Line) || Line <- re:split(Out, "\n", [trim])].
+
+-define(part(I), element(I, Parts)).
 
 parse_gpu_attrs_line(Line) ->
     Parts = list_to_tuple(re:split(Line, ", ", [{return, list}])),
