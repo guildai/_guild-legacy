@@ -26,7 +26,7 @@ parser() ->
     cli:parser(
       "guild view",
       "[OPTION]... [RUNDIR]",
-      "Serve a trained model in RUNDIR or the latest using --latest-run.\n."
+      "Serve a trained model in RUNDIR or the latest using --latest-run.\n"
       "\n"
       "Use 'guild list-runs' to list runs that can be used for RUNDIR.",
       serve_options() ++ guild_cmd_support:project_options([latest_run]),
