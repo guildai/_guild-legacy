@@ -17,12 +17,18 @@
 -export([compile_template/3]).
 
 compile_template(File, Module, UserOpts) ->
+    OutDir = ensure_out_dir(),
     AllOpts =
         [return,
-         {out_dir, guild_app:tmp_dir()},
+         {out_dir, OutDir},
          {compiler_options, [nowarn_unused_vars]}
          |UserOpts],
     handle_compile(erlydtl:compile_file(File, Module, AllOpts), File).
+
+ensure_out_dir() ->
+    Dir = filename:join(guild_app:tmp_dir(), "guild-dtl"),
+    ok = filelib:ensure_dir(Dir ++ "/"),
+    Dir.
 
 handle_compile({ok, _, WarningsList}, File) ->
     lists:foreach(
