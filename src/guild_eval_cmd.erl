@@ -26,8 +26,8 @@ parser() ->
       "\n"
       "The model applicable to the run must have an evaluate operation "
       "operation defined.",
-      guild_cmd_support:project_options([flag_support, latest_run])
-      ++ eval_options(),
+      eval_options()
+      ++ guild_cmd_support:project_options([flag_support, latest_run]),
       [{pos_args, {0, 1}}]).
 
 eval_options() ->

@@ -28,7 +28,7 @@ parser() ->
       "Models are prepared by their configured 'prepare' operation, if "
       "specified. If the specified model doesn't define a prepare operation, "
       "the command exits with an error message.",
-      guild_cmd_support:project_options([flag_support]) ++ prepare_options(),
+      prepare_options() ++ guild_cmd_support:project_options([flag_support]),
       [{pos_args, {0, 1}}]).
 
 prepare_options() ->

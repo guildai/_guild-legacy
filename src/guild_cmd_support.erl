@@ -33,28 +33,40 @@ project_options() ->
     project_options([]).
 
 project_options(Opts) ->
-    base_project_options() ++ more_project_options(Opts).
+    more_project_options(Opts) ++ base_project_options().
 
 base_project_options() ->
     [{project_dir, "-P, --project",
       "project directory (default is current directory)",
       [{metavar, "DIR"}]}].
 
-more_project_options(Opts) ->
-    lists:foldl(fun acc_more_options/2, [], Opts).
+more_project_options(UserOpts) ->
+    Order = [latest_run, flag_support],
+    more_project_options_acc(Order, UserOpts, []).
 
-acc_more_options(flag_support, Acc) ->
-    flag_options() ++ Acc;
-acc_more_options(latest_run, Acc) ->
-    latest_run_options() ++ Acc.
+more_project_options_acc([Name|Rest], UserOpts, Acc) ->
+    more_project_options_acc(
+      Rest, UserOpts,
+      maybe_apply_project_options(Name, UserOpts, Acc));
+more_project_options_acc([], _, Acc) ->
+    lists:reverse(Acc).
+
+maybe_apply_project_options(Name, Opts, Acc) ->
+    case proplists:get_bool(Name, Opts) of
+        true -> lists:reverse(project_options_(Name)) ++ Acc;
+        false -> Acc
+    end.
+
+project_options_(flag_support) -> flag_options();
+project_options_(latest_run)   -> latest_run_options().
 
 flag_options() ->
-    [{flags, "-F, --flag",
-      "set a project flag; may be used multiple times",
-      [{metavar, "NAME[=VAL]"}]},
-     {profile, "-p, --profile",
+    [{profile, "-p, --profile",
       "use alternate flags profile",
-      [{metavar, "NAME"}]}].
+      [{metavar, "NAME"}]},
+     {flags, "-F, --flag",
+      "set a project flag; may be used multiple times",
+      [{metavar, "NAME[=VAL]"}]}].
 
 latest_run_options() ->
     [{latest, "--latest-run",

@@ -29,7 +29,7 @@ parser() ->
       "\n"
       "If the specified model does not exist or cannot be trained because "
       "it does not define a train operation, the command exits with an error.",
-      guild_cmd_support:project_options([flag_support]) ++ train_options(),
+      train_options() ++ guild_cmd_support:project_options([flag_support]),
       [{pos_args, {0, 1}}]).
 
 train_options() ->
