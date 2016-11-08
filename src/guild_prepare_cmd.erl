@@ -32,8 +32,7 @@ parser() ->
       [{pos_args, {0, 1}}]).
 
 prepare_options() ->
-    [{preview, "--preview", "print training details but do not train", [flag]},
-     {debug, "--debug", "show errors", [hidden, flag]}].
+    [{preview, "--preview", "print training details but do not train", [flag]}].
 
 %% ===================================================================
 %% Main
@@ -50,7 +49,7 @@ init_op(Opts, Args) ->
 
 prepare_or_preview({ok, Op}, Opts) ->
     case proplists:get_bool(preview, Opts) of
-        false -> prepare(Op, Opts);
+        false -> prepare(Op);
         true  -> preview(Op)
     end;
 prepare_or_preview({error, Err}, _Opts) ->
@@ -63,11 +62,8 @@ init_op_error(preparable) ->
 init_op_error(Err) ->
     guild_cli:cli_error(guild_cmd_support:runtime_error_msg(Err)).
 
-prepare(Op, Opts) ->
-    guild_cmd_support:init_error_tty(debug_flag(Opts)),
+prepare(Op) ->
     guild_cmd_support:exec_operation(guild_prepare_op, Op).
-
-debug_flag(Opts) -> proplists:get_bool(debug, Opts).
 
 preview(Op) ->
     guild_cli:out_par("This command will use the settings below.~n~n"),

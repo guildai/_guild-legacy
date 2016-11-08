@@ -33,8 +33,7 @@ parser() ->
       [{pos_args, {0, 1}}]).
 
 train_options() ->
-    [{preview, "--preview", "print training details but do not train", [flag]},
-     {debug, "--debug", "show errors", [hidden, flag]}].
+    [{preview, "--preview", "print training details but do not train", [flag]}].
 
 %% ===================================================================
 %% Main
@@ -51,7 +50,7 @@ init_op(Opts, Args) ->
 
 train_or_preview({ok, Op}, Opts) ->
     case proplists:get_bool(preview, Opts) of
-        false -> train(Op, Opts);
+        false -> train(Op);
         true  -> preview(Op)
     end;
 train_or_preview({error, Err}, _Opts) ->
@@ -72,11 +71,8 @@ missing_requires_error(Missing) ->
       "Do you need to run 'guild prepare' first?",
       [Missing]).
 
-train(Op, Opts) ->
-    guild_cmd_support:init_error_tty(debug_flag(Opts)),
+train(Op) ->
     guild_cmd_support:exec_operation(guild_train_op, Op).
-
-debug_flag(Opts) -> proplists:get_bool(debug, Opts).
 
 preview(Op) ->
     guild_cli:out_par(

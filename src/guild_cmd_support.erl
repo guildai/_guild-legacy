@@ -20,7 +20,7 @@
          rundir_from_args/3, validate_rundir/1, run_for_args/2,
          model_section_for_name/2, model_section_for_args/2,
          run_db_for_args/2, port_opt/2, exec_operation/2,
-         operation_result/1, runtime_error_msg/1, init_error_tty/1,
+         operation_result/1, runtime_error_msg/1,
          runtime_for_section/2, preview_op_cmd/1]).
 
 -define(github_repo_url, "https://github.com/guildai/guild").
@@ -360,18 +360,8 @@ runtime_error_msg({runtime, Name}) ->
     io_lib:format("unsupported runtime '~s'", [Name]).
 
 %% ===================================================================
-%% Init error tty
+%% Runtime for section
 %% ===================================================================
-
-init_error_tty(DebugFlag) ->
-    %% The train operation directs the error logger to a file as a
-    %% matter of record. We typicall disable tty here to insulate the
-    %% user from the chatty gen_server logging (gen_server logs errors
-    %% whenever a process exits abnormally - and we use abnormal exits
-    %% to track when our monitored operation exits with non zero). To
-    %%e disable this behavior we will turn tty on when the debug option
-    %% is provided.
-    error_logger:tty(DebugFlag).
 
 runtime_for_section(Section, Project) ->
     case guild_runtime:for_section(Section, Project) of
