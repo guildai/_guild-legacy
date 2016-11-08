@@ -23,6 +23,8 @@
          operation_result/1, runtime_error_msg/1, init_error_tty/1,
          runtime_for_section/2, preview_op_cmd/1]).
 
+-define(github_repo_url, "https://github.com/guildai/guild").
+
 %% ===================================================================
 %% Project support
 %% ===================================================================
@@ -92,10 +94,8 @@ syntax_error_msg(Line, Num, Dir) ->
     io_lib:format(
       "the Guild project file contains an error on line ~b~n"
       "~s:~b: syntax error: ~s~n"
-      "Try editing the file or submit a report using "
-      "'guild report-issue~s'",
-      [Num, guild_project:project_file_for_dir(Dir), Num, Line,
-       project_dir_opt(Dir)]).
+      "Try editing the file or submit an issue at " ?github_repo_url,
+      [Num, guild_project:project_file_for_dir(Dir), Num, Line]).
 
 profile_flags(Opts, Project) ->
     case proplists:get_value(profile, Opts) of
