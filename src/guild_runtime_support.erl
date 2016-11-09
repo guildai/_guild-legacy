@@ -63,7 +63,10 @@ log_output_to_db(RunDir, {Stream, Lines}) ->
     handle_log_to_db_result(guild_run_db:log_output(RunDir, Output)).
 
 format_output_for_db(Stream, Lines) ->
-    [{Time, Stream, Line} || {Time, Line} <- Lines].
+    [{Time, Stream, Line} || {Time, Line} <- Lines, filter_line_for_db(Line)].
+
+filter_line_for_db([<<"\e", _/binary>>|_]) -> false;
+filter_line_for_db(_) -> true.
 
 handle_log_to_db_result(ok) -> ok;
 handle_log_to_db_result({error, Err}) ->
