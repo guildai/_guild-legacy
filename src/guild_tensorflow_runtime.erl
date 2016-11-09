@@ -102,9 +102,7 @@ train_tasks(Flags, Env) ->
        {collector, "op-stats", Repeat},
        {collector, "sys-stats", Repeat},
        {collector, "gpu-stats", Repeat},
-       {collector,
-        "tensorflow-collector",
-        Repeat,
+       {collector, "tensorflow-collector", Repeat,
         collector_stderr_handler()}]).
 
 stats_interval_opt(Flags) ->

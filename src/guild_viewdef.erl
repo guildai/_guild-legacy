@@ -12,8 +12,6 @@
 -define(templates,
         [{"default.config", guild_default_viewdef}]).
 
--define(viewdef_section, "view").
--define(viewdef_attr, "view").
 -define(default_viewdef_template, guild_default_viewdef).
 -define(default_fields_lookup, "default-fields").
 -define(default_series_lookup, "default-series").
@@ -50,11 +48,11 @@ viewdef_section(Model, Project) ->
       [fun() -> model_viewdef_section(Model, Project) end,
        fun() -> project_viewdef_section(Project) end]).
 
-model_viewdef_section({Name, _}, Project) ->
-    guild_project:section(Project, [?viewdef_section, Name]).
+model_viewdef_section({["model", Name], _}, Project) ->
+    guild_project:section(Project, ["view", Name]).
 
 project_viewdef_section(Project) ->
-    guild_project:section(Project, [?viewdef_section]).
+    guild_project:section(Project, ["view"]).
 
 %% ===================================================================
 %% Viewdef path
@@ -72,10 +70,10 @@ viewdef_attr(Model, Project) ->
        fun() -> project_viewdef_attr(Project) end]).
 
 model_viewdef_attr(Model) ->
-    guild_project:section_attr(Model, ?viewdef_attr).
+    guild_project:section_attr(Model, "view").
 
 project_viewdef_attr(Project) ->
-    guild_project:attr(Project, ["project"], ?viewdef_attr).
+    guild_project:attr(Project, ["project"], "view").
 
 %% ===================================================================
 %% Generate viewdef

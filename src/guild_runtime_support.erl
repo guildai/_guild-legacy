@@ -16,6 +16,10 @@
 
 -export([op_tasks/1, op_stream_handlers/1]).
 
+%% ===================================================================
+%% Op tasks
+%% ===================================================================
+
 op_tasks(Specs) ->
     [op_task(Spec) || Spec <- Specs].
 
@@ -29,6 +33,10 @@ op_task({log_flags, Flags}) ->
     {guild_log_flags_task, start_link, [Flags]};
 op_task(log_system_attrs) ->
     {guild_log_system_attrs_task, start_link, []}.
+
+%% ===================================================================
+%% Op stream handlers
+%% ===================================================================
 
 op_stream_handlers(Specs) ->
     [op_stream_handler(Spec) || Spec <- Specs].
