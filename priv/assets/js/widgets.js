@@ -37,11 +37,27 @@ var run_support = new function() {
     };
 
     var runStatusUIRules = [
-        [["running"],    {label: "Running",    color: "blue-600",  icon: "circle-o-notch", spin: true}],
-        [["stopped", 0], {label: "Completed",  color: "green-700", icon: "check-circle-o"}],
-        [["stopped"],    {label: "Error",      color: "red-800",   icon: "exclamation-triangle"}],
-        [["crashed"],    {label: "Terminated", color: "red-800",   icon: "times-circle"}],
-        [[],             {label: "--",         color: "grey-600",  icon: "question-circle-o"}]
+        [["running"],
+         {label: "Running",
+          color: "blue-600",
+          icon:  "circle-o-notch",
+          spin: true}],
+        [["stopped", 0],
+         {label: "Completed",
+          color: "green-700",
+          icon:  "check-circle-o"}],
+        [["stopped"],
+         {label: "Error",
+          color: "red-800",
+          icon:  "exclamation-triangle"}],
+        [["crashed"],
+         {label: "Terminated",
+          color: "red-800",
+          icon:  "times-circle"}],
+        [[],
+         {label: "--",
+          color: "grey-600",
+          icon:  "question-circle-o"}]
     ];
 
     var runStatusUIAttrs = function(run) {
