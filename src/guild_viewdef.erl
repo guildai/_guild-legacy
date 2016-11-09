@@ -247,5 +247,5 @@ field_class(_Field, Fields) ->
         1 -> "col-md-12";
         2 -> "col-md-6";
         3 -> "col-md-4";
-        _ -> "col-md-3 col-sm-6"
+        _ -> "col-lg-3 col-md-6 col-sm-6"
     end.
