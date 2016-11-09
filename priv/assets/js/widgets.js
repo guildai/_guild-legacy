@@ -637,6 +637,9 @@ guild.widget.register("compare-table", function(widget, state) {
                 },
                 sort: function(run) {
                     return run.started;
+                },
+                filter: function(run) {
+                    return run_support.runLabel(run);
                 }
             }
         };
