@@ -25,19 +25,15 @@ init(Args) ->
     ?logger:init(Args).
 
 handle_event({error, _, {_, _, Data}}=Event, State) ->
-    case is_operation_exit(Data) of
+    case is_exec_exit(Data) of
         true -> {ok, State};
         false -> ?logger:handle_event(Event, State)
     end;
 handle_event(Event, State) ->
     ?logger:handle_event(Event, State).
 
-is_operation_exit([Name, {'EXIT', _, _}|_]) when
-      Name == guild_train_op;
-      Name == guild_eval_op;
-      Name == guild_prepare_op
-      -> true;
-is_operation_exit(_) -> false.
+is_exec_exit([_, {'EXIT', _, {exit_status, _}}|_]) -> true;
+is_exec_exit(_) -> false.
 
 handle_info(Msg, State) ->
     ?logger:handle_info(Msg, State).
