@@ -14,6 +14,7 @@
     margin-top: 6px;
     transform:scale(0.95,1);
     width: 103%;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.25);
 }
 
 .panel .label-value-small {
@@ -25,6 +26,8 @@
     line-height: 18px;
     white-space: nowrap;
     margin: 6px 0;
+    float: right;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.25);
 }
 
 .panel-heading {
