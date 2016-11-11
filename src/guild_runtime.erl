@@ -88,6 +88,7 @@ runtime_mod_for_attr(error, {[Type, Name|_], _}) ->
     {error, {no_runtime, Type, Name}}.
 
 runtime_mod_for_name("tensorflow")  -> {ok, guild_tensorflow_runtime};
+runtime_mod_for_name("tflearn")     -> {ok, guild_tflearn_runtime};
 runtime_mod_for_name(Name)          -> {error, {unknown_runtime, Name}}.
 
 maybe_runtime({ok, Mod}, State) ->
