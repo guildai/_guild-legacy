@@ -163,7 +163,7 @@ log_viewdef_error({Line, erl_parse, Msg}, File) ->
 generated_viewdef(Model, Project) ->
     case guild_viewdef:viewdef_section(Model, Project) of
         {ok, View} ->
-            guild_viewdef:generate_viewdef(View, Project);
+            guild_viewdef:generate_viewdef(View, Model, Project);
         error ->
             error
     end.

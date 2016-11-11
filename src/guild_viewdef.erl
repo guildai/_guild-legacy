@@ -3,7 +3,7 @@
 -behavior(erlydtl_library).
 
 -export([init/1, viewdef_section/2, viewdef_path/2,
-         generate_viewdef/2]).
+         generate_viewdef/3]).
 
 -export([version/0, inventory/1]).
 
@@ -13,8 +13,6 @@
         [{"default.config", guild_default_viewdef}]).
 
 -define(default_viewdef_template, guild_default_viewdef).
--define(default_fields_lookup, "default-fields").
--define(default_series_lookup, "default-series").
 
 %% ===================================================================
 %% Init
@@ -79,10 +77,10 @@ project_viewdef_attr(Project) ->
 %% Generate viewdef
 %% ===================================================================
 
-generate_viewdef(Section, Project) ->
-    Module = viewdef_template(Section),
+generate_viewdef(ViewSection, Model, Project) ->
+    Module = viewdef_template(ViewSection),
     maybe_recompile(Module),
-    Vars = viewdef_template_vars(Section, Project),
+    Vars = viewdef_template_vars(ViewSection, Model, Project),
     case Module:render(Vars) of
         {ok, Bin} -> rendered_template_to_viewdef(Bin);
         {error, Err} -> error({render, Module, Vars, Err})
@@ -106,10 +104,10 @@ rendered_template_to_viewdef(Bin) ->
     Str = binary_to_list(iolist_to_binary(Bin)),
     guild_util:consult_string(Str).
 
-viewdef_template_vars(Section, Project) ->
-    Fields = viewdef_fields(Section, Project),
-    {SeriesA, SeriesB} = viewdef_series(Section, Project),
-    CompareFields = viewdef_compare_fields(Section, Project, Fields),
+viewdef_template_vars(ViewSection, Model, Project) ->
+    Fields = viewdef_fields(ViewSection, Model, Project),
+    {SeriesA, SeriesB} = viewdef_series(ViewSection, Model, Project),
+    CompareFields = viewdef_compare_fields(ViewSection, Model, Project, Fields),
     [{fields, Fields},
      {series_a, SeriesA},
      {series_b, SeriesB},
@@ -119,17 +117,26 @@ viewdef_template_vars(Section, Project) ->
 %% Viewdef fields
 %% ===================================================================
 
-viewdef_fields(Section, Project) ->
-    Lookup = fields_lookup(Section),
-    viewdef_fields(section_attr(Section, "fields"), Project, Lookup).
+viewdef_fields(ViewSection, Model, Project) ->
+    Lookup = fields_lookup(Model),
+    viewdef_fields_(section_attr(ViewSection, "fields"), Project, Lookup).
 
-fields_lookup(_Section) ->
-    read_lookup(lookup_path(?default_fields_lookup)).
+fields_lookup(Model) ->
+    merge_lookups(
+      [default_fields_lookup(),
+       runtime_fields_lookup(Model)]).
 
-viewdef_fields({ok, Raw}, Project, Lookup) ->
+default_fields_lookup() ->
+    read_lookup(lookup_path("default-fields")).
+
+runtime_fields_lookup(Model) ->
+    Name = model_runtime(Model) ++ "-fields",
+    read_lookup(lookup_path(Name)).
+
+viewdef_fields_({ok, Raw}, Project, Lookup) ->
     Names = parse_names(Raw),
     [resolve_field(Name, Project, Lookup) || Name <- Names];
-viewdef_fields(error, _Project, _Lookup) ->
+viewdef_fields_(error, _Project, _Lookup) ->
     [].
 
 resolve_field(Name, Project, Lookup) ->
@@ -148,26 +155,35 @@ apply_project_field(Name, Project, BaseAttrs) ->
 %% Viewdef series
 %% ===================================================================
 
-viewdef_series(Section, Project) ->
-    Lookup = series_lookup(Section),
-    case section_attr(Section, "series") of
+viewdef_series(ViewSection, Model, Project) ->
+    Lookup = series_lookup(Model),
+    case section_attr(ViewSection, "series") of
         {ok, _}=A ->
-            {viewdef_series(A, Project, Lookup),
+            {viewdef_series_(A, Project, Lookup),
              []};
         error ->
-            A = section_attr(Section, "series-a"),
-            B = section_attr(Section, "series-b"),
-            {viewdef_series(A, Project, Lookup),
-             viewdef_series(B, Project, Lookup)}
+            A = section_attr(ViewSection, "series-a"),
+            B = section_attr(ViewSection, "series-b"),
+            {viewdef_series_(A, Project, Lookup),
+             viewdef_series_(B, Project, Lookup)}
         end.
 
-series_lookup(_Section) ->
-    read_lookup(lookup_path(?default_series_lookup)).
+series_lookup(Model) ->
+    merge_lookups(
+      [default_series_lookup(),
+       runtime_series_lookup(Model)]).
 
-viewdef_series({ok, Raw}, Project, Lookup) ->
+default_series_lookup() ->
+    read_lookup(lookup_path("default-series")).
+
+runtime_series_lookup(Model) ->
+    Name = model_runtime(Model) ++ "-series",
+    read_lookup(lookup_path(Name)).
+
+viewdef_series_({ok, Raw}, Project, Lookup) ->
     Names = parse_names(Raw),
     [resolve_series(Name, Project, Lookup) || Name <- Names];
-viewdef_series(error, _Project, _Lookup) ->
+viewdef_series_(error, _Project, _Lookup) ->
     [].
 
 resolve_series(Name, Project, Lookup) ->
@@ -186,21 +202,25 @@ apply_project_series(Name, Project, BaseAttrs) ->
 %% Viewdef compare fields
 %% ===================================================================
 
-viewdef_compare_fields(Section, Project, DefaultFields) ->
-    Lookup = fields_lookup(Section),
-    viewdef_compare_fields(
-      section_attr(Section, "compare-fields"),
+viewdef_compare_fields(ViewSection, Model, Project, DefaultFields) ->
+    Lookup = fields_lookup(Model),
+    viewdef_compare_fields_(
+      section_attr(ViewSection, "compare"),
       Project, Lookup, DefaultFields).
 
-viewdef_compare_fields({ok, Raw}, Project, Lookup, _Defaults) ->
+viewdef_compare_fields_({ok, Raw}, Project, Lookup, _Defaults) ->
     Names = parse_names(Raw),
     [resolve_field(Name, Project, Lookup) || Name <- Names];
-viewdef_compare_fields(error, _Project, _Lookup, Defaults) ->
+viewdef_compare_fields_(error, _Project, _Lookup, Defaults) ->
     Defaults.
 
 %% ===================================================================
 %% General support
 %% ===================================================================
+
+model_runtime(Model) ->
+    {ok, Runtime} = section_attr(Model, "runtime"),
+    Runtime.
 
 section_attr(Section, Name) ->
     guild_project:section_attr(Section, Name).
@@ -230,6 +250,21 @@ lookup_defaults(FieldName, Lookup) ->
      || {AttrName, Val} <- proplists:get_value(FieldName, Lookup, [])].
 
 merge_attrs(P1, P2) -> P1 ++ P2.
+
+merge_lookups([Working, Next|Rest]) ->
+    merge_lookups([merge_lookups(Working, Next)|Rest]);
+merge_lookups([Merged]) ->
+    Merged.
+
+merge_lookups(Working, New) ->
+    merge_lookups_acc(New, Working, Working).
+
+merge_lookups_acc([{Name, NewAttrs}|Rest], Working, Acc) ->
+    CurAttrs = proplists:get_value(Name, Working, []),
+    MergedAttrs = merge_attrs(NewAttrs, CurAttrs),
+    merge_lookups_acc(Rest, Working, [{Name, MergedAttrs}|Acc]);
+merge_lookups_acc([], _Working, Acc) ->
+    Acc.
 
 %% ===================================================================
 %% Template support
