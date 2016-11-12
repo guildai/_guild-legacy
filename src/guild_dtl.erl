@@ -26,6 +26,7 @@
          {"placeholder-widget.html",   guild_placeholder_widget},
          {"project-error.html",        guild_project_error_page},
          {"project-view.html",         guild_project_view_page},
+         {"run-model-widget.html",     guild_run_model_widget},
          {"status-widget.html",        guild_status_widget},
          {"timeseries-widget.html",    guild_timeseries_widget},
          {"value-panel-widget.html",   guild_value_panel_widget}
