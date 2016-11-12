@@ -43,7 +43,7 @@ main(Opts, Args) ->
 
 init_op(Opts, Args) ->
     Project = guild_cmd_support:project_from_opts(Opts),
-    Model = guild_cmd_support:model_section_for_args(Args, Project),
+    Model = guild_cmd_support:model_or_resource_section_for_args(Args, Project),
     Runtime = guild_cmd_support:runtime_for_section(Model, Project),
     guild_runtime:init_prepare_op(Runtime, Model, Project).
 

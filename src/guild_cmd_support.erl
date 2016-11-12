@@ -19,9 +19,10 @@
          project_dir_desc/1, project_dir_opt/1, latest_rundir/1,
          rundir_from_args/3, validate_rundir/1, run_for_args/2,
          model_section_for_name/2, model_section_for_args/2,
-         run_db_for_args/2, port_opt/2, exec_operation/2,
-         operation_result/1, runtime_error_msg/1,
-         runtime_for_section/2, preview_op_cmd/1]).
+         model_or_resource_section_for_args/2, run_db_for_args/2,
+         port_opt/2, exec_operation/2, operation_result/1,
+         runtime_error_msg/1, runtime_for_section/2,
+         preview_op_cmd/1]).
 
 -define(github_repo_url, "https://github.com/guildai/guild").
 
@@ -286,6 +287,33 @@ model_section_for_args([], Project) ->
     model_section_for_name(undefined, Project);
 model_section_for_args([Name], Project) ->
     model_section_for_name(Name, Project).
+
+%% ===================================================================
+%% Model or resource section for args
+%% ===================================================================
+
+model_or_resource_section_for_args([], Project) ->
+    model_section_for_name(undefined, Project);
+model_or_resource_section_for_args([Name], Project) ->
+    {ok, Result} =
+        guild_util:find_apply(
+          [fun model_for_name/2,
+           fun resource_for_name/2,
+           fun(_, _) -> bad_model_or_resource_error(Name) end],
+          [Project, Name]),
+    Result.
+
+model_for_name(Project, Name) ->
+    guild_model:find_model_for_name(Project, Name).
+
+resource_for_name(Project, Name) ->
+    guild_project:section(Project, ["resource", Name]).
+
+bad_model_or_resource_error(Name) ->
+    guild_cli:cli_error(
+      io_lib:format(
+        "model/resource '~s' is not defined for this project",
+        [Name])).
 
 %% ===================================================================
 %% Run DB for args
