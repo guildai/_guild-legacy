@@ -606,7 +606,7 @@ guild.widget.register("compare-table", function(widget, state) {
             var coldefEl = $(this);
             coldefs.push({
                 title: coldefEl.attr("data-title"),
-                source: coldefEl.attr("data-source"),
+                sources: coldefEl.attr("data-sources").split(","),
                 attribute: coldefEl.attr("data-attribute"),
                 reduce: coldefEl.attr("data-reduce"),
                 format: coldefEl.attr("data-format")
@@ -685,7 +685,7 @@ guild.widget.register("compare-table", function(widget, state) {
 
     var dataSource = function(coldefs) {
         var sources = coldefs.map(function(coldef) {
-            return coldef.source;
+            return coldef.sources.join();
         });
         return "/data/compare?sources=" + sources.join();
     };
@@ -748,10 +748,20 @@ guild.widget.register("compare-table", function(widget, state) {
     };
 
     var coldefValue = function(coldef, data) {
-        var raw = data[coldef.source];
+        var raw = firstValForSources(coldef.sources, data);
         var widgetProxy = coldefWidgetProxy(coldef);
         var val = guild.widget.value(widgetProxy, raw);
         return val != undefined ? val : null;
+    };
+
+    var firstValForSources = function(sources, data) {
+        for (var i in sources) {
+            var val = data[sources[i]];
+            if (val != undefined && Object.keys(val).length > 0) {
+                return val;
+            }
+        }
+        return null;
     };
 
     var coldefWidgetProxy = function(coldef) {

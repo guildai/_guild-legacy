@@ -107,7 +107,7 @@ rendered_template_to_viewdef(Bin) ->
 viewdef_template_vars(ViewSection, Model, Project) ->
     Fields = viewdef_fields(ViewSection, Model, Project),
     {SeriesA, SeriesB} = viewdef_series(ViewSection, Model, Project),
-    CompareFields = viewdef_compare_fields(ViewSection, Model, Project, Fields),
+    CompareFields = viewdef_compare_fields(ViewSection, Project),
     [{fields, Fields},
      {series_a, SeriesA},
      {series_b, SeriesB},
@@ -202,17 +202,60 @@ apply_project_series(Name, Project, BaseAttrs) ->
 %% Viewdef compare fields
 %% ===================================================================
 
-viewdef_compare_fields(ViewSection, Model, Project, DefaultFields) ->
-    Lookup = fields_lookup(Model),
-    viewdef_compare_fields_(
-      section_attr(ViewSection, "compare"),
-      Project, Lookup, DefaultFields).
+viewdef_compare_fields(ViewSection, Project) ->
+    Runtimes = project_runtimes(Project),
+    Lookups = fields_lookups_for_runtimes(Runtimes),
+    FieldNames = compare_field_names(ViewSection),
+    [viewdef_compare_field(Name, Project, Lookups) || Name <- FieldNames].
 
-viewdef_compare_fields_({ok, Raw}, Project, Lookup, _Defaults) ->
-    Names = parse_names(Raw),
-    [resolve_field(Name, Project, Lookup) || Name <- Names];
-viewdef_compare_fields_(error, _Project, _Lookup, Defaults) ->
-    Defaults.
+project_runtimes(Project) ->
+    project_runtimes_acc(
+      guild_project:sections(Project, ["model"]),
+      sets:new()).
+
+project_runtimes_acc([Model|Rest], S) ->
+    project_runtimes_acc(Rest, sets:add_element(model_runtime(Model), S));
+project_runtimes_acc([], S) -> sets:to_list(S).
+
+compare_field_names(ViewSection) ->
+    Names =
+        guild_util:find_apply(
+          [fun() -> section_attr(ViewSection, "compare") end,
+           fun() -> section_attr(ViewSection, "fields") end],
+          [], ""),
+    parse_names(Names).
+
+fields_lookups_for_runtimes(Runtimes) ->
+    [fields_lookup_for_runtime(Runtime) || Runtime <- Runtimes].
+
+fields_lookup_for_runtime(Runtime) ->
+    merge_lookups(
+      [default_fields_lookup(),
+       read_lookup(lookup_path(Runtime ++ "-fields"))]).
+
+viewdef_compare_field(Name, Project, [Lookup|ExtraLookups]) ->
+    Field = resolve_field(Name, Project, Lookup),
+    ExtraSources = field_extra_sources(Name, ExtraLookups),
+    apply_extra_sources(Field, ExtraSources).
+
+field_extra_sources(Name, Lookups) ->
+    field_extra_sources_acc(Name, Lookups, sets:new()).
+
+field_extra_sources_acc(Name, [Lookup|Rest], S) ->
+    Field = lookup_defaults(Name, Lookup),
+    field_extra_sources_acc(Name, Rest, maybe_apply_field_source(Field, S));
+field_extra_sources_acc(_Name, [], S) ->
+    S.
+
+maybe_apply_field_source(Field, S) ->
+    case proplists:get_value("source", Field, "") of
+        "" -> S;
+        Source -> sets:add_element(Source, S)
+    end.
+
+apply_extra_sources(Field, SourcesSet) ->
+    Sources = sets:to_list(maybe_apply_field_source(Field, SourcesSet)),
+    [{"sources", Sources}|Field].
 
 %% ===================================================================
 %% General support
@@ -234,6 +277,7 @@ read_lookup(Path) ->
         {error, enoent} -> []
     end.
 
+parse_names("") -> [];
 parse_names(Raw) ->
     Split = re:split(Raw, "\\s+", [{return, list}]),
     [strip_whitespace(S) || S <- Split].
