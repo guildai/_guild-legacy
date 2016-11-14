@@ -173,14 +173,18 @@ guild.widget = new function() {
     };
 
     var runSource = function(widget, run) {
-        var base = "/data/" + widget.attr("data-widget-source");
-        return guild.util.runSource(base, run);
+        var sourceAttr = widget.attr("data-widget-source");
+        return sourceAttr
+            ? guild.util.runSource("/data/" + sourceAttr, run)
+            : undefined;
     };
 
     this.register = register;
     this.initAll = initAll;
     this.registerCallback = registerCallback;
     this.formattedValue = formattedValue;
+    this.tryReduce = tryReduce;
+    this.tryFormat = tryFormat;
     this.value = value;
     this.runSource = runSource;
 };

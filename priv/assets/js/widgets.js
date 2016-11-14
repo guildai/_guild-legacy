@@ -196,7 +196,28 @@ guild.widget.register("run-select", function(widget, state) {
 guild.widget.register("value-panel", function(widget, state) {
 
     var init = function() {
-        guild.event.register(RUN_UPDATE, runUpdated, state);
+        initTooltip();
+        initValueOrSource();
+    };
+
+    var initTooltip = function() {
+        $(".label-caption", widget).tooltip();
+    };
+
+    var initValueOrSource = function() {
+        var valueAttr = widget.attr("data-widget-value");
+        if (valueAttr) {
+            setPanelValue(guild.widget.tryFormat(widget, valueAttr));
+        } else {
+            var sourceAttr = widget.attr("data-widget-source");
+            if (sourceAttr) {
+                guild.event.register(RUN_UPDATE, runUpdated, state);
+            }
+        }
+    };
+
+    var setPanelValue = function(value) {
+        $("span", widget).text(value);
     };
 
     var runUpdated = function(run) {
@@ -206,9 +227,9 @@ guild.widget.register("value-panel", function(widget, state) {
     var update = function(data) {
         var value = guild.widget.formattedValue(widget, data);
         if (value != undefined) {
-            widget.text(value);
+            setPanelValue(value);
         } else {
-            widget.text("--");
+            setPanelValue("--");
         }
     };
 

@@ -1,4 +1,11 @@
-<div class="panel mdc-bg-{{color}}">
+<div class="panel mdc-bg-{{color|default:'grey'}}"
+     data-widget="value-panel"
+     {# value existing has special meaning - it overrides source even if empty #}
+     {% if value|default_if_none:false %}data-widget-value="{{value}}"{% endif %}
+     data-widget-source="{{source}}"
+     data-widget-attribute="{{attribute}}"
+     data-widget-format="{{format}}"
+     data-widget-reduce="{{reduce}}" >
   <div class="panel-heading">
     <div class="row">
       {% if icon %}
@@ -8,17 +15,9 @@
       {% endif %}
       <div class="{% if icon %}col-xs-9{% else %}col-xs-12{% endif %} text-right">
         <div class="label-value label-value-{{value_font|default:'default'}}">
-          <span
-              data-widget="value-panel"
-              {# value existing has special meaning - it overrides source even if empty #}
-              {% if value|default_if_none:false %}data-widget-value="{{value}}"{% endif %}
-              data-widget-source="{{source}}"
-              data-widget-attribute="{{attribute}}"
-              data-widget-format="{{format}}"
-              data-widget-reduce="{{reduce}}"
-          >--</span>
+          <span>--</span>
         </div>
-        <div class="label-caption">{{label}}</div>
+        <div class="label-caption" data-placement="bottom" title="{{tooltip}}">{{label}}</div>
       </div>
     </div>
   </div>
