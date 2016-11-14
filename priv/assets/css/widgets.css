@@ -7,6 +7,10 @@
     margin-top: 6px;
 }
 
+.panel .label-icon-col {
+    padding: 0 0 0 4px;
+}
+
 .panel .label-value {
     font-size: 36px;
     white-space: nowrap;
