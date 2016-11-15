@@ -16,7 +16,7 @@
 
 -export([app/4]).
 
--export([handle_model_init/2, handle_model_run/4]).
+-export([handle_model_init/2, handle_model_run/4, handle_model_info/2]).
 
 %% ===================================================================
 %% App
@@ -28,6 +28,9 @@ app("POST", {"/model/run", _, Params}, Env, View) ->
 app("POST", {"/model/init", _, Params}, _Env, View) ->
     {Project, Run} = resolve_project_run(Params, View),
     handle_model_init(Project, Run);
+app("GET", {"/model/info", _, Params}, _Env, View) ->
+    {Project, Run} = resolve_project_run(Params, View),
+    handle_model_info(Project, Run);
 app(_, _, _, _) ->
     guild_http:bad_request().
 
@@ -36,29 +39,21 @@ resolve_project_run(Params, View) ->
     guild_project_view_http:resolve_project_run(RunId, View).
 
 %% ===================================================================
-%% Model init
+%% Handlers
 %% ===================================================================
 
 handle_model_init(Project, Run) ->
-    load_model_response(
-      guild_tensorflow_port:load_project_model(Project, Run)).
-
-load_model_response(ok) ->
-    guild_http:ok_no_content();
-load_model_response({error, <<"not found">>}) ->
-    guild_http:not_found().
-
-%% ===================================================================
-%% Model run
-%% ===================================================================
+    http_result(guild_tensorflow_port:load_project_model(Project, Run)).
 
 handle_model_run(Project, Run, Body, _Env) ->
-    run_model_response(
-      guild_tensorflow_port:run_project_model(Project, Run, Body)).
+    http_result(guild_tensorflow_port:run_project_model(Project, Run, Body)).
 
-run_model_response({ok, JSON}) ->
+handle_model_info(Project, Run) ->
+    http_result(guild_tensorflow_port:project_model_info(Project, Run)).
+
+http_result({ok, JSON}) ->
     guild_http:ok_json(JSON);
-run_model_response({error, <<"not found">>}) ->
+http_result({error, <<"not found">>}) ->
     guild_http:not_found();
-run_model_response({error, Err}) ->
+http_result({error, Err}) ->
     guild_http:bad_request([Err, "\n"]).

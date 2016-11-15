@@ -32,5 +32,7 @@ maybe_start_server({error, Err}, _Project, _Run, _Port) ->
 app("POST", "/run", Project, Run, Env) ->
     Handler = {guild_project_view_model_http, handle_model_run, [Project, Run]},
     {recv_body, Handler, Env};
+app("GET", "/info", Project, Run, _Env) ->
+    guild_project_view_model_http:handle_model_info(Project, Run);
 app(_, _, _, _, _) ->
     guild_http:bad_request().

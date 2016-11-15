@@ -17,7 +17,8 @@
 -behavior(e2_service).
 
 -export([start_link/0, read_image/2, load_model/1,
-         load_project_model/2, run_model/2, run_project_model/3]).
+         load_project_model/2, run_model/2, run_project_model/3,
+         project_model_info/2]).
 
 -export([init/1, handle_msg/3]).
 
@@ -72,9 +73,11 @@ run_project_model(Project, Run, Request) ->
     run_model(ModelPath, Request).
 
 project_model_path(_Project, Run) ->
-    %% As this module is a holding place for future TF runtime
-    %% support, we're including Guild project knowledge here.
     filename:join(guild_run:dir(Run), "model/export").
+
+project_model_info(Project, Run) ->
+    ModelPath = project_model_path(Project, Run),
+    e2_service:call(?MODULE, {call, {model_info, ModelPath}}).
 
 %% ===================================================================
 %% Message dispatch
@@ -121,7 +124,9 @@ encode_request({read_image, Dir, Index}) ->
 encode_request({load_model, ModelPath}) ->
     ["load-model", $\t, ModelPath];
 encode_request({run_model, ModelPath, Request}) ->
-    ["run-model", $\t, ModelPath, $\t, encode_json_arg(Request)].
+    ["run-model", $\t, ModelPath, $\t, encode_json_arg(Request)];
+encode_request({model_info, ModelPath}) ->
+    ["model-info", $\t, ModelPath].
 
 encode_json_arg(JSON) ->
     re:replace(JSON, "[\n\r\t]", " ", [global]).
@@ -135,7 +140,9 @@ decode_call_result(ok, {read_image, _, _}, Parts) ->
 decode_call_result(ok, {load_model, _}, []) ->
     ok;
 decode_call_result(ok, {run_model, _, _}, Parts) ->
-    {ok, decode_model_run_response(Parts)};
+    {ok, Parts};
+decode_call_result(ok, {model_info, _}, Parts) ->
+    {ok, Parts};
 decode_call_result(error, _, Error) ->
     {error, decode_error(Error)}.
 
@@ -153,9 +160,6 @@ decode_image_dim(Enc) ->
     {binary_to_integer(H), binary_to_integer(W), binary_to_integer(D)}.
 
 decode_image_bytes(Enc) -> base64:decode(Enc).
-
-decode_model_run_response(Parts) ->
-    Parts.
 
 decode_error(Msg) -> iolist_to_binary(Msg).
 

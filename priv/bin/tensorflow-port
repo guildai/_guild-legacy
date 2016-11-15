@@ -112,6 +112,12 @@ def send_response(req, status, parts):
     STDOUT.write("\n")
     STDOUT.flush()
 
+def send_ok_response(req, parts=[]):
+    send_response(req, "ok", parts)
+
+def send_error_response(req, parts):
+    send_response(req, "error", parts)
+
 def not_found_response():
     return ["not_found"]
 
@@ -126,6 +132,8 @@ def handle_request(req):
         handle_load_model(req)
     elif req.name == "run-model":
         handle_run_model(req)
+    elif req.name == "model-info":
+        handle_model_info(req)
     else:
         raise ProtocolError("unknown " + repr(req.name))
 
@@ -281,7 +289,39 @@ class Model(object):
                 items[item_index][key] = value.tolist()
         return items
 
+    def info(self):
+        return {
+            "path": self._serving_path,
+            "inputs": self._inputs_info(),
+            "outputs": self._outputs_info()
+        }
+
+    def _inputs_info(self):
+        return {
+            key: self._tensor_info(tensor)
+            for key, tensor in self._input_tensor_map.items()
+        }
+
+    def _outputs_info(self):
+        return {
+            key: self._tensor_info(tensor)
+            for key, tensor in zip(self._output_keys, self._output_tensors)
+        }
+
+    def _tensor_info(_self, tensor):
+        return {
+            "tensor": tensor.name,
+            "dtype": tensor.dtype.name,
+            "shape": str(tensor.get_shape())
+        }
+
 active_model = Model()
+
+def ensure_active_model_serving_path(path, req):
+    try:
+        active_model.ensure_serving_path(path)
+    except ModelError, e:
+        raise ErrorResponse(req, str(e))
 
 # ===================================================================
 # Load model
@@ -289,12 +329,8 @@ active_model = Model()
 
 def handle_load_model(req):
     model_path = validate_load_model_args(req)
-    try:
-        active_model.ensure_serving_path(model_path)
-    except ModelError, e:
-        send_response(req, "error", [str(e)])
-    else:
-        send_response(req, "ok", [])
+    ensure_active_model_serving_path(model_path, req)
+    send_ok_response(req)
 
 def validate_load_model_args(req):
     if len(req.args) != 1:
@@ -310,15 +346,13 @@ def validate_load_model_args(req):
 
 def handle_run_model(req):
     model_path, instances = validate_run_model_args(req)
+    ensure_active_model_serving_path(model_path)
     try:
-        active_model.ensure_serving_path(model_path)
         outputs = active_model.run(instances)
-    except ModelError, e:
-        send_response(req, "error", [str(e)])
     except ValueError, e:
-        send_response(req, "error", [str(e)])
+        send_error_response(req, [str(e)])
     else:
-        send_response(req, "ok", [json.dumps(outputs)])
+        send_ok_response(req, [json.dumps(outputs)])
 
 def validate_run_model_args(req):
     if len(req.args) != 2:
@@ -335,6 +369,24 @@ def validate_run_model_args(req):
     return model_path, instances
 
 # ===================================================================
+# Model info
+# ===================================================================
+
+def handle_model_info(req):
+    model_path = validate_model_info_args(req)
+    ensure_active_model_serving_path(model_path, req)
+    info = active_model.info()
+    send_ok_response(req, [json.dumps(info)])
+
+def validate_model_info_args(req):
+    if len(req.args) != 1:
+        raise ProtocolError("load-model requires 1 argument")
+    model_path = req.args[0]
+    if not os.path.exists(model_path):
+        raise ErrorResponse(req, "not found")
+    return model_path
+
+# ===================================================================
 # Main loop
 # ===================================================================
 
@@ -346,4 +398,4 @@ if __name__ == "__main__":
         try:
             handle_request(req)
         except ErrorResponse, e:
-            send_response(e.req, "error", [e.msg])
+            send_error_response(e.req, [e.msg])
