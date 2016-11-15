@@ -856,35 +856,43 @@ guild.widget.register("run-model", function(widget, state) {
     var runUpdated = function(run) {
         guild.event.unregister(RUN_UPDATE, runUpdated, state);
         var url = guild.util.runSource("/model/info", run);
-        guild.data.fetch(url, function(info) {
-            initTensorTable("input-tensors", info["inputs"]);
-            initTensorTable("output-tensors", info["outputs"]);
-            maybeEnableInputs(info);
+        $.ajax({
+            url: url,
+            success: handleModelInfo,
+            error: handleModelInfoError,
+            dataType: "json"
         });
     };
 
+    var handleModelInfo = function(info) {
+        initTensorTable("input-tensors", info["inputs"]);
+        initTensorTable("output-tensors", info["outputs"]);
+        maybeEnableInputs(info);
+    };
+
     var initTensorTable = function(name, inputs) {
-        var table = $("table[data-role='" + name + "']", widget);
         var names = Object.keys(inputs).sort();
-        table.empty();
-        if (names.length > 0) {
-            table.append(tensorTableHeading());
-            for (var i in names) {
-                var name = names[i];
-                var input = inputs[name];
-                table.append(
-                    tensorTableRow(
-                        name,
-                        input["shape"],
-                        input["dtype"],
-                        input["tensor"]));
-            }
-        } else {
-            var caption = $("<caption>" + missingTensorsMsg(name)
-                            + "</caption>");
-            table.append(caption);
-            tensorTablePanelBody(table).addClass("error");
+        if (names.length == 0) {
+            setTensorTableError(name, missingTensorsMsg(name));
+            return;
         }
+        var table = tensorTable(name);
+        table.empty();
+        table.append(tensorTableHeading());
+        for (var i in names) {
+            var name = names[i];
+            var input = inputs[name];
+            table.append(
+                tensorTableRow(
+                    name,
+                    input["shape"],
+                    input["dtype"],
+                    input["tensor"]));
+        }
+    };
+
+    var tensorTable = function(name) {
+        return $("table[data-role='" + name + "']", widget);
     };
 
     var tensorTableHeading = function() {
@@ -901,9 +909,11 @@ guild.widget.register("run-model", function(widget, state) {
 
     var missingTensorsMsg = function(name) {
         if (name == "input-tensors") {
-            return "There are no inputs defined for this model - it cannot be run";
+            return "There are no inputs defined for this model "
+                   + "- it cannot be run";
         } else if (name == "output-tensors") {
-            return "There are no outputs defined for thie model - it cannot be run";
+            return "There are no outputs defined for thie model "
+                   + "- it cannot be run";
         } else {
             throw name;
         }
@@ -925,6 +935,22 @@ guild.widget.register("run-model", function(widget, state) {
     var enableInputs = function() {
         submitButton().prop("disabled", false);
         runModelInput().prop("disabled", false);
+    };
+
+    var handleModelInfoError = function(error) {
+        if (error.status == 404) {
+            var msg = "This run does not contain an exported model";
+            setTensorTableError("input-tensors", msg);
+            setTensorTableError("output-tensors", msg);
+        }
+    };
+
+    var setTensorTableError = function(name, msg) {
+        var table = tensorTable(name);
+        var caption = $("<caption>" + msg + "</caption>");
+        table.empty();
+        table.append(caption);
+        tensorTablePanelBody(table).addClass("error");
     };
 
     var runModel = function() {
