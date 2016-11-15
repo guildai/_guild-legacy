@@ -98,7 +98,7 @@ class Request(object):
         self.args = parts[2:]
 
 def read_request():
-    line = STDIN.readline().strip()
+    line = STDIN.readline()[:-1]
     return Request(line) if line else None
 
 def send_response(req, status, parts):
