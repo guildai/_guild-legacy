@@ -1,20 +1,73 @@
 <div data-widget="run-model">
-  <h2 style="margin-top:0">Input</h2>
 
-  <p>Type or paste input JSON into this field and click <strong>Run
-      model</strong> below.</p>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h2 style="margin:0">Input</h2>
+        </div>
+        <div class="panel-body">
+          <div class="row">
+            <div class="col-md-12">
+              <p>Type or paste input JSON into this field and click <strong>Run
+                model</strong> below.</p>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-4 col-md-push-8">
+              <div class="panel panel-default" >
+                <div class="panel-heading">Input Values</div>
+                <div class="panel-body">
+                  <table data-role="input-tensors"
+                         class="table table-bordered table-hover">
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-8 col-md-pull-4">
+              <textarea
+                  data-role="model-run-input"
+                  class="model-run-input form-control"></textarea>
+              <button class="btn btn-primary" data-role="run-model">Run model</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  <textarea
-     data-role="model-run-input"
-     class="model-run-input form-control"></textarea>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="panel panel-default" >
+        <div class="panel-heading">
+          <h2 style="margin:0">Output</h2>
+        </div>
+        <div class="panel-body">
+          <div class="row">
+            <div class="col-md-12">
+              <p>The result of the model run is displayed below.</p>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-4 col-md-push-8">
+              <div class="panel panel-default" >
+                <div class="panel-heading">Output Values</div>
+                <div class="panel-body">
+                  <table data-role="output-tensors"
+                         class="table table-bordered table-hover">
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-8 col-md-pull-4">
+              <pre class="model-run-output"
+                   data-role="model-run-output"
+                   style="min-height:200px;"></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  <button class="btn btn-primary" data-role="run-model">Run model</button>
-
-  <h2>Output</h2>
-
-  <p>The result of the model run is displayed below.</p>
-
-  <pre class="model-run-output"
-       data-role="model-run-output"
-       style="min-height:200px;"></pre>
 </div>

@@ -840,6 +840,7 @@ guild.widget.register("run-model", function(widget, state) {
 
     var init = function() {
         initSubmitHandler();
+        guild.event.register(RUN_UPDATE, runUpdated, state);
     };
 
     var initSubmitHandler = function() {
@@ -847,6 +848,50 @@ guild.widget.register("run-model", function(widget, state) {
         submit.click(function() {
             runModel();
         });
+    };
+
+    var runUpdated = function(run) {
+        guild.event.unregister(RUN_UPDATE, runUpdated, state);
+        console.log(state.run);
+        var url = guild.util.runSource("/model/info", run);
+        console.log(url);
+        guild.data.fetch(url, function(info) {
+            initTensorTable("input-tensors", info["inputs"]);
+            initTensorTable("output-tensors", info["outputs"]);
+        });
+    };
+
+    var initTensorTable = function(name, inputs) {
+        var table = $("table[data-role='" + name + "']", widget);
+        table.empty();
+        if (inputs) {
+            table.append(tensorTableHeading());
+            var names = Object.keys(inputs).sort();
+            for (var i in names) {
+                var name = names[i];
+                var input = inputs[name];
+                table.append(
+                    tensorTableRow(
+                        name,
+                        input["shape"],
+                        input["dtype"],
+                        input["tensor"]));
+            }
+        } else {
+            ;
+        }
+    };
+
+    var tensorTableHeading = function() {
+        return $("<tr><th>Name</th><th>Shape</th>" +
+                 "<th>Type</th><th>Tensor</th></tr>");
+    };
+
+    var tensorTableRow = function(name, shape, type, tensor) {
+        return $("<tr><td>" + name + "</td>" +
+                 "<td>" + shape + "</td>" +
+                 "<td>" + type + "</td>" +
+                 "<td>" + tensor + "</td></tr>");
     };
 
     var runModel = function() {

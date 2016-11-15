@@ -346,7 +346,7 @@ def validate_load_model_args(req):
 
 def handle_run_model(req):
     model_path, instances = validate_run_model_args(req)
-    ensure_active_model_serving_path(model_path)
+    ensure_active_model_serving_path(model_path, req)
     try:
         outputs = active_model.run(instances)
     except ValueError, e:

@@ -84,11 +84,11 @@ table.output tr.stderr {
  * =================================================================== */
 
 .model-run-input {
-    min-width: 100%;
     min-height: 180px;
     margin-bottom: 10px;
     line-height: 13px;
     font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
+    resize: vertical;
 }
 
 .model-run-output.error {
@@ -97,4 +97,5 @@ table.output tr.stderr {
 
 .model-run-output {
     padding: 0.5em 1.5em;
+    resize: vertical;
 }
