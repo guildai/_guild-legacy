@@ -74,7 +74,6 @@ cmd_info("view")           -> {guild_view_cmd, "start Guild viewer"}.
 %% ===================================================================
 
 main({Cmd, Opts, Args}) ->
-    init_tty_error_logger(),
     apply_global_opts(Opts),
     {M, _Desc} = cmd_info(Cmd),
     handle_main_result(M:main(Opts, Args)).
@@ -82,14 +81,6 @@ main({Cmd, Opts, Args}) ->
 handle_main_result(Result) ->
     guild_proc:wait_for({scope, global}),
     Result.
-
-%% ===================================================================
-%% TTY error logger
-%% ===================================================================
-
-init_tty_error_logger() ->
-    error_logger:tty(false),
-    error_logger:add_report_handler(guild_error_logger_tty).
 
 %% ===================================================================
 %% Global opts
