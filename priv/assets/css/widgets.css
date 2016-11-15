@@ -99,3 +99,7 @@ table.output tr.stderr {
     padding: 0.5em 1.5em;
     resize: vertical;
 }
+
+.panel-body.error {
+    background-color: #FFCDD2;
+}

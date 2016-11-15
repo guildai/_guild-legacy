@@ -255,8 +255,6 @@ class Model(object):
         tensor_map = {}
         for val in graph.get_collection("outputs"):
             tensor_map.update(json.loads(val))
-        if not tensor_map:
-            raise ModelError("no outputs")
         keys = tensor_map.keys()
         tensors = [graph.get_tensor_by_name(tensor_map[key]) for key in keys]
         return tensors, keys

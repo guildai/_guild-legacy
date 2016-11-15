@@ -17,9 +17,11 @@
             <div class="col-md-4 col-md-push-8">
               <div class="panel panel-default" >
                 <div class="panel-heading">Input Values</div>
-                <div class="panel-body">
+                <div class="panel-body" data-role="tensor-table-body">
                   <table data-role="input-tensors"
                          class="table table-bordered table-hover">
+                    <caption>
+                      <i class="fa fa-spin fa-circle-o-notch fa-fw"></i> Loading model</caption>
                   </table>
                 </div>
               </div>
@@ -27,8 +29,12 @@
             <div class="col-md-8 col-md-pull-4">
               <textarea
                   data-role="model-run-input"
-                  class="model-run-input form-control"></textarea>
-              <button class="btn btn-primary" data-role="run-model">Run model</button>
+                  class="model-run-input form-control"
+                  disabled="disabled"></textarea>
+              <button
+                  data-role="run-model"
+                  class="btn btn-primary"
+                  disabled="disabled">Run model</button>
             </div>
           </div>
         </div>
@@ -52,7 +58,7 @@
             <div class="col-md-4 col-md-push-8">
               <div class="panel panel-default" >
                 <div class="panel-heading">Output Values</div>
-                <div class="panel-body">
+                <div class="panel-body" data-role="tensor-table-body">
                   <table data-role="output-tensors"
                          class="table table-bordered table-hover">
                   </table>

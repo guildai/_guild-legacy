@@ -844,29 +844,31 @@ guild.widget.register("run-model", function(widget, state) {
     };
 
     var initSubmitHandler = function() {
-        var submit = $("button[data-role='run-model']", widget);
-        submit.click(function() {
+        submitButton().click(function() {
             runModel();
         });
     };
 
+    var submitButton = function() {
+        return $("button[data-role='run-model']", widget);
+    };
+
     var runUpdated = function(run) {
         guild.event.unregister(RUN_UPDATE, runUpdated, state);
-        console.log(state.run);
         var url = guild.util.runSource("/model/info", run);
-        console.log(url);
         guild.data.fetch(url, function(info) {
             initTensorTable("input-tensors", info["inputs"]);
             initTensorTable("output-tensors", info["outputs"]);
+            maybeEnableInputs(info);
         });
     };
 
     var initTensorTable = function(name, inputs) {
         var table = $("table[data-role='" + name + "']", widget);
+        var names = Object.keys(inputs).sort();
         table.empty();
-        if (inputs) {
+        if (names.length > 0) {
             table.append(tensorTableHeading());
-            var names = Object.keys(inputs).sort();
             for (var i in names) {
                 var name = names[i];
                 var input = inputs[name];
@@ -878,25 +880,56 @@ guild.widget.register("run-model", function(widget, state) {
                         input["tensor"]));
             }
         } else {
-            ;
+            var caption = $("<caption>" + missingTensorsMsg(name)
+                            + "</caption>");
+            table.append(caption);
+            tensorTablePanelBody(table).addClass("error");
         }
     };
 
     var tensorTableHeading = function() {
-        return $("<tr><th>Name</th><th>Shape</th>" +
-                 "<th>Type</th><th>Tensor</th></tr>");
+        return $("<tr><th>Name</th><th>Shape</th>"
+                 + "<th>Type</th><th>Tensor</th></tr>");
     };
 
     var tensorTableRow = function(name, shape, type, tensor) {
-        return $("<tr><td>" + name + "</td>" +
-                 "<td>" + shape + "</td>" +
-                 "<td>" + type + "</td>" +
-                 "<td>" + tensor + "</td></tr>");
+        return $("<tr><td>" + name + "</td>"
+                 + "<td>" + shape + "</td>"
+                 + "<td>" + type + "</td>"
+                 + "<td>" + tensor + "</td></tr>");
+    };
+
+    var missingTensorsMsg = function(name) {
+        if (name == "input-tensors") {
+            return "There are no inputs defined for this model - it cannot be run";
+        } else if (name == "output-tensors") {
+            return "There are no outputs defined for thie model - it cannot be run";
+        } else {
+            throw name;
+        }
+    };
+
+    var tensorTablePanelBody = function(table) {
+        return table.parents("div[data-role='tensor-table-body']");
+    };
+
+    var maybeEnableInputs = function(runInfo) {
+        var inputs = runInfo["inputs"];
+        var outputs = runInfo["outputs"];
+        if (Object.keys(inputs).length > 0
+            && Object.keys(outputs).length > 0) {
+            enableInputs();
+        }
+    };
+
+    var enableInputs = function() {
+        submitButton().prop("disabled", false);
+        runModelInput().prop("disabled", false);
     };
 
     var runModel = function() {
         var url = guild.util.runSource("/model/run", state.run);
-        var input = runModelInput(widget).val();
+        var input = runModelInput().val();
         $.ajax({
             type: "POST",
             url: url,
