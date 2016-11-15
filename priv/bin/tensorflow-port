@@ -315,6 +315,8 @@ def handle_run_model(req):
         outputs = active_model.run(instances)
     except ModelError, e:
         send_response(req, "error", [str(e)])
+    except ValueError, e:
+        send_response(req, "error", [str(e)])
     else:
         send_response(req, "ok", [json.dumps(outputs)])
 
