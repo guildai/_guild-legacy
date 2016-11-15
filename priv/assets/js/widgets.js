@@ -850,7 +850,7 @@ guild.widget.register("run-model", function(widget, state) {
     };
 
     var runModel = function() {
-        var url = "/model/run";
+        var url = guild.util.runSource("/model/run", state.run);
         var input = runModelInput(widget).val();
         $.ajax({
             type: "POST",
