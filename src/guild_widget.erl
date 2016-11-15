@@ -24,7 +24,7 @@ for_name("flags")         -> {ok, default_widget(guild_flags_widget)};
 for_name("output")        -> {ok, data_table_widget(guild_output_widget)};
 for_name("page-header")   -> {ok, select_widget(guild_page_header_widget)};
 for_name("placeholder")   -> {ok, default_widget(guild_placeholder_widget)};
-for_name("run-model")     -> {ok, run_model_widget(guild_run_model_widget2)};
+for_name("run-model")     -> {ok, run_model_widget(guild_run_model_widget)};
 for_name("status")        -> {ok, default_widget(guild_status_widget)};
 for_name("timeseries")    -> {ok, c3_widget(guild_timeseries_widget)};
 for_name("value-panel")   -> {ok, default_widget(guild_value_panel_widget)};

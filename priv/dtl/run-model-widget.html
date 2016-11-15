@@ -1,13 +1,20 @@
-<h2 style="margin-top:0">Model input</h2>
+<div data-widget="run-model">
+  <h2 style="margin-top:0">Input</h2>
 
-<p>Type or paste the input for the model here and click <strong>Run model</strong> below.</p>
+  <p>Type or paste input JSON into this field and click <strong>Run
+      model</strong> below.</p>
 
-<textarea class="form-control col-md-12" rows="7" style="margin-bottom:10px"></textarea>
+  <textarea
+     data-role="model-run-input"
+     class="model-run-input form-control"></textarea>
 
-<button type="submit" class="btn btn-primary">Run model</button>
+  <button class="btn btn-primary" data-role="run-model">Run model</button>
 
-<h2>Model output</h2>
+  <h2>Output</h2>
 
-<p>The result of the model run is displayed below.</p>
+  <p>The result of the model run is displayed below.</p>
 
-<pre class="col-md-12" style="height:300px"></pre>
+  <pre class="model-run-output"
+       data-role="model-run-output"
+       style="min-height:200px;"></pre>
+</div>
