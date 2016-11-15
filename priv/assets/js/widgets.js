@@ -605,7 +605,7 @@ guild.widget.register("compare-table", function(widget, state) {
                 infoEmpty: "_TOTAL_ runs",
                 search: "",
                 searchPlaceholder: "Filter",
-                zeroRecords: "No runs"
+                zeroRecords: "Waiting for data"
             },
             dom: "<'row'<'col-sm-12'f>>" +
                 "<'row'<'col-sm-12'tr>>" +
