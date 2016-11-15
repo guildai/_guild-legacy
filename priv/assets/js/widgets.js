@@ -831,3 +831,56 @@ guild.widget.register("compare-table", function(widget, state) {
 
     init();
 });
+
+/********************************************************************
+ * Run model
+ ********************************************************************/
+
+guild.widget.register("run-model", function(widget, state) {
+
+    var init = function() {
+        initSubmitHandler();
+    };
+
+    var initSubmitHandler = function() {
+        var submit = $("button[data-role='run-model']", widget);
+        submit.click(function() {
+            runModel();
+        });
+    };
+
+    var runModel = function() {
+        var url = "/model/run";
+        var input = runModelInput(widget).val();
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: input,
+            success: handleRunModelResult,
+            error: handleRunModelError,
+            dataType: "json"
+        });
+    };
+
+    var runModelInput = function() {
+        return $("textarea[data-role='model-run-input']", widget);
+    };
+
+    var handleRunModelResult = function(data) {
+        var output = runModelOutput();
+        output.toggleClass("error", false);
+        output.jsonViewer(data, {withQuotes: true});
+    };
+
+    var handleRunModelError = function(error) {
+        var output = runModelOutput();
+        output.toggleClass("error", true);
+        output.text(error.responseText);
+    };
+
+    var runModelOutput = function() {
+        return $("pre[data-role='model-run-output']", widget);
+    };
+
+    init();
+});

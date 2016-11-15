@@ -74,3 +74,23 @@ table.output tr.stderr {
     font-size: 14px !important;
     width: 15em !important;
 }
+
+/* ===================================================================
+ * Run model
+ * =================================================================== */
+
+.model-run-input {
+    min-width: 100%;
+    min-height: 180px;
+    margin-bottom: 10px;
+    line-height: 13px;
+    font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
+}
+
+.model-run-output.error {
+    background-color: #FFCDD2;
+}
+
+.model-run-output {
+    padding: 0.5em 1.5em;
+}
