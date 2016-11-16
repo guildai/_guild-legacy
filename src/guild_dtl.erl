@@ -21,6 +21,7 @@
          {"bye.html",                  guild_bye_page},
          {"compare-table-widget.html", guild_compare_table_widget},
          {"flags-widget.html",         guild_flags_widget},
+         {"model-stats-widget.html",   guild_model_stats_widget},
          {"output-widget.html",        guild_output_widget},
          {"page-header-widget.html",   guild_page_header_widget},
          {"placeholder-widget.html",   guild_placeholder_widget},
