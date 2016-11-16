@@ -272,9 +272,10 @@ class ModelStats(object):
             return None
 
     def _predictions_per_second(self):
-        if self._batches:
-            predictions = sum([b[0] for b in self._batches])
-            seconds = sum([b[1] for b in self._batches]) / 1000000
+        sample = self._batches[1:]
+        if sample:
+            predictions = sum([b[0] for b in sample])
+            seconds = sum([b[1] for b in sample]) / 1000000
             return predictions / seconds
         else:
             return None
