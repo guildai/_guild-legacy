@@ -233,8 +233,13 @@ class ModelError(Exception):
 
 class ModelStats(object):
 
+    N = 5 # observations used for weighted averages
+
     def __init__(self):
         self.reset()
+
+    def reset(self):
+        self._batches = []
 
     def start_batch(self, size):
         self._pending_start = self._timestamp()
@@ -247,14 +252,11 @@ class ModelStats(object):
     def _timestamp(_self):
         return int(time.time() * 1000000)
 
-    def reset(self):
-        self._batches = []
-
     def generate(self):
         return {
             "last_batch_time_ms": self._last_batch_time_ms(),
-            "average_batch_time_ms": self._average_batch_time_ms(),
-            "predictions_per_second": self._predictions_per_second()
+            "average_batch_time_ms": self._average_batch_time_ms(self.N),
+            "predictions_per_second": self._predictions_per_second(self.N)
         }
 
     def _last_batch_time_ms(self):
@@ -263,20 +265,29 @@ class ModelStats(object):
         else:
             return None
 
-    def _average_batch_time_ms(self):
+    def _average_batch_time_ms(self, n0):
         if self._batches:
-            total_time = sum([b[1] for b in self._batches])
-            batches = len(self._batches)
-            return total_time / batches / 1000
+            # Weighted average
+            n = min(n0, len(self._batches))
+            sample = self._batches[-n:]
+            weighted_total = 0
+            for i, val in enumerate(sample):
+                weighted_total += (i + 1) * val[1] / 1000
+            return weighted_total / (n * (n + 1) / 2)
         else:
             return None
 
-    def _predictions_per_second(self):
-        sample = self._batches[1:]
-        if sample:
-            predictions = sum([b[0] for b in sample])
-            seconds = sum([b[1] for b in sample]) / 1000000
-            return predictions / seconds
+    def _predictions_per_second(self, n0):
+        if self._batches:
+            # Weighted predictions
+            n = min(n0, len(self._batches))
+            sample = self._batches[-n:]
+            weighted_predictions = 0
+            weighted_seconds = 0
+            for i, (predictions, time_us) in enumerate(sample):
+                weighted_predictions += (i + 1) * predictions
+                weighted_seconds += (i + 1) * (time_us / 1000000)
+            return weighted_predictions / weighted_seconds
         else:
             return None
 
@@ -448,10 +459,10 @@ def handle_model_stats(req):
     send_ok_response(req, [json.dumps(stats)])
 
 # ===================================================================
-# Main loop
+# Run
 # ===================================================================
 
-if __name__ == "__main__":
+def run():
     while True:
         req = read_request()
         if not req:
@@ -460,3 +471,65 @@ if __name__ == "__main__":
             handle_request(req)
         except ErrorResponse, e:
             send_error_response(e.req, [e.msg])
+
+# ===================================================================
+# Test
+# ===================================================================
+
+def test():
+    test_model_stats()
+    print "All tests passed"
+
+def test_model_stats():
+    def generate_stats(batches):
+        stats = ModelStats()
+        stats._batches = batches
+        return stats.generate()
+
+    def assert_equals(stats, name, expected):
+        actual = stats[name]
+        if actual != expected:
+            STDERR.write("ERROR: %s was %s, expected %s\n"
+                         % (name, actual, expected))
+            sys.exit(1)
+
+    s1 = generate_stats([])
+    assert_equals(s1, "last_batch_time_ms", None)
+    assert_equals(s1, "average_batch_time_ms", None)
+    assert_equals(s1, "predictions_per_second", None)
+
+    s2 = generate_stats([(1, 10000)])
+    assert_equals(s2, "last_batch_time_ms", 10.0)
+    assert_equals(s2, "average_batch_time_ms", 10.0)
+    assert_equals(s2, "predictions_per_second", 100.0)
+
+    s3 = generate_stats([(1, 10000), (1, 10000)])
+    assert_equals(s3, "last_batch_time_ms", 10.0)
+    assert_equals(s3, "average_batch_time_ms", 10.0)
+    assert_equals(s3, "predictions_per_second", 100.0)
+
+    s4 = generate_stats([(1, 10000), (1, 20000)])
+    assert_equals(s4, "last_batch_time_ms", 20.0)
+    assert_equals(s4, "average_batch_time_ms", 50000 / 3 / 1000)
+    assert_equals(s4, "predictions_per_second", 1 / (50000 / 3 / 1000000))
+
+    s5 = generate_stats(
+        [(1, 60000),
+         (1, 50000),
+         (1, 40000),
+         (1, 30000),
+         (1, 20000),
+         (1, 10000)])
+    assert_equals(s5, "last_batch_time_ms", 10.0)
+    assert_equals(s5, "average_batch_time_ms", 350000 / 15 / 1000)
+    assert_equals(s5, "predictions_per_second", 1 / (350000 / 15 / 1000000))
+
+# ===================================================================
+# Main
+# ===================================================================
+
+if __name__ == "__main__":
+    if "--test" in sys.argv:
+        test()
+    else:
+        run()
