@@ -76,6 +76,8 @@ STDIN = sys.stdin
 STDOUT = sys.stdout
 STDERR = sys.stderr
 
+TRACE_STATS = False
+
 # ===================================================================
 # Protocol
 # ===================================================================
@@ -338,9 +340,32 @@ class Model(object):
     def run(self, instances):
         inputs = self._inputs_feed_dict(instances)
         self._stats.start_batch(len(instances))
-        run_result = self._session.run(self._output_tensors, feed_dict=inputs)
+        run_result = self._session_run(inputs)
         self._stats.end_batch()
         return self._run_result_outputs(run_result)
+
+    def _session_run(self, inputs):
+        if TRACE_STATS:
+            return self._session_run_with_stats(inputs)
+        else:
+            return self._session.run(self._output_tensors, feed_dict=inputs)
+
+    def _session_run_with_stats(self, inputs):
+        # Working alternative to _session_run with tfprof stats
+        import tensorflow as tf
+        run_metadata = tf.RunMetadata()
+        run_result = self._session.run(
+            self._output_tensors,
+            feed_dict=inputs,
+            options=tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE),
+            run_metadata=run_metadata)
+        tfprof = tf.contrib.tfprof
+        _stats = tfprof.model_analyzer.print_model_analysis(
+            self._session.graph,
+            run_metadata=run_metadata,
+            tfprof_options=tfprof.model_analyzer.PRINT_ALL_TIMING_MEMORY)
+        # TODO: possibly integrate _stats here with self._stats
+        return run_result
 
     def _inputs_feed_dict(self, instances):
         return {
