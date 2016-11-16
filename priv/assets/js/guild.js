@@ -239,7 +239,7 @@ guild.util = new function() {
     var tryFormat = function(value, format) {
         if (value != null && value != undefined && value == value) {
             try {
-                return numeral(value).format(format);
+                return formatValue(value, format);
             } catch (err) {
                 console.error(err);
                 return value;
@@ -247,6 +247,31 @@ guild.util = new function() {
         } else {
             return value;
         }
+    };
+
+    var formatValue = function(value, format) {
+        var split = splitFormat(format);
+        var formatted = numeral(value).format(split.format);
+        return formatted + split.suffix;
+
+    };
+
+    var splitFormat = function(format) {
+        // Guild specific additions to numeral formatting support
+        var suffixes = [" ms"];
+        for (var i in suffixes) {
+            var suffix = suffixes[i];
+            if (format.endsWith(suffix)) {
+                return {
+                    format: format.substring(0, format.length - suffix.length),
+                    suffix: suffix
+                };
+            }
+        }
+        return {
+            format: format,
+            suffix: ""
+        };
     };
 
     var runSource = function(source, run) {
