@@ -18,6 +18,7 @@
  ********************************************************************/
 
 var RUN_UPDATE = "run_update";
+var MODEL_STATS_UPDATE = "model_stats_update";
 
 var run_support = new function() {
 
@@ -211,7 +212,11 @@ guild.widget.register("value-panel", function(widget, state) {
         } else {
             var sourceAttr = widget.attr("data-widget-source");
             if (sourceAttr) {
-                guild.event.register(RUN_UPDATE, runUpdated, state);
+                if (sourceAttr == "/model/stats") {
+                    guild.event.register(MODEL_STATS_UPDATE, fetchData, state);
+                } else {
+                    guild.event.register(RUN_UPDATE, fetchData, state);
+                }
             }
         }
     };
@@ -220,7 +225,7 @@ guild.widget.register("value-panel", function(widget, state) {
         $("span", widget).text(value);
     };
 
-    var runUpdated = function(run) {
+    var fetchData = function(run) {
         guild.data.fetch(guild.widget.runSource(widget, run), update);
     };
 
@@ -605,7 +610,7 @@ guild.widget.register("compare-table", function(widget, state) {
                 infoEmpty: "_TOTAL_ runs",
                 search: "",
                 searchPlaceholder: "Filter",
-                zeroRecords: "Waiting for data"
+                zeroRecords: "Waiting for data..."
             },
             dom: "<'row'<'col-sm-12'f>>" +
                 "<'row'<'col-sm-12'tr>>" +
@@ -855,6 +860,7 @@ guild.widget.register("run-model", function(widget, state) {
 
     var runUpdated = function(run) {
         guild.event.unregister(RUN_UPDATE, runUpdated, state);
+        notifyModelStatsUpdate(run, state);
         var url = guild.util.runSource("/model/info", run);
         $.ajax({
             url: url,
@@ -971,9 +977,14 @@ guild.widget.register("run-model", function(widget, state) {
     };
 
     var handleRunModelResult = function(data) {
+        notifyModelStatsUpdate(state.run, state);
         var output = runModelOutput();
         output.toggleClass("error", false);
         output.jsonViewer(data, {withQuotes: true});
+    };
+
+    var notifyModelStatsUpdate = function(run, state) {
+        guild.event.notify(MODEL_STATS_UPDATE, run, state);
     };
 
     var handleRunModelError = function(error) {

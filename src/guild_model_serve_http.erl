@@ -34,5 +34,7 @@ app("POST", "/run", Project, Run, Env) ->
     {recv_body, Handler, Env};
 app("GET", "/info", Project, Run, _Env) ->
     guild_project_view_model_http:handle_model_info(Project, Run);
+app("GET", "/stats", Project, Run, _Env) ->
+    guild_project_view_model_http:handle_model_stats(Project, Run);
 app(_, _, _, _, _) ->
     guild_http:bad_request().

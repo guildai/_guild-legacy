@@ -174,9 +174,13 @@ guild.widget = new function() {
 
     var runSource = function(widget, run) {
         var sourceAttr = widget.attr("data-widget-source");
-        return sourceAttr
-            ? guild.util.runSource("/data/" + sourceAttr, run)
-            : undefined;
+        if (!sourceAttr) {
+            return undefined;
+        } else if (sourceAttr.startsWith("/")) {
+            return guild.util.runSource(sourceAttr.substring(1), run);
+        } else {
+            return guild.util.runSource("/data/" + sourceAttr, run);
+        }
     };
 
     this.register = register;

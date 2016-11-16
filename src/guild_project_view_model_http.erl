@@ -16,7 +16,8 @@
 
 -export([app/4]).
 
--export([handle_model_init/2, handle_model_run/4, handle_model_info/2]).
+-export([handle_model_init/2, handle_model_run/4, handle_model_info/2,
+         handle_model_stats/2]).
 
 %% ===================================================================
 %% App
@@ -31,6 +32,9 @@ app("POST", {"/model/init", _, Params}, _Env, View) ->
 app("GET", {"/model/info", _, Params}, _Env, View) ->
     {Project, Run} = resolve_project_run(Params, View),
     handle_model_info(Project, Run);
+app("GET", {"/model/stats", _, Params}, _Env, View) ->
+    {Project, Run} = resolve_project_run(Params, View),
+    handle_model_stats(Project, Run);
 app(_, _, _, _) ->
     guild_http:bad_request().
 
@@ -50,6 +54,9 @@ handle_model_run(Project, Run, Body, _Env) ->
 
 handle_model_info(Project, Run) ->
     http_result(guild_tensorflow_port:project_model_info(Project, Run)).
+
+handle_model_stats(Project, Run) ->
+    http_result(guild_tensorflow_port:project_model_stats(Project, Run)).
 
 http_result({ok, JSON}) ->
     guild_http:ok_json(JSON);

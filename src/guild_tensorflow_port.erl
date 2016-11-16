@@ -18,7 +18,7 @@
 
 -export([start_link/0, read_image/2, load_model/1,
          load_project_model/2, run_model/2, run_project_model/3,
-         project_model_info/2]).
+         project_model_info/2, project_model_stats/2]).
 
 -export([init/1, handle_msg/3]).
 
@@ -79,6 +79,10 @@ project_model_info(Project, Run) ->
     ModelPath = project_model_path(Project, Run),
     e2_service:call(?MODULE, {call, {model_info, ModelPath}}).
 
+project_model_stats(Project, Run) ->
+    ModelPath = project_model_path(Project, Run),
+    e2_service:call(?MODULE, {call, {model_stats, ModelPath}}).
+
 %% ===================================================================
 %% Message dispatch
 %% ===================================================================
@@ -113,7 +117,7 @@ encode_request(Ref, Call) ->
     iolist_to_binary([Ref, $\t, encode_request(Call), $\n]).
 
 add_caller(From, Ref, Call, #state{callers=Callers}=S) ->
-    S#state{callers=[{Ref, Call, From}|Callers]}.
+    S#state{callers=Callers++[{Ref, Call, From}]}.
 
 %% ===================================================================
 %% Request encoders
@@ -126,7 +130,9 @@ encode_request({load_model, ModelPath}) ->
 encode_request({run_model, ModelPath, Request}) ->
     ["run-model", $\t, ModelPath, $\t, encode_json_arg(Request)];
 encode_request({model_info, ModelPath}) ->
-    ["model-info", $\t, ModelPath].
+    ["model-info", $\t, ModelPath];
+encode_request({model_stats, ModelPath}) ->
+    ["model-stats", $\t, ModelPath].
 
 encode_json_arg(JSON) ->
     re:replace(JSON, "[\n\r\t]", " ", [global]).
@@ -142,6 +148,8 @@ decode_call_result(ok, {load_model, _}, []) ->
 decode_call_result(ok, {run_model, _, _}, Parts) ->
     {ok, Parts};
 decode_call_result(ok, {model_info, _}, Parts) ->
+    {ok, Parts};
+decode_call_result(ok, {model_stats, _}, Parts) ->
     {ok, Parts};
 decode_call_result(error, _, Error) ->
     {error, decode_error(Error)}.

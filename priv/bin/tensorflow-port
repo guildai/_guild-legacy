@@ -61,14 +61,16 @@ which is identified by its name.
 Arguments must not contain tabs or line endings. Parts must not
 contain line endings. In general these values should be encoded to
 avoid either of these separators.
-
 """
+from __future__ import division
+
 import base64
 import glob
 import imghdr
 import json
 import os
 import sys
+import time
 
 STDIN = sys.stdin
 STDOUT = sys.stdout
@@ -134,6 +136,8 @@ def handle_request(req):
         handle_run_model(req)
     elif req.name == "model-info":
         handle_model_info(req)
+    elif req.name == "model-stats":
+        handle_model_stats(req)
     else:
         raise ProtocolError("unknown " + repr(req.name))
 
@@ -227,13 +231,63 @@ def init_session(vars_path):
 class ModelError(Exception):
     pass
 
+class ModelStats(object):
+
+    def __init__(self):
+        self.reset()
+
+    def start_batch(self, size):
+        self._pending_start = self._timestamp()
+        self._pending_batch_size = size
+
+    def end_batch(self):
+        batch_time = self._timestamp() - self._pending_start
+        self._batches.append((self._pending_batch_size, batch_time))
+
+    def _timestamp(_self):
+        return int(time.time() * 1000000)
+
+    def reset(self):
+        self._batches = []
+
+    def generate(self):
+        return {
+            "last_batch_time_ms": self._last_batch_time_ms(),
+            "average_batch_time_ms": self._average_batch_time_ms(),
+            "predictions_per_second": self._predictions_per_second()
+        }
+
+    def _last_batch_time_ms(self):
+        if self._batches:
+            return self._batches[-1][1] / 1000
+        else:
+            return None
+
+    def _average_batch_time_ms(self):
+        if self._batches:
+            total_time = sum([b[1] for b in self._batches])
+            batches = len(self._batches)
+            return total_time / batches / 1000
+        else:
+            return None
+
+    def _predictions_per_second(self):
+        if self._batches:
+            predictions = sum([b[0] for b in self._batches])
+            seconds = sum([b[1] for b in self._batches]) / 1000000
+            return predictions / seconds
+        else:
+            return None
+
 class Model(object):
 
-    _serving_path = None
-    _session = None
-    _output_tensors = []
-    _output_keys = []
-    _input_tensor_map = {}
+    def __init__(self):
+        self._serving_path = None
+        self._session = None
+        self._output_tensors = []
+        self._output_keys = []
+        self._input_tensor_map = {}
+        self._stats = ModelStats()
 
     def ensure_serving_path(self, path):
         if self._serving_path != path:
@@ -243,6 +297,7 @@ class Model(object):
         self._serving_path = None
         if self._session:
             self._session.close()
+        self._stats.reset()
         session = init_session(path)
         self._session = session
         output_tensors, output_keys = self._graph_outputs(session.graph)
@@ -270,7 +325,9 @@ class Model(object):
 
     def run(self, instances):
         inputs = self._inputs_feed_dict(instances)
+        self._stats.start_batch(len(instances))
         run_result = self._session.run(self._output_tensors, feed_dict=inputs)
+        self._stats.end_batch()
         return self._run_result_outputs(run_result)
 
     def _inputs_feed_dict(self, instances):
@@ -313,6 +370,9 @@ class Model(object):
             "shape": str(tensor.get_shape())
         }
 
+    def stats(self):
+        return self._stats.generate()
+
 active_model = Model()
 
 def ensure_active_model_serving_path(path, req):
@@ -326,13 +386,13 @@ def ensure_active_model_serving_path(path, req):
 # ===================================================================
 
 def handle_load_model(req):
-    model_path = validate_load_model_args(req)
+    model_path = validate_model_path_args(req)
     ensure_active_model_serving_path(model_path, req)
     send_ok_response(req)
 
-def validate_load_model_args(req):
+def validate_model_path_args(req):
     if len(req.args) != 1:
-        raise ProtocolError("load-model requires 1 argument")
+        raise ProtocolError("%s requires 1 argument" % req.name)
     model_path = req.args[0]
     if not os.path.exists(model_path):
         raise ErrorResponse(req, "not found")
@@ -371,18 +431,20 @@ def validate_run_model_args(req):
 # ===================================================================
 
 def handle_model_info(req):
-    model_path = validate_model_info_args(req)
+    model_path = validate_model_path_args(req)
     ensure_active_model_serving_path(model_path, req)
     info = active_model.info()
     send_ok_response(req, [json.dumps(info)])
 
-def validate_model_info_args(req):
-    if len(req.args) != 1:
-        raise ProtocolError("load-model requires 1 argument")
-    model_path = req.args[0]
-    if not os.path.exists(model_path):
-        raise ErrorResponse(req, "not found")
-    return model_path
+# ===================================================================
+# Model stats
+# ===================================================================
+
+def handle_model_stats(req):
+    model_path = validate_model_path_args(req)
+    ensure_active_model_serving_path(model_path, req)
+    stats = active_model.stats()
+    send_ok_response(req, [json.dumps(stats)])
 
 # ===================================================================
 # Main loop
