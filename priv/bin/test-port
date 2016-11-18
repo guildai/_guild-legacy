@@ -1,0 +1,21 @@
+#!/usr/bin/python
+
+import struct
+import sys
+
+STDIN = sys.stdin
+STDOUT = sys.stdout
+
+def loop():
+    while True:
+        msg_len = ord(STDIN.read(1))
+        if msg_len == 0:
+            break
+        msg = STDIN.read(msg_len)
+        reply = "you said %s" % msg
+        STDOUT.write(chr(len(reply)))
+        STDOUT.write(reply)
+        STDOUT.flush()
+
+if __name__ == "__main__":
+    loop()

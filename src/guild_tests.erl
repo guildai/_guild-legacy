@@ -38,7 +38,8 @@ run() ->
     test_make_tmp_dir(),
     test_delete_tmp_dir(),
     test_consult_string(),
-    test_tensorflow_load_image().
+    test_port_file(),
+    test_tensorflow_read_image().
 
 run(Test) ->
     guild_trace:init_from_env(os:getenv("TRACE")),
@@ -1084,11 +1085,58 @@ test_consult_string() ->
     ok().
 
 %% ===================================================================
-%% Tensorflow load image
+%% Port file
 %% ===================================================================
 
-test_tensorflow_load_image() ->
-    start("tensorflow_load_image"),
+test_port_file() ->
+    start("port_file"),
+
+    {ok, F} = port_file:start_link("priv/bin/test-port"),
+
+    %% Helpers
+
+    Send =
+        fun(Msg) ->
+            ok = file:write(F, [length(Msg), Msg])
+        end,
+
+    Recv =
+        fun() ->
+            {ok, <<RespLen>>} = file:read(F, 1),
+            {ok, Resp} = file:read(F, RespLen),
+            Resp
+        end,
+
+    %% Send msg to port via file write
+
+    Send("hello"),
+
+    %% Read response from port via file read
+
+    <<"you said hello">> = Recv(),
+
+    %% Send requests consecutively
+
+    Send("cat"), Send("dog"), Send("bird"),
+
+    <<"you said cat">> = Recv(),
+    <<"you said dog">> = Recv(),
+    <<"you said bird">> = Recv(),
+
+    %% Ask port to exit by sending 0, wait and confirm
+
+    file:write(F, [0]),
+    timer:sleep(100),
+    false = erlang:is_process_alive(F),
+
+    ok().
+
+%% ===================================================================
+%% Tensorflow read image
+%% ===================================================================
+
+test_tensorflow_read_image() ->
+    start("tensorflow_read_image"),
 
     guild_app:init_support(exec),
     {ok, _} = guild_tensorflow_port:start_link(),
