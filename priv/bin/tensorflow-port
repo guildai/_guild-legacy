@@ -61,6 +61,16 @@ which is identified by its name.
 Arguments must not contain tabs or line endings. Parts must not
 contain line endings. In general these values should be encoded to
 avoid either of these separators.
+
+Note when running this script from a shell you will be limited to 4095
+characters per line unless you change the terminate to non-canonical
+mode::
+
+    $ stty -icanon
+
+To restore canonical mode::
+
+    $ tty icanon
 """
 from __future__ import division
 
@@ -102,8 +112,17 @@ class Request(object):
         self.args = parts[2:]
 
 def read_request():
-    line = STDIN.readline()[:-1]
+    line = read_line()[:-1]
     return Request(line) if line else None
+
+def read_line():
+    parts = []
+    while True:
+        part = STDIN.readline()
+        parts.append(part)
+        if not part or part[-1] == "\n":
+            break
+    return "".join(parts)
 
 def send_response(req, status, parts):
     STDOUT.write(req.ref)
@@ -364,6 +383,7 @@ class Model(object):
             self._session.graph,
             run_metadata=run_metadata,
             tfprof_options=tfprof.model_analyzer.PRINT_ALL_TIMING_MEMORY)
+        STDERR.write(str(_stats) + "\n")
         # TODO: possibly integrate _stats here with self._stats
         return run_result
 
