@@ -38,7 +38,7 @@ run() ->
     test_make_tmp_dir(),
     test_delete_tmp_dir(),
     test_consult_string(),
-    test_port_file(),
+    test_port_io(),
     test_tensorflow_read_image().
 
 run(Test) ->
@@ -1085,13 +1085,13 @@ test_consult_string() ->
     ok().
 
 %% ===================================================================
-%% Port file
+%% Port IO
 %% ===================================================================
 
-test_port_file() ->
-    start("port_file"),
+test_port_io() ->
+    start("port_io"),
 
-    {ok, F} = port_file:start_link("priv/bin/test-port"),
+    {ok, F} = port_io:start_link("priv/bin/test-port"),
 
     %% Helpers
 
