@@ -52,7 +52,7 @@ main(Opts, []) ->
     View = init_project_view(Opts),
     Port = guild_cmd_support:port_opt(Opts, ?default_port),
     ServerOpts = server_opts(Opts),
-    guild_app:init_support([json, exec, {app_child, guild_tensorflow_port2}]),
+    guild_app:init_support([json, exec, {app_child, guild_tensorflow_port}]),
     Server = start_http_server(View, Port, ServerOpts),
     guild_cli:out("View server running on port ~b~n", [Port]),
     wait_for_server_and_terminate(Server).

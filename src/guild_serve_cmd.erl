@@ -46,7 +46,7 @@ fmt(Msg, Data) -> io_lib:format(Msg, Data).
 main(Opts, Args) ->
     {Run, Project, _, _} = guild_cmd_support:run_for_args(Args, Opts),
     Port = guild_cmd_support:port_opt(Opts, ?default_port),
-    guild_app:init_support([json, exec, {app_child, guild_tensorflow_port2}]),
+    guild_app:init_support([json, exec, {app_child, guild_tensorflow_port}]),
     Server = start_http_server(Project, Run, Port),
     guild_cli:out("Serving model on port ~b~n", [Port]),
     wait_for_server_and_terminate(Server).

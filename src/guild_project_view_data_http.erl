@@ -80,7 +80,7 @@ handle_image_request(Params, View) ->
     {_, Run} = guild_project_view_http:resolve_project_run(RunId, View),
     RunDir = guild_run:dir(Run),
     Index = index_opt(Params),
-    handle_image(guild_tensorflow_port2:get_image(RunDir, Index)).
+    handle_image(guild_tensorflow_port:get_image(RunDir, Index)).
 
 index_opt(Params) ->
     Schema = [{"index", [required, integer]}],

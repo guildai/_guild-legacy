@@ -47,16 +47,16 @@ resolve_project_run(Params, View) ->
 %% ===================================================================
 
 handle_model_init(Project, Run) ->
-    http_result(guild_tensorflow_port2:load_project_model(Project, Run)).
+    http_result(guild_tensorflow_port:load_project_model(Project, Run)).
 
 handle_model_run(Project, Run, Body, _Env) ->
-    http_result(guild_tensorflow_port2:run_project_model(Project, Run, Body)).
+    http_result(guild_tensorflow_port:run_project_model(Project, Run, Body)).
 
 handle_model_info(Project, Run) ->
-    http_result(guild_tensorflow_port2:project_model_info(Project, Run)).
+    http_result(guild_tensorflow_port:project_model_info(Project, Run)).
 
 handle_model_stats(Project, Run) ->
-    http_result(guild_tensorflow_port2:project_model_stats(Project, Run)).
+    http_result(guild_tensorflow_port:project_model_stats(Project, Run)).
 
 http_result({ok, JSON}) ->
     guild_http:ok_json(JSON);

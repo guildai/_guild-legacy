@@ -21,7 +21,7 @@ start_server(Project, Run, Port) ->
     maybe_start_server(ModelInitResult, Project, Run, Port).
 
 init_tensorflow_port_model(Project, Run) ->
-    guild_tensorflow_port2:load_project_model(Project, Run).
+    guild_tensorflow_port:load_project_model(Project, Run).
 
 maybe_start_server(ok, Project, Run, Port) ->
     App = psycho_util:dispatch_app(?MODULE, [method, path, Project, Run, env]),

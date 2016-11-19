@@ -1146,8 +1146,8 @@ test_port_io() ->
 test_tensorflow_port_protocol() ->
     start("tensorflow_port_protocol"),
 
-    ensure_started(guild_tensorflow_port2),
-    ok = guild_tensorflow_port2:test_protocol(),
+    ensure_started(guild_tensorflow_port),
+    ok = guild_tensorflow_port:test_protocol(),
 
     ok().
 
@@ -1158,9 +1158,9 @@ test_tensorflow_port_protocol() ->
 test_tensorflow_read_image() ->
     start("tensorflow_read_image"),
 
-    ensure_started(guild_tensorflow_port2),
+    ensure_started(guild_tensorflow_port),
 
-    Load = fun guild_tensorflow_port2:read_image/2,
+    Load = fun guild_tensorflow_port:read_image/2,
 
     %% Image from a non-existing directory
 
