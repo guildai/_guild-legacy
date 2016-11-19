@@ -16,6 +16,8 @@
 
 -export([start_server/3, app/5]).
 
+-define(max_run_request, 1024 * 1024 * 1024).
+
 start_server(Project, Run, Port) ->
     ModelInitResult = init_tensorflow_port_model(Project, Run),
     maybe_start_server(ModelInitResult, Project, Run, Port).
@@ -31,7 +33,7 @@ maybe_start_server({error, Err}, _Project, _Run, _Port) ->
 
 app("POST", "/run", Project, Run, Env) ->
     Handler = {guild_project_view_model_http, handle_model_run, [Project, Run]},
-    {recv_body, Handler, Env};
+    {recv_body, Handler, Env, [{recv_length, ?max_run_request}]};
 app("GET", "/info", Project, Run, _Env) ->
     guild_project_view_model_http:handle_model_info(Project, Run);
 app("GET", "/stats", Project, Run, _Env) ->

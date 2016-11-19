@@ -19,13 +19,16 @@
 -export([handle_model_init/2, handle_model_run/4, handle_model_info/2,
          handle_model_stats/2]).
 
+-define(max_run_request, 1024 * 1024 * 1024).
+
 %% ===================================================================
 %% App
 %% ===================================================================
 
 app("POST", {"/model/run", _, Params}, Env, View) ->
     {Project, Run} = resolve_project_run(Params, View),
-    {recv_body, {?MODULE, handle_model_run, [Project, Run]}, Env};
+    Handler = {?MODULE, handle_model_run, [Project, Run]},
+    {recv_body, Handler, Env, [{recv_length, ?max_run_request}]};
 app("POST", {"/model/init", _, Params}, _Env, View) ->
     {Project, Run} = resolve_project_run(Params, View),
     handle_model_init(Project, Run);
