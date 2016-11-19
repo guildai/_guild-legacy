@@ -98,6 +98,8 @@ table.output tr.stderr {
 .model-run-output {
     padding: 0.5em 1.5em;
     resize: vertical;
+    overflow: auto;
+    height: 180px;
 }
 
 .panel-body.error {
