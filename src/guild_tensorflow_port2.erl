@@ -181,11 +181,19 @@ encode_request(test_protocol) ->
 %% Response decoders
 %% ===================================================================
 
--define(STATUS_OK, 0).
+-define(STATUS_OK,    0).
 -define(STATUS_ERROR, 1).
 
-decode_response({read_image, _, _}, ?STATUS_OK, [Bin]) ->
-    {ok, Bin};
+decode_response({read_image, _, _}, ?STATUS_OK, Parts) ->
+    {ok, decode_image(Parts)};
+decode_response({load_model, _}, ?STATUS_OK, []) ->
+    ok;
+decode_response({run_model, _, _}, ?STATUS_OK, [Resp]) ->
+    {ok, Resp};
+decode_response({model_info, _}, ?STATUS_OK, [Resp]) ->
+    {ok, Resp};
+decode_response({model_stats, _}, ?STATUS_OK, [Resp]) ->
+    {ok, Resp};
 decode_response(test_protocol, ?STATUS_OK, Parts) ->
     ok = check_test_response(Parts);
 decode_response(_Call, ?STATUS_ERROR, [Err]) ->
@@ -194,32 +202,14 @@ decode_response(_Call, ?STATUS_ERROR, [Err]) ->
 check_test_response([<<"e pluribus unum">>]) -> ok;
 check_test_response(Other) -> {error, Other}.
 
-%% decode_call_result(ok, {read_image, _, _}, Parts) ->
-%%     {ok, decode_image(Parts)};
-%% decode_call_result(ok, {load_model, _}, []) ->
-%%     ok;
-%% decode_call_result(ok, {run_model, _, _}, Parts) ->
-%%     {ok, Parts};
-%% decode_call_result(ok, {model_info, _}, Parts) ->
-%%     {ok, Parts};
-%% decode_call_result(ok, {model_stats, _}, Parts) ->
-%%     {ok, Parts};
-%% decode_call_result(error, _, Error) ->
-%%     {error, decode_error(Error)}.
+decode_image([File, Tag, DimEnc, Type, Bytes]) ->
+    Dim = decode_image_dim(DimEnc),
+    #{file => File,
+      tag => Tag,
+      dim => Dim,
+      type => Type,
+      bytes => Bytes}.
 
-%% decode_image([File, Tag, EncDim, Type, EncBytes]) ->
-%%     Dim = decode_image_dim(EncDim),
-%%     Bytes = decode_image_bytes(EncBytes),
-%%     #{file => File,
-%%       tag => Tag,
-%%       dim => Dim,
-%%       type => Type,
-%%       bytes => Bytes}.
-
-%% decode_image_dim(Enc) ->
-%%     [H, W, D] = re:split(Enc, " ", []),
-%%     {binary_to_integer(H), binary_to_integer(W), binary_to_integer(D)}.
-
-%% decode_image_bytes(Enc) -> base64:decode(Enc).
-
-%% decode_error(Msg) -> iolist_to_binary(Msg).
+decode_image_dim(Enc) ->
+    [H, W, D] = re:split(Enc, " ", []),
+    {binary_to_integer(H), binary_to_integer(W), binary_to_integer(D)}.

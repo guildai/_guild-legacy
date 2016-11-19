@@ -162,7 +162,7 @@ def handle_read_image(req):
     cur = 0
     for image in iter_images(path):
         if cur == index:
-            send_response(req, "ok", image_response(image))
+            send_ok_response(req, image_response(image))
             break
         else:
             cur += 1
@@ -203,7 +203,7 @@ def image_response(image):
         image.tag,
         encode_image_dimensions(image.height, image.width, image.colorspace),
         encode_image_type(image.image_bytes),
-        encode_image_bytes(image.image_bytes)
+        image.image_bytes
     ]
 
 def encode_image_dimensions(h, w, d):
@@ -212,9 +212,6 @@ def encode_image_dimensions(h, w, d):
 def encode_image_type(image_bytes):
     guessed = imghdr.what(None, image_bytes)
     return guessed if guessed else ""
-
-def encode_image_bytes(image_bytes):
-    return base64.b64encode(image_bytes)
 
 # ===================================================================
 # Model support

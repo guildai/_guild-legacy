@@ -54,6 +54,13 @@ start(Name) ->
 ok() ->
     io:format("OK~n").
 
+ensure_started(Mod) ->
+    case Mod:start_link() of
+        {ok, _} -> ok;
+        {error, {already_started, _}} -> ok;
+        {error, Err} -> error({start_link, Mod, Err})
+    end.
+
 %% ===================================================================
 %% Ini file
 %% ===================================================================
@@ -1139,7 +1146,7 @@ test_port_io() ->
 test_tensorflow_port_protocol() ->
     start("tensorflow_port_protocol"),
 
-    {ok, _} = guild_tensorflow_port2:start_link(),
+    ensure_started(guild_tensorflow_port2),
     ok = guild_tensorflow_port2:test_protocol(),
 
     ok().
@@ -1151,8 +1158,7 @@ test_tensorflow_port_protocol() ->
 test_tensorflow_read_image() ->
     start("tensorflow_read_image"),
 
-    guild_app:init_support(exec),
-    {ok, _} = guild_tensorflow_port2:start_link(),
+    ensure_started(guild_tensorflow_port2),
 
     Load = fun guild_tensorflow_port2:read_image/2,
 
