@@ -496,6 +496,16 @@ def port_loop():
             send_error_response(e.req, [e.msg])
 
 # ===================================================================
+# Run once (for debugging)
+# ===================================================================
+
+def run_once(model_path, single_input_path):
+    active_model.ensure_serving_path(model_path)
+    inputs = [json.load(open(single_input_path, "r"))]
+    outputs = active_model.run(inputs)
+    print json.dumps(outputs)
+
+# ===================================================================
 # Test
 # ===================================================================
 
@@ -551,8 +561,28 @@ def test_model_stats():
 # Main
 # ===================================================================
 
+def script_error(msg):
+    STDERR.write(msg + "\n")
+    sys.exit(1)
+
 if __name__ == "__main__":
-    if "--test" in sys.argv:
+    import argparse
+    p = argparse.ArgumentParser()
+    p.add_argument("cmd", metavar="CMD", nargs="?",
+                   help="optional command: run | test")
+    p.add_argument("--model", metavar="PATH",
+                   help="model path")
+    p.add_argument("--single-input",  metavar="PATH",
+                   help=("single input path; expects a single instance "
+                         "that will run in a list"))
+    args = p.parse_args()
+    if args.cmd == "run":
+        if not args.model:
+            script_error("--model required for run command")
+        if not args.single_input:
+            script_error("--inputs required for run command")
+        run_once(args.model, args.single_input)
+    elif args.cmd == "test":
         test()
     else:
         port_loop()
