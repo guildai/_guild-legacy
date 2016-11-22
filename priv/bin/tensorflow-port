@@ -440,10 +440,12 @@ def handle_load_model(req):
 def validate_model_path_args(req):
     if len(req.args) != 1:
         raise ProtocolError("%s requires 1 argument" % req.name)
-    model_path = req.args[0]
-    if not os.path.exists(model_path):
+    return validate_model_path(req.args[0])
+
+def validate_model_path(path):
+    if not os.path.exists(path + ".meta"):
         raise ErrorResponse(req, "not found")
-    return model_path
+    return path
 
 # ===================================================================
 # Run model
@@ -465,9 +467,7 @@ def handle_run_model_with_stats(req):
 def validate_run_model_args(req):
     if len(req.args) != 2:
         raise ProtocolError("run-model requires 2 arguments")
-    model_path = req.args[0]
-    if not os.path.exists(model_path):
-        raise ErrorResponse(req, "not found")
+    model_path = validate_model_path(req.args[0])
     try:
         instances = json.loads(req.args[1])
     except ValueError:
