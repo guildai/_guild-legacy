@@ -198,4 +198,4 @@ resolve_project_run(RunId, View) ->
     end.
 
 no_such_run_error(RunId) ->
-    throw(guild_http:bad_request(io_lib:format("no such run ~s", [RunId]))).
+    throw(guild_http:bad_request(io_lib:format("no such run ~p", [RunId]))).
