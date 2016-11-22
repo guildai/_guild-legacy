@@ -218,16 +218,6 @@ def encode_image_type(image_bytes):
 # Model support
 # ===================================================================
 
-def init_session(vars_path):
-    import tensorflow as tf
-    graph = tf.Graph()
-    with graph.as_default():
-        saver = tf.train.import_meta_graph(vars_path + ".meta", True)
-    config = tf.ConfigProto(gpu_options=tf.GPUOptions(allow_growth=True))
-    session = tf.Session(config=config, graph=graph)
-    saver.restore(session, vars_path)
-    return session
-
 class ModelError(Exception):
     pass
 
@@ -290,6 +280,40 @@ class ModelStats(object):
         else:
             return None
 
+def init_session(vars_path):
+    import tensorflow as tf
+    graph = tf.Graph()
+    with graph.as_default():
+        saver = tf.train.import_meta_graph(vars_path + ".meta", True)
+    config = tf.ConfigProto(gpu_options=tf.GPUOptions(allow_growth=True))
+    session = tf.Session(config=config, graph=graph)
+    saver.restore(session, vars_path)
+    return session
+
+def graph_outputs(graph):
+    tensor_map = {}
+    for val in graph.get_collection("outputs"):
+        tensor_map.update(json.loads(val))
+    keys = tensor_map.keys()
+    tensors = [graph.get_tensor_by_name(tensor_map[key]) for key in keys]
+    return tensors, keys
+
+def graph_inputs(graph):
+    tensor_map = {}
+    for val in graph.get_collection("inputs"):
+        tensor_map.update(json.loads(val))
+    return {
+        key: graph.get_tensor_by_name(tensor_name)
+        for key, tensor_name in tensor_map.items()
+    }
+
+def tensor_info(tensor):
+    return {
+        "tensor": tensor.name,
+        "dtype": tensor.dtype.name,
+        "shape": str(tensor.get_shape())
+    }
+
 class Model(object):
 
     def __init__(self):
@@ -311,28 +335,11 @@ class Model(object):
         self._stats.reset()
         session = init_session(path)
         self._session = session
-        output_tensors, output_keys = self._graph_outputs(session.graph)
+        output_tensors, output_keys = graph_outputs(session.graph)
         self._output_tensors = output_tensors
         self._output_keys = output_keys
-        self._input_tensor_map = self._graph_inputs(session.graph)
+        self._input_tensor_map = graph_inputs(session.graph)
         self._serving_path = path
-
-    def _graph_outputs(_self, graph):
-        tensor_map = {}
-        for val in graph.get_collection("outputs"):
-            tensor_map.update(json.loads(val))
-        keys = tensor_map.keys()
-        tensors = [graph.get_tensor_by_name(tensor_map[key]) for key in keys]
-        return tensors, keys
-
-    def _graph_inputs(_self, graph):
-        tensor_map = {}
-        for val in graph.get_collection("inputs"):
-            tensor_map.update(json.loads(val))
-        return {
-            key: graph.get_tensor_by_name(tensor_name)
-            for key, tensor_name in tensor_map.items()
-        }
 
     def run(self, instances, trace_stats=False):
         inputs = self._inputs_feed_dict(instances)
@@ -398,21 +405,14 @@ class Model(object):
 
     def _inputs_info(self):
         return {
-            key: self._tensor_info(tensor)
+            key: tensor_info(tensor)
             for key, tensor in self._input_tensor_map.items()
         }
 
     def _outputs_info(self):
         return {
-            key: self._tensor_info(tensor)
+            key: tensor_info(tensor)
             for key, tensor in zip(self._output_keys, self._output_tensors)
-        }
-
-    def _tensor_info(_self, tensor):
-        return {
-            "tensor": tensor.name,
-            "dtype": tensor.dtype.name,
-            "shape": str(tensor.get_shape())
         }
 
     def stats(self):
