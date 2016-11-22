@@ -172,14 +172,14 @@ guild.widget = new function() {
         }
     };
 
-    var runSource = function(widget, run) {
+    var runSource = function(widget, run, attrs) {
         var sourceAttr = widget.attr("data-widget-source");
         if (!sourceAttr) {
             return undefined;
         } else if (sourceAttr.startsWith("/")) {
-            return guild.util.runSource(sourceAttr.substring(1), run);
+            return guild.util.runSource(sourceAttr.substring(1), run, attrs);
         } else {
-            return guild.util.runSource("/data/" + sourceAttr, run);
+            return guild.util.runSource("/data/" + sourceAttr, run, attrs);
         }
     };
 
@@ -274,7 +274,12 @@ guild.util = new function() {
         };
     };
 
-    var runSource = function(source, run) {
+    var runSource = function(source, run, attrs) {
+        var base = baseRunSource(source, run);
+        return (attrs && attrs.length > 0) ? base + "&" + attrs : base;
+    };
+
+    var baseRunSource = function(source, run) {
         if (run) {
             return source + "?run=" + run.id;
         } else {
