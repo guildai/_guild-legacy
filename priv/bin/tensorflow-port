@@ -374,7 +374,6 @@ class Model(object):
             self._session.graph_def.SerializeToString())
         ss.ProcessStepStatsStr(meta.step_stats.SerializeToString())
         stats_str = ss.GetOutputString()
-        STDERR.write(stats_str)
         m = re.search(
             "curr=([0-9]+) count=([0-9]+).*\n(.*) avg KB",
             stats_str, re.DOTALL)
