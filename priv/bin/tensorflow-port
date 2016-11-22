@@ -514,12 +514,17 @@ def port_loop():
 # Run once (for debugging)
 # ===================================================================
 
-def run_once(model_path, single_input_path):
+def run_once(model_path, input_paths):
     active_model.ensure_serving_path(model_path)
-    inputs = [json.load(open(single_input_path, "r"))]
+    inputs = load_inputs(input_paths)
+    if not inputs:
+        raise ValueError("no inputs")
     outputs = active_model.run(inputs, trace_stats=True)
     print active_model.stats()
     print json.dumps(outputs)
+
+def load_inputs(paths):
+    return [json.load(open(path, "r")) for path in paths]
 
 # ===================================================================
 # Test
@@ -588,16 +593,15 @@ if __name__ == "__main__":
                    help="optional command: run | test")
     p.add_argument("--model", metavar="PATH",
                    help="model path")
-    p.add_argument("--single-input",  metavar="PATH",
-                   help=("single input path; expects a single instance "
-                         "that will run in a list"))
+    p.add_argument("--inputs",  nargs="+", metavar="PATTERN",
+                   help=("pattern to match input sources"))
     args = p.parse_args()
     if args.cmd == "run":
         if not args.model:
             script_error("--model required for run command")
-        if not args.single_input:
+        if not args.inputs:
             script_error("--inputs required for run command")
-        run_once(args.model, args.single_input)
+        run_once(args.model, args.inputs)
     elif args.cmd == "test":
         test()
     else:
