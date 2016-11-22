@@ -270,7 +270,10 @@ class ModelStats(object):
             for i, (predictions, time_us, _avg_mem) in enumerate(sample):
                 weighted_predictions += (i + 1) * predictions
                 weighted_seconds += (i + 1) * (time_us / 1000000)
-            return weighted_predictions / weighted_seconds
+            if weighted_seconds > 0:
+                return weighted_predictions / weighted_seconds
+            else:
+                return None
         else:
             return None
 
