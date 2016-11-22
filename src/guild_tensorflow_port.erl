@@ -17,7 +17,8 @@
 -behavior(e2_service).
 
 -export([start_link/0, test_protocol/0, read_image/2, load_model/1,
-         load_project_model/2, run_model/2, run_project_model/3,
+         load_project_model/2, run_model/2, run_model/3,
+         run_project_model/3, run_project_model/4,
          project_model_info/2, project_model_stats/2]).
 
 -export([init/1, handle_msg/3]).
@@ -55,11 +56,24 @@ load_project_model(Project, Run) ->
     load_model(project_model_path(Project, Run)).
 
 run_model(ModelPath, Request) ->
-    e2_service:call(?MODULE, {call, {run_model, ModelPath, Request}}).
+    run_model(ModelPath, Request, []).
+
+run_model(ModelPath, Request, Opts) ->
+    Call = run_model_call(ModelPath, Request, Opts),
+    e2_service:call(?MODULE, {call, Call}).
+
+run_model_call(ModelPath, Request, Opts) ->
+    case proplists:get_bool(with_stats, Opts) of
+        true  -> {run_model_with_stats, ModelPath, Request};
+        false -> {run_model, ModelPath, Request}
+    end.
 
 run_project_model(Project, Run, Request) ->
+    run_project_model(Project, Run, Request, []).
+
+run_project_model(Project, Run, Request, Opts) ->
     ModelPath = project_model_path(Project, Run),
-    run_model(ModelPath, Request).
+    run_model(ModelPath, Request, Opts).
 
 project_model_path(_Project, Run) ->
     filename:join(guild_run:dir(Run), "model/export").
@@ -157,12 +171,13 @@ decode_ulong(Bin) -> <<I:8/integer-unit:8>> = Bin, I.
 
 %% Keep in sync with priv/bin/tensorflow-port2
 
--define(CMD_TEST_PROTOCOL, 0).
--define(CMD_READ_IMAGE,    1).
--define(CMD_LOAD_MODEL,    2).
--define(CMD_RUN_MODEL,     3).
--define(CMD_MODEL_INFO,    4).
--define(CMD_MODEL_STATS,   5).
+-define(CMD_TEST_PROTOCOL,        0).
+-define(CMD_READ_IMAGE,           1).
+-define(CMD_LOAD_MODEL,           2).
+-define(CMD_RUN_MODEL,            3).
+-define(CMD_MODEL_INFO,           4).
+-define(CMD_MODEL_STATS,          5).
+-define(CMD_RUN_MODEL_WITH_STATS, 6).
 
 encode_request({read_image, Dir, Index}) ->
     {?CMD_READ_IMAGE, [Dir, integer_to_list(Index)]};
@@ -170,6 +185,8 @@ encode_request({load_model, ModelPath}) ->
     {?CMD_LOAD_MODEL, [ModelPath]};
 encode_request({run_model, ModelPath, Request}) ->
     {?CMD_RUN_MODEL, [ModelPath, Request]};
+encode_request({run_model_with_stats, ModelPath, Request}) ->
+    {?CMD_RUN_MODEL_WITH_STATS, [ModelPath, Request]};
 encode_request({model_info, ModelPath}) ->
     {?CMD_MODEL_INFO, [ModelPath]};
 encode_request({model_stats, ModelPath}) ->
@@ -189,6 +206,8 @@ decode_response({read_image, _, _}, ?STATUS_OK, Parts) ->
 decode_response({load_model, _}, ?STATUS_OK, []) ->
     ok;
 decode_response({run_model, _, _}, ?STATUS_OK, [Resp]) ->
+    {ok, Resp};
+decode_response({run_model_with_stats, _, _}, ?STATUS_OK, [Resp]) ->
     {ok, Resp};
 decode_response({model_info, _}, ?STATUS_OK, [Resp]) ->
     {ok, Resp};

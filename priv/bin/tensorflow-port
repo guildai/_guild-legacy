@@ -57,8 +57,6 @@ STDIN = sys.stdin
 STDOUT = sys.stdout
 STDERR = sys.stderr
 
-TRACE_STATS = False
-
 # ===================================================================
 # Protocol
 # ===================================================================
@@ -113,12 +111,13 @@ def not_found_response():
 # Request cmd dispatch
 # ===================================================================
 
-CMD_TEST_PROTOCOL = 0
-CMD_READ_IMAGE    = 1
-CMD_LOAD_MODEL    = 2
-CMD_RUN_MODEL     = 3
-CMD_MODEL_INFO    = 4
-CMD_MODEL_STATS   = 5
+CMD_TEST_PROTOCOL        = 0
+CMD_READ_IMAGE           = 1
+CMD_LOAD_MODEL           = 2
+CMD_RUN_MODEL            = 3
+CMD_MODEL_INFO           = 4
+CMD_MODEL_STATS          = 5
+CMD_RUN_MODEL_WITH_STATS = 6
 
 def handle_request(req):
     if req.cmd == CMD_READ_IMAGE:
@@ -127,6 +126,8 @@ def handle_request(req):
         handle_load_model(req)
     elif req.cmd == CMD_RUN_MODEL:
         handle_run_model(req)
+    elif req.cmd == CMD_RUN_MODEL_WITH_STATS:
+        handle_run_model_with_stats(req)
     elif req.cmd == CMD_MODEL_INFO:
         handle_model_info(req)
     elif req.cmd == CMD_MODEL_STATS:
@@ -240,22 +241,15 @@ class ModelStats(object):
     def reset(self):
         self._batches = []
 
-    def start_batch(self, size):
-        self._pending_start = self._timestamp()
-        self._pending_batch_size = size
-
-    def end_batch(self):
-        batch_time = self._timestamp() - self._pending_start
-        self._batches.append((self._pending_batch_size, batch_time))
-
-    def _timestamp(_self):
-        return int(time.time() * 1000000)
+    def update(self, run_count, time, avg_memory):
+        self._batches.append((run_count, time, avg_memory))
 
     def generate(self):
         return {
             "last_batch_time_ms": self._last_batch_time_ms(),
             "average_batch_time_ms": self._average_batch_time_ms(self.N),
-            "predictions_per_second": self._predictions_per_second(self.N)
+            "predictions_per_second": self._predictions_per_second(self.N),
+            "last_memory_bytes": self._last_memory_bytes()
         }
 
     def _last_batch_time_ms(self):
@@ -283,10 +277,16 @@ class ModelStats(object):
             sample = self._batches[-n:]
             weighted_predictions = 0
             weighted_seconds = 0
-            for i, (predictions, time_us) in enumerate(sample):
+            for i, (predictions, time_us, _avg_mem) in enumerate(sample):
                 weighted_predictions += (i + 1) * predictions
                 weighted_seconds += (i + 1) * (time_us / 1000000)
             return weighted_predictions / weighted_seconds
+        else:
+            return None
+
+    def _last_memory_bytes(self):
+        if self._batches:
+            return self._batches[-1][2] * 1000
         else:
             return None
 
@@ -334,36 +334,46 @@ class Model(object):
             for key, tensor_name in tensor_map.items()
         }
 
-    def run(self, instances):
+    def run(self, instances, trace_stats=False):
         inputs = self._inputs_feed_dict(instances)
-        self._stats.start_batch(len(instances))
-        run_result = self._session_run(inputs)
-        self._stats.end_batch()
+        run_result = self._session_run(inputs, trace_stats)
         return self._run_result_outputs(run_result)
 
-    def _session_run(self, inputs):
-        if TRACE_STATS:
+    def _session_run(self, inputs, trace_stats):
+        if trace_stats:
             return self._session_run_with_stats(inputs)
         else:
-            return self._session.run(self._output_tensors, feed_dict=inputs)
+            return self._session_run_default(inputs)
 
     def _session_run_with_stats(self, inputs):
-        # Working alternative to _session_run with tfprof stats
         import tensorflow as tf
-        run_metadata = tf.RunMetadata()
-        run_result = self._session.run(
+        meta = tf.RunMetadata()
+        run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+        output = self._session.run(
             self._output_tensors,
             feed_dict=inputs,
-            options=tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE),
-            run_metadata=run_metadata)
-        tfprof = tf.contrib.tfprof
-        _stats = tfprof.model_analyzer.print_model_analysis(
-            self._session.graph,
-            run_metadata=run_metadata,
-            tfprof_options=tfprof.model_analyzer.PRINT_ALL_TIMING_MEMORY)
-        STDERR.write(str(_stats) + "\n")
-        # TODO: possibly integrate _stats here with self._stats
-        return run_result
+            options=run_options,
+            run_metadata=meta)
+        self._update_stats(meta)
+        return output
+
+    def _update_stats(self, meta):
+        import re
+        import tensorflow as tf
+        ss = tf.contrib.stat_summarizer.NewStatSummarizer(
+            self._session.graph_def.SerializeToString())
+        ss.ProcessStepStatsStr(meta.step_stats.SerializeToString())
+        stats_str = ss.GetOutputString()
+        STDERR.write(stats_str)
+        m = re.search(
+            "curr=([0-9]+) count=([0-9]+).*\n(.*) avg KB",
+            stats_str, re.DOTALL)
+        if m is not None:
+            time, count, memory = m.groups()
+            self._stats.update(int(count), int(time), float(memory))
+
+    def _session_run_default(self, inputs):
+        return self._session.run(self._output_tensors, feed_dict=inputs)
 
     def _inputs_feed_dict(self, instances):
         return {
@@ -437,15 +447,18 @@ def validate_model_path_args(req):
 # Run model
 # ===================================================================
 
-def handle_run_model(req):
+def handle_run_model(req, trace_stats=False):
     model_path, instances = validate_run_model_args(req)
     ensure_active_model_serving_path(model_path, req)
     try:
-        outputs = active_model.run(instances)
+        outputs = active_model.run(instances, trace_stats)
     except ValueError, e:
         send_error_response(req, [str(e)])
     else:
         send_ok_response(req, [json.dumps(outputs)])
+
+def handle_run_model_with_stats(req):
+    handle_run_model(req, trace_stats=True)
 
 def validate_run_model_args(req):
     if len(req.args) != 2:
@@ -502,7 +515,8 @@ def port_loop():
 def run_once(model_path, single_input_path):
     active_model.ensure_serving_path(model_path)
     inputs = [json.load(open(single_input_path, "r"))]
-    outputs = active_model.run(inputs)
+    outputs = active_model.run(inputs, trace_stats=True)
+    print active_model.stats()
     print json.dumps(outputs)
 
 # ===================================================================

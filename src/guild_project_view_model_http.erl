@@ -52,8 +52,18 @@ resolve_project_run(Params, View) ->
 handle_model_init(Project, Run) ->
     http_result(guild_tensorflow_port:load_project_model(Project, Run)).
 
-handle_model_run(Project, Run, Body, _Env) ->
-    http_result(guild_tensorflow_port:run_project_model(Project, Run, Body)).
+handle_model_run(Project, Run, Body, Env) ->
+    Opts = run_project_model_opts(Env),
+    http_result(
+      guild_tensorflow_port:run_project_model(
+        Project, Run, Body, Opts)).
+
+run_project_model_opts(Env) ->
+    {_, _, Params} = psycho:parsed_request_path(Env),
+    case proplists:is_defined("withstats", Params) of
+        true -> [with_stats];
+        false -> []
+    end.
 
 handle_model_info(Project, Run) ->
     http_result(guild_tensorflow_port:project_model_info(Project, Run)).
