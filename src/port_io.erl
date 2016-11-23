@@ -23,7 +23,7 @@ handle_info({Port, {data, Data}}, #state{port=Port}=State) ->
 handle_info({Port, {exit_status, 0}}, #state{port=Port}=State) ->
     {stop, normal, State};
 handle_info({Port, {exit_status, N}}, #state{port=Port}=State) ->
-    {stop, normal, {exit_status, N}, State}.
+    {stop, {exit_status, N}, State}.
 
 %% ===================================================================
 %% IO request
