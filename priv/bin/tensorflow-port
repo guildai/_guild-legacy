@@ -287,7 +287,9 @@ def init_session(vars_path):
     import tensorflow as tf
     graph = tf.Graph()
     with graph.as_default():
-        saver = tf.train.import_meta_graph(vars_path + ".meta", True)
+        saver = tf.train.import_meta_graph(
+            vars_path + ".meta",
+            clear_devices=True)
     config = tf.ConfigProto(gpu_options=tf.GPUOptions(allow_growth=True))
     session = tf.Session(config=config, graph=graph)
     saver.restore(session, vars_path)
