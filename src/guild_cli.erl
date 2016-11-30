@@ -15,7 +15,7 @@
 -module(guild_cli).
 
 -export([parser/0, main/1, cli_error/1, cli_error/2, out/1, out/2,
-         out_par/1, out_par/2, warn/1, warn/2]).
+         out_par/1, out_par/2, closeable_out/2, warn/1, warn/2]).
 
 -define(default_exit_code, 2).
 -define(page_width, 79).
@@ -133,6 +133,13 @@ out_par(Msg) ->
 out_par(Msg, Data) ->
     Text = io_lib:format(Msg, Data),
     io:format(standard_io, wrap(Text), []).
+
+closeable_out(Msg, Data) ->
+    try
+        out(Msg, Data)
+    catch
+        error:terminated -> erlang:halt(0)
+    end.
 
 wrap(Text) ->
     prettypr:format(prettypr:text_par(Text), ?page_width, ?page_width).

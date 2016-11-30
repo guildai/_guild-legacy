@@ -41,4 +41,4 @@ print_runs(Runs) ->
 
 print_run(R) ->
     Dir = guild_run:dir(R),
-    guild_cli:out(io_lib:format("~s~n", [Dir])).
+    guild_cli:closeable_out("~s~n", [Dir]).
