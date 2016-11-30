@@ -125,14 +125,14 @@ out(Msg) ->
     out(Msg, []).
 
 out(Msg, Data) ->
-    io:format(user, Msg, Data).
+    io:format(standard_io, Msg, Data).
 
 out_par(Msg) ->
     out_par(Msg, []).
 
 out_par(Msg, Data) ->
     Text = io_lib:format(Msg, Data),
-    io:format(user, wrap(Text), []).
+    io:format(standard_io, wrap(Text), []).
 
 wrap(Text) ->
     prettypr:format(prettypr:text_par(Text), ?page_width, ?page_width).
