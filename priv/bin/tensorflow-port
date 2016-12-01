@@ -300,16 +300,25 @@ def graph_outputs(graph):
     for val in graph.get_collection("outputs"):
         tensor_map.update(json.loads(val))
     keys = tensor_map.keys()
-    tensors = [graph.get_tensor_by_name(tensor_map[key]) for key in keys]
+    def tensor_for_key(key):
+        try:
+            return graph.get_tensor_by_name(tensor_map[key])
+        except ValueError, e:
+            raise ModelError("Invalid output for '%s': %s" % (key, e))
+    tensors = [tensor_for_key(key) for key in keys]
     return tensors, keys
 
 def graph_inputs(graph):
     tensor_map = {}
     for val in graph.get_collection("inputs"):
         tensor_map.update(json.loads(val))
+    def tensor_for_key(key):
+        try:
+            return graph.get_tensor_by_name(tensor_map[key])
+        except ValueError, e:
+            raise ModelError("Invalid input for '%s': %s" % (key, e))
     return {
-        key: graph.get_tensor_by_name(tensor_name)
-        for key, tensor_name in tensor_map.items()
+        key: tensor_for_key(key) for key in tensor_map
     }
 
 def tensor_info(tensor):

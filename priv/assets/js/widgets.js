@@ -945,7 +945,15 @@ guild.widget.register("run-model", function(widget, state) {
         if (error.status == 404) {
             var msg = "This run does not contain an exported model";
             setTensorTableError("input-tensors", msg);
-            setTensorTableError("output-tensors", msg);
+            setTensorTableError("output-tensors", "");
+        } else if (error.status == 400) {
+            setTensorTableError("input-tensors", "");
+            setTensorTableError("output-tensors", "");
+            if (/invalid output/i.exec(error.responseText)) {
+                setTensorTableError("output-tensors", error.responseText);
+            } else {
+                setTensorTableError("input-tensors", error.responseText);
+            }
         }
     };
 
