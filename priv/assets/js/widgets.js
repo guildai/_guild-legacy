@@ -915,11 +915,9 @@ guild.widget.register("run-model", function(widget, state) {
 
     var missingTensorsMsg = function(name) {
         if (name == "input-tensors") {
-            return "There are no inputs defined for this model "
-                   + "- it cannot be run";
+            return "There are no inputs defined for this model";
         } else if (name == "output-tensors") {
-            return "There are no outputs defined for thie model "
-                   + "- it cannot be run";
+            return "There are no outputs defined for thie model";
         } else {
             throw name;
         }
