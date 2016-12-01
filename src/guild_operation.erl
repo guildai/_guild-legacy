@@ -194,25 +194,19 @@ format_env_attr(Env) ->
 %% Snapshot project
 %% ===================================================================
 
-snapshot_project(#state{rundir=RunDir,
-                        op=#op{section=Section, project=Project}}=State) ->
+snapshot_project(#state{rundir=RunDir, op=#op{project=Project}}=State) ->
+    Bin = guild_app:priv_bin("snapshot-project"),
+    ProjectDir = guild_project:project_dir(Project),
     GuildDir = guild_rundir:guild_dir(RunDir),
-    copy_project(Project, GuildDir),
-    copy_viewdef(Section, Project, GuildDir),
+    RunRootPath = guild_project_util:runroot(Project),
+    RunRoot = project_relative_runroot(ProjectDir, RunRootPath),
+    guild_exec:run_quiet([Bin, ProjectDir, GuildDir, RunRoot]),
     State.
 
-copy_project(Project, GuildDir) ->
-    Src = guild_project:project_file(Project),
-    copy_file(Src, GuildDir).
-
-copy_file(Src, DestDir) ->
-    Dest = filename:join(DestDir, filename:basename(Src)),
-    {ok, _} = file:copy(Src, Dest).
-
-copy_viewdef(Section, Project, GuildDir) ->
-    case guild_viewdef:viewdef_path(Section, Project) of
-        {ok, Path} -> copy_file(Path, GuildDir);
-        error -> []
+project_relative_runroot(ProjectDir, RunRoot) ->
+    case lists:prefix(ProjectDir, RunRoot) of
+        true -> lists:nthtail(length(ProjectDir), RunRoot);
+        false -> ""
     end.
 
 %% ===================================================================

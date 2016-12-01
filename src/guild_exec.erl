@@ -14,7 +14,8 @@
 
 -module(guild_exec).
 
--export([init/0, run_link/2, send/2, stop_and_wait/2, apply_user_opts/2]).
+-export([init/0, run_link/2, run_quiet/1, send/2, stop_and_wait/2,
+         apply_user_opts/2]).
 
 init() ->
     ok = application:ensure_started(erlexec).
@@ -22,13 +23,18 @@ init() ->
 run_link(Args, Opts) ->
     exec:run_link(Args, Opts).
 
+run_quiet(Args) ->
+    case exec:run(Args, [sync, stdout, stderr]) of
+        {ok, _} -> ok;
+        {error, Err} -> error({exec_run, Err, Args})
+    end.
+
 send(Pid, Bin) ->
     exec:send(Pid, Bin).
 
 stop_and_wait(Pid, Timeout) ->
     exec:stop_and_wait(Pid, Timeout).
 
-%% TODO: delete this function once operation2 is promoted
 apply_user_opts(Opts, Acc) ->
     lists:foldl(fun maybe_user_opt/2, Acc, Opts).
 
