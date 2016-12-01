@@ -2,17 +2,24 @@
 
 project_dir="${1}"
 guild_dir="${2}"
-runs_root="${3}"
+sources="${3}"
 
-dest_dir="$guild_dir/project"
+dest_dir="$guild_dir/sources"
+
+# Disable glob expansion as it conflicts with rsync's patterns
+set -f
+
+sources-includes() {
+    for source in $sources; do
+        echo "--include $source"
+    done
+}
 
 snapshot-project() {
     mkdir -p "$dest_dir"
     rsync -am \
-          --exclude="/$runs_root" \
-          --include="*/" \
           --include="/Guild" \
-          --include="*.py" \
+          $(sources-includes) \
           --exclude="*" \
           "$project_dir/" "$dest_dir/"
 }

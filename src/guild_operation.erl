@@ -194,20 +194,20 @@ format_env_attr(Env) ->
 %% Snapshot project
 %% ===================================================================
 
-snapshot_project(#state{rundir=RunDir, op=#op{project=Project}}=State) ->
+snapshot_project(#state{rundir=RunDir,
+                        op=#op{section=Section, project=Project}}=State) ->
     Bin = guild_app:priv_bin("snapshot-project"),
     ProjectDir = guild_project:project_dir(Project),
     GuildDir = guild_rundir:guild_dir(RunDir),
-    RunRootPath = guild_project_util:runroot(Project),
-    RunRoot = project_relative_runroot(ProjectDir, RunRootPath),
-    guild_exec:run_quiet([Bin, ProjectDir, GuildDir, RunRoot]),
+    Sources = section_sources(Section, Project),
+    guild_exec:run_quiet([Bin, ProjectDir, GuildDir, Sources]),
     State.
 
-project_relative_runroot(ProjectDir, RunRoot) ->
-    case lists:prefix(ProjectDir, RunRoot) of
-        true -> lists:nthtail(length(ProjectDir), RunRoot);
-        false -> ""
-    end.
+section_sources({SectionPath, _}, Project) ->
+    Attrs =
+        guild_project:section_attr_union(
+          Project, [SectionPath, ["project"]]),
+    proplists:get_value("sources", Attrs, "").
 
 %% ===================================================================
 %% Errors log
