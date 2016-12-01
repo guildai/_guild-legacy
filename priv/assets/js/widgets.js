@@ -362,7 +362,10 @@ guild.widget.register("timeseries", function(widget, state) {
 
     var runUpdated = function(run) {
         ensureWidgetInit();
-        guild.data.fetch(guild.widget.runSource(widget, run), update);
+        var url = guild.widget.runSource(widget, run);
+        if (url) {
+            guild.data.fetch(guild.widget.runSource(widget, run), update);
+        }
     };
 
     var ensureWidgetInit = function() {
