@@ -356,9 +356,14 @@ class Model(object):
         self._serving_path = path
 
     def run(self, instances, trace_stats=False):
+        import tensorflow as tf
         inputs = self._inputs_feed_dict(instances)
-        run_result = self._session_run(inputs, trace_stats)
-        return self._run_result_outputs(run_result)
+        try:
+            run_result = self._session_run(inputs, trace_stats)
+        except tf.errors.InvalidArgumentError, e:
+            raise ModelError(e.message)
+        else:
+            return self._run_result_outputs(run_result)
 
     def _session_run(self, inputs, trace_stats):
         if trace_stats:
@@ -468,6 +473,8 @@ def handle_run_model(req, trace_stats=False):
     try:
         outputs = active_model.run(instances, trace_stats)
     except ValueError, e:
+        send_error_response(req, [str(e)])
+    except ModelError, e:
         send_error_response(req, [str(e)])
     else:
         send_ok_response(req, [json.dumps(outputs)])
