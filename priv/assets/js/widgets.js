@@ -429,7 +429,13 @@ guild.widget.register("timeseries", function(widget, state) {
     };
 
     var formatFun = function(format) {
-        return format ? function(x) {return numeral(x).format(format);} : null;
+        if (format) {
+            return function(x) {
+                return guild.util.tryFormat(x, format);
+            };
+        } else {
+            return null;
+        }
     };
 
     var initTimeseriesRedrawHandler = function(chart) {

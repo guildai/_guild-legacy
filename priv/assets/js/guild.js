@@ -250,13 +250,27 @@ guild.util = new function() {
     };
 
     var formatValue = function(value, format) {
-        var split = splitFormat(format);
-        var formatted = numeral(value).format(split.format);
+        var split = splitFormatAndSuffix(format);
+        var formatted;
+        if (split.format.endsWith("e")) {
+            formatted = formatExponential(value, split.format.slice(0, -1));
+        } else {
+            formatted = numeral(value).format(split.format);
+        }
         return formatted + split.suffix;
 
     };
 
-    var splitFormat = function(format) {
+    var formatExponential = function(value, format) {
+        var match = /0\.(0+)/.exec(format);
+        if (match) {
+            return value.toExponential(match[1].length);
+        } else {
+            return value.toExponential();
+        }
+    };
+
+    var splitFormatAndSuffix = function(format) {
         // Guild specific additions to numeral formatting support
         var suffixes = [" ms"];
         for (var i in suffixes) {
