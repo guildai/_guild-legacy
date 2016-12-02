@@ -377,7 +377,7 @@ class Model(object):
         run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
         output = self._session.run(
             self._output_tensors,
-            feed_dict=inputs,
+            inputs,
             options=run_options,
             run_metadata=meta)
         self._update_stats(meta)
