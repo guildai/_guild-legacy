@@ -400,11 +400,14 @@ runtime_for_section(Section, Project) ->
             unsupported_runtime_error(Val)
     end.
 
-no_runtime_error({["model"], _}) ->
-    guild_cli:cli_error("runtime not specified for model");
-no_runtime_error({["model", Name], _}) ->
+no_runtime_error({[Type], _}) ->
     guild_cli:cli_error(
-      io_lib:format("runtime not specified for model '~s'", [Name])).
+      io_lib:format(
+        "runtime not specified for ~s", [Type]));
+no_runtime_error({[Type, Name], _}) ->
+    guild_cli:cli_error(
+      io_lib:format(
+        "runtime not specified for '~s' ~s", [Name, Type])).
 
 unsupported_runtime_error(Val) ->
     guild_cli:cli_error(io_lib:format("unknown runtime '~s'", [Val])).
