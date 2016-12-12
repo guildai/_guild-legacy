@@ -10,7 +10,7 @@
 <ul class="nav navbar-nav">
   {% for item in viewdef|navbar_links %}
   <li class="{{item|navbar_item_active_class:active_view}}">
-    <a href="{{item|navbar_item_link:params}}"><i class="fa fa-{{item.icon}} fa-fw"></i> {{item.label}}</a>
+    <a href="{{item|navbar_item_link:params}}"><i class="fa fa-{{item.icon|resolve_icon_alias}} fa-fw"></i> {{item.label}}</a>
   </li>
   {% endfor %}
 </ul>
