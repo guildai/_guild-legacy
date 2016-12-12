@@ -5,6 +5,7 @@ compile:
 
 clean: clean-local-deps
 	rm -rf build; rm -f rebar.lock
+	rm -f compile_commands.json
 
 clean-local-deps: $(LOCAL_DEPS:=.clean)
 
