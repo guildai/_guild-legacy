@@ -1,15 +1,24 @@
 #!/bin/sh -eu
 
-ERL=$(which erl)
-ERL_PREFIX=${ERL%/*/*}
-export ROOTDIR=$ERL_PREFIX/lib/erlang
+realpath() {
+    if [ "$(uname -s)" = "Darwin" ]; then
+        perl -e 'use Cwd "abs_path";print abs_path(shift)' "$1"
+    else
+        readlink -f "$1"
+    fi
+}
+
+ERL=$(which erl || true)
+if [ "$ERL" = "" ]; then
+    echo "ERROR: Cannot find Erlang, which is required to run Guild" >&2
+    exit 1
+fi
+
+REAL_ERL=$(realpath $ERL)
+export ROOTDIR=${REAL_ERL%/*/*}
 export BINDIR=$(echo $ROOTDIR/erts-*/bin)
 
-if [ "$(uname -s)" = "Darwin" ]; then
-    SCRIPT=`perl -e 'use Cwd "abs_path";print abs_path(shift)' $0`
-else
-    SCRIPT=$(readlink -f "$0")
-fi
+SCRIPT=$(realpath $0)
 SCRIPTDIR=${SCRIPT%/*}
 export ERL_LIBS=$SCRIPTDIR/../build/default/lib
 
