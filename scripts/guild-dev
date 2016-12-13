@@ -1,4 +1,8 @@
-#!/bin/sh -eu
+#!/bin/bash -eu
+
+if [ "${TRACE_EXEC:-}" = "1" ]; then
+    set -x
+fi
 
 realpath() {
     if [ "$(uname -s)" = "Darwin" ]; then
@@ -16,7 +20,9 @@ fi
 
 REAL_ERL=$(realpath $ERL)
 export ROOTDIR=${REAL_ERL%/*/*}
-export BINDIR=$(echo $ROOTDIR/erts-*/bin)
+
+read -r -a ERTS_PATHS <<< "$(echo $ROOTDIR/erts-*/bin)"
+export BINDIR=${ERTS_PATHS[-1]}
 
 SCRIPT=$(realpath $0)
 SCRIPTDIR=${SCRIPT%/*}
