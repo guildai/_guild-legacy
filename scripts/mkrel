@@ -2,13 +2,19 @@
 
 PKG_NAME=guild
 
-ERTS_VER=8.0
+# If you change ERTS_VER you MUST also change REL_OTP_APPS to specify
+# the corresponding app versions for the new version of
+# Erlang. Failing to keep these versions in sync will almost certainly
+# cause hard to diagnose bugs in Guild.
+#
+ERTS_VER=8.1   # !!!! READ ABOVE COMMENT BEFORE CHANGING !!!!
 REL_OTP_APPS=(
-    compiler
-    inets
-    kernel
-    stdlib
-    syntax_tools
+    compiler-7.0.2
+    crypto-3.7.1
+    inets-6.3.3
+    kernel-5.1
+    stdlib-3.1
+    syntax_tools-2.1
 )
 
 REL_ROOT=releases
@@ -18,9 +24,14 @@ GUILD_BUILD="$GUILD_SRC/build/default"
 
 VERSION="${1:-}"
 
-usage-error() {
-    echo "usage: $0 VERSION"
-    exit 1
+###################################################################
+# Init
+###################################################################
+
+init() {
+    check-user-args
+    init-args
+    check-args
 }
 
 check-user-args() {
@@ -62,6 +73,24 @@ package-arch() {
     esac
 }
 
+check-args() {
+    if [ ! -e "$ERLANG_HOME/erts-$ERTS_VER" ]; then
+        echo "Erlang erts version $ERTS_VER (defined by ERTS_VER) is not installed, quitting"
+        exit 1
+    fi
+}
+
+###################################################################
+# Create package
+###################################################################
+
+create-package() {
+    echo "Creating package $REL_PKG"
+    init-release
+    install-erlang
+    install-guild
+}
+
 init-release() {
     mkdir -p $REL_DIR
 }
@@ -84,9 +113,8 @@ install-erts() {
 install-erlang-libs() {
     local app versioned_app app_src app_dest
     for app in ${REL_OTP_APPS[@]}; do
-        versioned_app=$(basename $ERLANG_HOME/lib/$app-*)
-        app_src=$ERLANG_HOME/lib/$versioned_app
-        app_dest=$REL_DIR/lib/$versioned_app
+        app_src=$ERLANG_HOME/lib/$app
+        app_dest=$REL_DIR/lib/$app
         mkdir -p $app_dest
         sync-otp-app $app_src/ $app_dest/
     done
@@ -117,22 +145,27 @@ install-guild-libs() {
     done
 }
 
-init() {
-    check-user-args
-    init-args
-}
-
-create-package() {
-    echo "Creating package $REL_PKG"
-    init-release
-    install-erlang
-    install-guild
-}
+###################################################################
+# Create archive
+###################################################################
 
 create-archive() {
     echo "Creating archive $REL_PKG.tar.gz"
     tar -C $REL_ROOT -czf $REL_ROOT/$REL_PKG.tar.gz $REL_PKG
 }
+
+###################################################################
+# Shared
+###################################################################
+
+usage-error() {
+    echo "usage: $0 VERSION"
+    exit 1
+}
+
+###################################################################
+# Main
+###################################################################
 
 main() {
     init
