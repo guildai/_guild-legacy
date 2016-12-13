@@ -203,7 +203,18 @@ handle_op_exit(State) ->
 %% Exec exited
 %% ===================================================================
 
+%% Collectors may exit deliberately for various reasons - e.g. when
+%% required software is not available or the environment doesn't
+%% otherwise support collection. This is a controlled exit and is
+%% indicated by an exit code of 127 (32512 encoded). Collectors should
+%% print an appropriate message to stderr as an indicator to the user,
+%% however, the exit should not be treated as an error.
+%%
+-define(controlled_exit_status, 32512).
+
 handle_exec_exit(normal, State) ->
+    {stop, normal, State};
+handle_exec_exit({exit_status, ?controlled_exit_status}, State) ->
     {stop, normal, State};
 handle_exec_exit({exit_status, Status}, State) ->
     {stop, {exec_exit, exec:status(Status)}, State}.
