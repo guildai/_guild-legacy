@@ -22,7 +22,7 @@ REAL_ERL=$(realpath $ERL)
 export ROOTDIR=${REAL_ERL%/*/*}
 
 read -r -a ERTS_PATHS <<< "$(echo $ROOTDIR/erts-*/bin)"
-export BINDIR=${ERTS_PATHS[-1]}
+export BINDIR=${ERTS_PATHS[*]: -1}
 
 SCRIPT=$(realpath $0)
 SCRIPTDIR=${SCRIPT%/*}
