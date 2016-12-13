@@ -48,29 +48,11 @@ init-args() {
 }
 
 package-os() {
-    local os=`uname -o`
-    case "$os" in
-        GNU/Linux)
-            echo "linux"
-            ;;
-        *)
-            echo "Unknown OS: $arch"
-            exit 1
-            ;;
-    esac
+    uname -s | tr "[:upper:]" "[:lower:]"
 }
 
 package-arch() {
-    local arch=`uname -i`
-    case "$arch" in
-        x86_64)
-            echo "amd64"
-            ;;
-        *)
-            echo "Unknown architecture: $arch"
-            exit 1
-            ;;
-    esac
+    uname -m
 }
 
 check-args() {
