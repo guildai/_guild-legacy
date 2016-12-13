@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -eu
 
 # Copyright 2016 TensorHub, Inc.
 #
@@ -33,7 +33,7 @@ cpu-cores() {
 }
 
 mem-total() {
-    if [ "" = "Darwin" ]; then
+    if [ "$OS" = "Darwin" ]; then
         # TODO: use sysctl hw.memsize
         echo ""
     else

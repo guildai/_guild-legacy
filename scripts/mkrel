@@ -85,7 +85,7 @@ install-erlang() {
 
 install-erlang-bin() {
     mkdir -p $REL_DIR/bin
-    cp $ERLANG_HOME/bin/{start.boot,start_clean.boot} $REL_DIR/bin/
+    cp -f $ERLANG_HOME/bin/{start.boot,start_clean.boot} $REL_DIR/bin/
 }
 
 install-erts() {
@@ -118,7 +118,8 @@ install-guild() {
 }
 
 install-guild-bin() {
-    install -D $GUILD_SRC/scripts/guild-rel $REL_DIR/bin/guild
+    mkdir -p $REL_DIR/bin
+    cp $GUILD_SRC/scripts/guild-rel $REL_DIR/bin/guild
 }
 
 install-guild-libs() {
@@ -131,7 +132,7 @@ install-guild-libs() {
 set-guild-version() {
     local guild_app
     guild_app=$REL_DIR/lib/guild/ebin/guild.app
-    sed -i s/0.0.0/$VERSION/ $guild_app
+    sed -i -e s/0.0.0/$VERSION/ $guild_app
 }
 
 ###################################################################
