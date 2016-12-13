@@ -86,12 +86,12 @@ check-args() {
 
 create-package() {
     echo "Creating package $REL_PKG"
-    init-release
+    init-release-dir
     install-erlang
     install-guild
 }
 
-init-release() {
+init-release-dir() {
     mkdir -p $REL_DIR
 }
 
@@ -132,6 +132,7 @@ sync-otp-app() {
 install-guild() {
     install-guild-bin
     install-guild-libs
+    set-guild-version
 }
 
 install-guild-bin() {
@@ -143,6 +144,12 @@ install-guild-libs() {
     for app in `ls $GUILD_BUILD/lib`; do
         sync-otp-app $GUILD_BUILD/lib/$app/ $REL_DIR/lib/$app/
     done
+}
+
+set-guild-version() {
+    local guild_app
+    guild_app=$REL_DIR/lib/guild/ebin/guild.app
+    sed -i s/0.0.0/$VERSION/ $guild_app
 }
 
 ###################################################################
