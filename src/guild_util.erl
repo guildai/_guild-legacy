@@ -408,5 +408,5 @@ format_exec_error(Err) ->
     end.
 
 strip(S0) ->
-    {match, [S]} = re:run(S0, "^\s*(.*?)\s*$", [{capture, [1], list}]),
+    {match, [S]} = re:run(S0, "^\s*(.*?)\s*$", [{capture, [1], list}, dotall]),
     S.
