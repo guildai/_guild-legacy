@@ -18,6 +18,7 @@ upgrade:
 
 test: compile
 	test/internal $(TESTS)
+	priv/bin/tensorflow-port test
 
 test-operations: compile
 	test/operations
