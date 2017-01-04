@@ -58,7 +58,7 @@ project_viewdef_section(Project) ->
 
 viewdef_path(Model, Project) ->
     case viewdef_attr(Model, Project) of
-        {ok, Val} -> viewdef_path(Val, Project);
+        {ok, Val} -> {ok, viewdef_path_(Val, Project)};
         error -> error
     end.
 
@@ -72,6 +72,9 @@ model_viewdef_attr(Model) ->
 
 project_viewdef_attr(Project) ->
     guild_project:attr(Project, ["project"], "view").
+
+viewdef_path_(Val, Project) ->
+    filename:absname(Val ++ ".config", guild_project:project_dir(Project)).
 
 %% ===================================================================
 %% Generate viewdef
