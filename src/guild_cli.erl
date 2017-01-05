@@ -35,7 +35,8 @@ parser() ->
 
 parser_commands() ->
     parser_commands(
-      ["delete-run",
+      ["cmds-json",
+       "delete-run",
        "evaluate",
        "export",
        "import",
@@ -54,20 +55,21 @@ parser_commands(Names) ->
     Info = [{Name, cmd_info(Name)} || Name <- Names],
     [{Name, Desc, M:parser()} || {Name, {M, Desc}} <- Info].
 
-cmd_info("delete-run")     -> {guild_delete_run_cmd, "deletes a run"};
-cmd_info("evaluate")       -> {guild_eval_cmd, "evaluate a trained model"};
-cmd_info("export")         -> {guild_export_cmd, "export run results"};
-cmd_info("import")         -> {guild_import_cmd, "import run results"};
-cmd_info("init")           -> {guild_init_cmd, "initialize a Guild project"};
-cmd_info("list-attrs")     -> {guild_list_attrs_cmd, "list run attributes"};
-cmd_info("list-models")    -> {guild_list_models_cmd, "list project models"};
-cmd_info("list-runs")      -> {guild_list_runs_cmd, "list project runs"};
-cmd_info("list-series")    -> {guild_list_series_cmd, "list run series names"};
-cmd_info("prepare")        -> {guild_prepare_cmd, "prepare model for training"};
-cmd_info("serve")          -> {guild_serve_cmd, "serve a trained model"};
-cmd_info("status")         -> {guild_status_cmd, "train a model"};
-cmd_info("train")          -> {guild_train_cmd, "show project status"};
-cmd_info("view")           -> {guild_view_cmd, "start Guild viewer"}.
+cmd_info("cmds-json")   -> {guild_cmds_json_cmd, "commands JSON (hidden)"};
+cmd_info("delete-run")  -> {guild_delete_run_cmd, "deletes a run"};
+cmd_info("evaluate")    -> {guild_eval_cmd, "evaluate a trained model"};
+cmd_info("export")      -> {guild_export_cmd, "export run results"};
+cmd_info("import")      -> {guild_import_cmd, "import run results"};
+cmd_info("init")        -> {guild_init_cmd, "initialize a Guild project"};
+cmd_info("list-attrs")  -> {guild_list_attrs_cmd, "list run attributes"};
+cmd_info("list-models") -> {guild_list_models_cmd, "list project models"};
+cmd_info("list-runs")   -> {guild_list_runs_cmd, "list project runs"};
+cmd_info("list-series") -> {guild_list_series_cmd, "list run series names"};
+cmd_info("prepare")     -> {guild_prepare_cmd, "prepare model for training"};
+cmd_info("serve")       -> {guild_serve_cmd, "serve a trained model"};
+cmd_info("status")      -> {guild_status_cmd, "train a model"};
+cmd_info("train")       -> {guild_train_cmd, "show project status"};
+cmd_info("view")        -> {guild_view_cmd, "start Guild viewer"}.
 
 %% ===================================================================
 %% Main
@@ -96,9 +98,9 @@ init_tty_error_logger() ->
 %% ===================================================================
 
 global_opts() ->
-    [{trace,    "--trace",    "trace a module/function", [hidden]},
-     {reload,   "--reload",   "reload modified modules", [hidden, flag]},
-     {observer, "--observer", "run observer",            [hidden, flag]}].
+    [{trace,     "--trace",     "trace a module/function", [hidden]},
+     {reload,    "--reload",    "reload modified modules", [hidden, flag]},
+     {observer,  "--observer",  "run observer",            [hidden, flag]}].
 
 apply_global_opts(Opts) ->
     guild_trace:init_from_opts(Opts),
