@@ -64,8 +64,12 @@ handle_msg({'DOWN', _, process, Op, Reason}, noreply, #state{op=Op}=State) ->
     handle_op_exit(Reason, State).
 
 handle_op_exit(ExitReason, #state{rundir=RunDir}) ->
-    write_exit_attrs(RunDir, ExitReason),
-    delete_lock(RunDir),
+    try
+        write_exit_attrs(RunDir, ExitReason),
+        delete_lock(RunDir)
+    catch
+        error:enoent -> log_rundir_deleted()
+    end,
     {stop, normal}.
 
 write_exit_attrs(RunDir, ExitReason) ->
@@ -79,3 +83,7 @@ op_exit_status({exit_status, N}) -> N.
 
 delete_lock(RunDir) ->
     ok = file:delete(lock_file(RunDir)).
+
+log_rundir_deleted() ->
+    guild_log:internal(
+      "Error updating run attributes (was RUNDIR deleted?)~n", []).

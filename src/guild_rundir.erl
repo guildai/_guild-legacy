@@ -38,7 +38,10 @@ write_attrs(RunDir, Attrs) ->
 
 write_attr(Dir, Key, Val) ->
     Path = filename:join(Dir, Key),
-    ok = file:write_file(Path, val_to_string(Val)).
+    case file:write_file(Path, val_to_string(Val)) of
+        ok -> ok;
+        {error, enoent} -> error(enoent)
+    end.
 
 val_to_string(undefined)                       -> "";
 val_to_string(A) when is_atom(A)               -> atom_to_list(A);
