@@ -29,10 +29,12 @@ parser() ->
       "[OPTION]... [DIR]",
       "Initialize a Guild project.\n"
       "\n"
-      "By default Guild creates a commented project stub in DIR. Specify "
-      "a template to create a specific project type. Guild provides "
-      "preconfigured templates that can be referenced by name (see list below) "
-      "or you may specify a full path to your own Guild template.\n"
+      "By default Guild creates an annotated project file in DIR (defaults "
+      "to current directory) or prints to standard output if --print is "
+      "specified. Specify a template to create a specific project type. "
+      "Guild provides preconfigured templates that can be referenced by "
+      "name (see list below) or you may specify a full path to your own "
+      "Guild template.\n"
       "\n"
       "Available template names:\n"
       "\n"
@@ -47,7 +49,9 @@ init_opts() ->
      {template, "--template",
       "propject template", [{metavar, "PATH_OR_NAME"}]},
      {train_cmd, "--train-cmd",
-      "script used to train the model", []}].
+      "script used to train the model", []},
+     {print, "--print",
+      "print project file to stdout instead of creating a file", [flag]}].
 
 %% ===================================================================
 %% Main
@@ -59,8 +63,7 @@ main(Opts, Args) ->
     Template = template_source(Opts),
     Vars = template_vars(Dir, Opts),
     Rendered = render_template(Template, Vars),
-    write_guild_file(Dir, Rendered),
-    guild_cli:out("Initialized Guild project at '~s'~n", [Dir]).
+    write_or_print_guild_file(print_or_write_opt(Opts), Rendered, Dir).
 
 project_dir_from_args([])    -> filename:absname("");
 project_dir_from_args([Dir]) -> filename:absname(Dir).
@@ -132,6 +135,18 @@ handle_render({ok, Bin}) -> Bin.
 bad_template_error() ->
     guild_cli:cli_error(
       "unable to initialize project - template contains errors").
+
+print_or_write_opt(Opts) ->
+    case proplists:get_bool(print, Opts) of
+        true -> print;
+        false -> write
+    end.
+
+write_or_print_guild_file(print, Rendered, _Dir) ->
+    io:format(user, Rendered, []);
+write_or_print_guild_file(write, Rendered, Dir) ->
+    write_guild_file(Dir, Rendered),
+    guild_cli:out("Initialized Guild project at '~s'~n", [Dir]).
 
 write_guild_file(Dir, Bin) ->
     Path = guild_project:project_file_for_dir(Dir),
