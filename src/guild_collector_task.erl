@@ -187,8 +187,13 @@ log_keytsvs(KTSVs, #state{rundir=RunDir}) ->
     handle_db_result(guild_run_db:log_series_values(RunDir, KTSVs)).
 
 handle_db_result(ok) -> ok;
+handle_db_result({error, read_only}) ->
+    guild_log:internal(
+      "Error logging series values: read_only "
+      "(was RUNDIR deleted?)~n", []);
 handle_db_result({error, Err}) ->
-    guild_log:internal("Error logging series values: ~p~n", [Err]).
+    guild_log:internal(
+      "Error logging series values: ~p~n", [Err]).
 
 %% ===================================================================
 %% Operation exited - run a final time

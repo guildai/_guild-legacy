@@ -467,7 +467,9 @@ try_insert(Db, SQL, Args, N) ->
     case sqlite3:sql_exec_timeout(Db, SQL, Args, infinity) of
         {rowid, _} -> ok;
         {error, 5, _LockedMsg} ->
-            try_insert_again(Db, SQL, Args, N)
+            try_insert_again(Db, SQL, Args, N);
+        {error, 8, _ReadOnlyDbMsg} ->
+            {error, read_only}
     end.
 
 try_insert_again(Db, SQL, Args, N) ->
