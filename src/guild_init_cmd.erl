@@ -16,7 +16,7 @@
 
 -export([parser/0, main/2]).
 
--define(default_template, "annotated").
+-define(default_template, "tensorflow").
 
 -behavior(erlydtl_library).
 
@@ -34,9 +34,10 @@ parser() ->
       "preconfigured templates that can be referenced by name (see list below) "
       "or you may specify a full path to your own Guild template.\n"
       "\n"
-      "Available templates:\n"
+      "Available template names:\n"
       "\n"
-      "!!  tensorflow     use for typical TensorFlow project\n",
+      "!!  annotated      fully annotated project\n"
+      "!!  tensorflow     use for typical TensorFlow project (default)\n",
       init_opts(),
       [{pos_args, {0, 1}}]).
 
@@ -44,7 +45,7 @@ init_opts() ->
     [{name, "--name",
      "project name (defaults to directory name)"},
      {template, "--template",
-      "template Guild propject", [{metaval, "GUILD_FILE"}]},
+      "propject template", [{metavar, "PATH_OR_NAME"}]},
      {train_cmd, "--train-cmd",
       "script used to train the model", []}].
 
