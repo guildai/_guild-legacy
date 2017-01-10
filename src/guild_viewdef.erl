@@ -47,7 +47,9 @@ viewdef_section(Model, Project) ->
        fun() -> project_viewdef_section(Project) end]).
 
 model_viewdef_section({["model", Name], _}, Project) ->
-    guild_project:section(Project, ["view", Name]).
+    guild_project:section(Project, ["view", Name]);
+model_viewdef_section(_Section, _Project) ->
+    error.
 
 project_viewdef_section(Project) ->
     guild_project:section(Project, ["view"]).
