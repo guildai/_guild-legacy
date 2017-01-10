@@ -1,13 +1,15 @@
 #-*-conf-*-
 
+####################################################################
+#
 # This is an annotated Guild project file. Review the comments below
 # and modify the attributes as needed for your project. Feel free to
 # delete comments as you become familiar with the project structure.
 #
 # For a complete project reference, see:
 #
-#   https://guild.ai/docs/projectref/
-
+#   https://guild.ai/project-reference/
+#
 ####################################################################
 
 [project]
