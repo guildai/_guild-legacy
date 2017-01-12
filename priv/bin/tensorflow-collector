@@ -16,6 +16,7 @@
 
 import json
 import os
+import subprocess
 import sys
 
 from tensorflow.python.summary import event_multiplexer
@@ -46,6 +47,7 @@ def print_scalars():
 
 def latest_scalars():
     refresh_event_loaders()
+    sync_file_system()
     data = {}
     for run, reader in event_loaders.items():
         add_scalars_from_events(reader.Load(), run, data)
@@ -81,6 +83,9 @@ def refresh_event_loaders():
 
 def init_event_loader(path):
     return event_accumulator._GeneratorFromPath(path)
+
+def sync_file_system():
+    subprocess.check_call(["sync", "-f", RUNDIR])
 
 ###################################################################
 # Print
