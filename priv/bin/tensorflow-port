@@ -279,7 +279,7 @@ class ModelStats(object):
 
     def _last_memory_bytes(self):
         if self._batches:
-            return self._batches[-1][2] * 1024
+            return self._batches[-1][2]
         else:
             return None
 
@@ -391,11 +391,12 @@ class Model(object):
         ss.ProcessStepStatsStr(meta.step_stats.SerializeToString())
         stats_str = ss.GetOutputString()
         m = re.search(
-            "curr=([0-9]+) count=([0-9]+).*\n(.*) avg KB",
+            "Timings \(microseconds\): count=([0-9]+) curr=([0-9]+)\n"
+            "Memory \(bytes\): count=[0-9]+ curr=([0-9]+)",
             stats_str, re.DOTALL)
         if m is not None:
-            time, count, memory = m.groups()
-            self._stats.update(int(count), int(time), float(memory))
+            count, time, memory = m.groups()
+            self._stats.update(int(count), int(time), int(memory))
 
     def _session_run_default(self, inputs):
         return self._session.run(self._output_tensors, feed_dict=inputs)
