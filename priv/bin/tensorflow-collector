@@ -24,8 +24,6 @@ from tensorflow.python.summary import event_accumulator
 
 RUNDIR = None
 
-RELOAD_INTERVAL = 5
-
 event_loaders = {}
 
 ###################################################################
