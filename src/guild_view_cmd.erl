@@ -27,7 +27,18 @@ parser() ->
     cli:parser(
       "guild view",
       "[OPTION]...",
-      "Start project viewer.",
+      "Start a web base app to view and interact with project runs.\n"
+      "\n"
+      "When the server is running, open your browser on the specified port "
+      "(default is " ++ integer_to_list(?default_port)
+      ++ ") - e.g. http://localhost:" ++ integer_to_list(?default_port) ++ ".\n"
+      "\n"
+      "To log server requests, use --logging.\n"
+      "\n"
+      "To modify the refresh interval (default is "
+      ++ integer_to_list(?default_refresh_interval)
+      ++ " seconds), use --interval. This is useful for "
+      "longer running operations that don't need to be refreshed often.",
       view_options() ++ guild_cmd_support:project_options(),
       [{pos_args, 0}]).
 
