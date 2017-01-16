@@ -31,7 +31,7 @@ init([Op]) ->
     {ok, #state{rundir=RunDir}}.
 
 handle_task(#state{rundir=RunDir}) ->
-    Attrs = sys_attrs() ++ gpu_attrs(),
+    Attrs = sys_attrs() ++ gpu_attrs() ++ runtime_attrs(),
     guild_run_db:log_attrs(RunDir, Attrs),
     {stop, normal}.
 
@@ -56,3 +56,28 @@ apply_gpu_attrs(Attrs, Acc) ->
     [{Key("name"), Name},
      {Key("memory"), Memory}
      |Acc].
+
+runtime_attrs() ->
+    %% TODO: We're cheating here and hard-coding a TF function but
+    %% this needs to come from the associated model via an appropriate
+    %% lookup.
+    Bin = guild_app:priv_bin("tensorflow-attrs"),
+    case exec:run(Bin, [stdout, stderr, sync]) of
+        {ok, Result} ->
+            parse_tensorflow_attrs(proplists:get_value(stdout, Result));
+        {error, Result} ->
+            guild_log:internal(
+              "ERROR reading TensorFlow stats:~n~p~n", [Result]),
+            []
+    end.
+
+parse_tensorflow_attrs(undefined) ->
+    [];
+parse_tensorflow_attrs(Out) ->
+    [parse_attr(Line) || Line <- split_lines(Out)].
+
+split_lines(Out) -> re:split(Out, "\n", [trim]).
+
+parse_attr(Line) ->
+    [Key, Val] = re:split(Line, "=", [{parts, 2}]),
+    {Key, Val}.
