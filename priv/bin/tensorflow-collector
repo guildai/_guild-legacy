@@ -83,7 +83,18 @@ def init_event_loader(path):
     return event_accumulator._GeneratorFromPath(path)
 
 def sync_file_system():
-    subprocess.check_call(["sync", "-f", RUNDIR])
+    try:
+        try:
+            # Try syncing RUNDIR file system (may fail on some
+            # versions of sync)
+            subprocess.check_call(
+                ["sync", "-f", RUNDIR],
+                stderr=open(os.devnull, 'w'))
+        except subprocess.CalledProcessError:
+            # Fall back on older version of sync without args
+            subprocess.check_call(["sync"])
+    except Exception, e:
+        sys.stderr.write("WARNING: error syncing file system (%s)\n" % e)
 
 ###################################################################
 # Print
