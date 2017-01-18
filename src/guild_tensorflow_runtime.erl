@@ -126,7 +126,7 @@ handle_collector_stderr(Bin, Buf) ->
     Next.
 
 log_collector_stderr({_, [<<"I ", _/binary>>|_]}) -> ok;
-log_collector_stderr({_, Line}) -> guild_log:internal(Line).
+log_collector_stderr({_, Line}) -> guild_log:internal([Line, "\n"]).
 
 %% ===================================================================
 %% Eval op
