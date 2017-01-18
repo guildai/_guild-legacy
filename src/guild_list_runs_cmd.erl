@@ -16,6 +16,8 @@
 
 -export([parser/0, main/2]).
 
+-define(true_filter, fun(_) -> true end).
+
 %% ===================================================================
 %% Parser
 %% ===================================================================
@@ -25,8 +27,14 @@ parser() ->
       "guild list-runs",
       "[OPTION]...",
       "List project runs.",
-      guild_cmd_support:project_options(),
+      list_runs_opts() ++ guild_cmd_support:project_options(),
       [{pos_args, 0}]).
+
+list_runs_opts() ->
+    [{completed, "--completed",
+      "show only completed runs", [flag]},
+     {with_export, "--with-export",
+      "show only runs an exported model", [flag]}].
 
 %% ===================================================================
 %% Main
@@ -34,10 +42,46 @@ parser() ->
 
 main(Opts, []) ->
     Project = guild_cmd_support:project_from_opts(Opts),
-    print_runs(guild_run:runs_for_project(Project)).
+    print_runs(guild_run:runs_for_project(Project), Opts).
 
-print_runs(Runs) ->
-    lists:foreach(fun print_run/1, Runs).
+print_runs(Runs, Opts) ->
+    Filtered = lists:filter(run_filter(Opts), Runs),
+    lists:foreach(fun print_run/1, Filtered).
+
+run_filter(Opts) ->
+    Filters = [status_filter(Opts), exports_filter(Opts)],
+    fun(Run) -> apply_filters(Run, Filters) end.
+
+status_filter(Opts) ->
+    case proplists:get_bool(completed, Opts) of
+        true -> fun(Run) -> is_completed(Run) end;
+        false -> ?true_filter
+    end.
+
+is_completed(Run) ->
+    case guild_run:attr(Run, "exit_status") of
+        {ok, <<"0">>} -> true;
+        {ok, _}       -> false;
+        error         -> false
+    end.
+
+exports_filter(Opts) ->
+    case proplists:get_bool(with_export, Opts) of
+        true -> fun(Run) -> has_export(Run) end;
+        false -> ?true_filter
+    end.
+
+has_export(Run) ->
+    Export = filename:join(guild_run:dir(Run), "model/export.meta"),
+    filelib:is_file(Export).
+
+apply_filters(Run, [F|Rest]) ->
+    case F(Run) of
+        true -> apply_filters(Run, Rest);
+        false -> false
+    end;
+apply_filters(_Run, []) ->
+    true.
 
 print_run(R) ->
     Dir = guild_run:dir(R),
