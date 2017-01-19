@@ -585,9 +585,9 @@ def test_model_stats():
     def assert_equals(stats, name, expected):
         actual = stats[name]
         if actual != expected:
-            STDERR.write("ERROR: %s was %s, expected %s\n"
-                         % (name, actual, expected))
-            sys.exit(1)
+            script_error(
+                "ERROR: %s was %s, expected %s"
+                % (name, actual, expected))
 
     s1 = generate_stats([])
     assert_equals(s1, "last_batch_time_ms", None)
