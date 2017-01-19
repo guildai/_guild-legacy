@@ -35,7 +35,8 @@ parser() ->
 
 parser_commands() ->
     parser_commands(
-      ["cmds-json",
+      ["check",
+       "cmds-json",
        "delete-run",
        "evaluate",
        "export",
@@ -55,6 +56,7 @@ parser_commands(Names) ->
     Info = [{Name, cmd_info(Name)} || Name <- Names],
     [{Name, Desc, M:parser()} || {Name, {M, Desc}} <- Info].
 
+cmd_info("check")       -> {guild_check_cmd, "check Guild setup"};
 cmd_info("cmds-json")   -> {guild_cmds_json_cmd, "commands JSON (hidden)"};
 cmd_info("delete-run")  -> {guild_delete_run_cmd, "deletes a run"};
 cmd_info("evaluate")    -> {guild_eval_cmd, "evaluate a trained model"};
