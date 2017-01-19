@@ -24,7 +24,7 @@ def print_info():
             "WARNING: psutil cannot be imported - system stats "
             "will not be available\n")
     else:
-        sys.stdout.write("psutil_version: %s\n" % psutil.__version__)
+        sys.stdout.write("psutil_version:         %s\n" % psutil.__version__)
     sys.stdout.flush()
 
 if __name__ == "__main__":

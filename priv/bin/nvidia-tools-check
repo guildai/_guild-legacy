@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/bin/bash -eu
 
 # Copyright 2016 TensorHub, Inc.
 #
@@ -14,24 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
+function smi-available() {
+    if which nvidia-smi > /dev/null; then
+        echo yes
+    else
+        echo no
+    fi
+}
 
-import tensorflow as tf
-
-def print_info():
-    sys.stdout.write("tf_version:             %s\n" % version())
-    sys.stdout.write("tf_cuda_support:        %s\n" % cuda_support())
-    sys.stdout.write("tf_gpu_available:       %s\n" % gpu_available())
-    sys.stdout.flush()
-
-def version():
-    return tf.__version__
-
-def cuda_support():
-    return "yes" if tf.test.is_built_with_cuda() else "no"
-
-def gpu_available():
-    return "yes" if tf.test.is_gpu_available() else "no"
-
-if __name__ == "__main__":
-    print_info()
+echo "nvidia_smi_available:   $(smi-available)"

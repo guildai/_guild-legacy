@@ -36,11 +36,12 @@ main(_Opts, []) ->
     guild_app:init_support([exec]),
     print_guild_info(),
     print_tensorflow_info(),
-    print_psutil_info().
+    print_psutil_info(),
+    print_nvidia_tools_info().
 
 print_guild_info() ->
-    io:format(user, "guild_version: ~s~n", [guild:version()]),
-    io:format(user, "guild_home: ~s~n", [guild_home()]).
+    io:format(user, "guild_version:          ~s~n", [guild:version()]),
+    io:format(user, "guild_home:             ~s~n", [guild_home()]).
 
 guild_home() ->
     filename:dirname(guild_app:priv_dir()).
@@ -52,6 +53,10 @@ print_tensorflow_info() ->
 print_psutil_info() ->
     CheckBin = guild_app:priv_bin("psutil-check"),
     handle_check_exec(exec(CheckBin), psutil).
+
+print_nvidia_tools_info() ->
+    CheckBin = guild_app:priv_bin("nvidia-tools-check"),
+    handle_check_exec(exec(CheckBin), nvidia_tools).
 
 exec(Cmd) ->
     exec:run(Cmd, [stdout, stderr, sync]).
