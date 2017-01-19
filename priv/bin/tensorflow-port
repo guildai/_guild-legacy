@@ -49,6 +49,7 @@ import glob
 import imghdr
 import json
 import os
+import re
 import struct
 import sys
 import time
@@ -384,19 +385,12 @@ class Model(object):
         return output
 
     def _update_stats(self, meta):
-        import re
         import tensorflow as tf
         ss = tf.contrib.stat_summarizer.NewStatSummarizer(
             self._session.graph_def.SerializeToString())
         ss.ProcessStepStatsStr(meta.step_stats.SerializeToString())
         stats_str = ss.GetOutputString()
-        m = re.search(
-            "Timings \(microseconds\): count=([0-9]+) curr=([0-9]+)\n"
-            "Memory \(bytes\): count=[0-9]+ curr=([0-9]+)",
-            stats_str, re.DOTALL)
-        if m is not None:
-            count, time, memory = m.groups()
-            self._stats.update(int(count), int(time), int(memory))
+        parse_and_apply_stats(stats_str, self._stats)
 
     def _session_run_default(self, inputs):
         return self._session.run(self._output_tensors, feed_dict=inputs)
@@ -436,6 +430,34 @@ class Model(object):
 
     def stats(self):
         return self._stats.generate()
+
+def parse_and_apply_stats(stats_str, stats):
+    result = try_parse_v1_stats(stats_str)
+    if result:
+        stats.update(*result)
+    else:
+        result = try_parse_pre_v1_stats(stats_str)
+        if result:
+            stats.update(*result)
+        else:
+            script_warning("WARNING: cannot parse stats")
+
+def try_parse_v1_stats(stats_str):
+    m = re.search(
+        "Timings \(microseconds\): count=([0-9]+) curr=([0-9]+)\n"
+        "Memory \(bytes\): count=[0-9]+ curr=([0-9]+)",
+        stats_str, re.DOTALL)
+    return [int(group) for group in m.groups()] if m else None
+
+def try_parse_pre_v1_stats(stats_str):
+    m = re.search(
+        "curr=([0-9]+) count=([0-9]+).*\n(.*) avg KB",
+        stats_str, re.DOTALL)
+    if m:
+        time, count, mem_kb = [int(group) for group in m.groups()]
+        return count, time, mem_kb / 1024
+    else:
+        return None
 
 active_model = Model()
 
@@ -610,6 +632,9 @@ def test_model_stats():
 def script_error(msg):
     STDERR.write(msg + "\n")
     sys.exit(1)
+
+def script_warning(msg):
+    STDERR.write(msg + "\n")
 
 if __name__ == "__main__":
     import argparse
