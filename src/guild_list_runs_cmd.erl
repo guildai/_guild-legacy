@@ -33,6 +33,13 @@ parser() ->
 list_runs_opts() ->
     [{completed, "--completed",
       "show only completed runs", [flag]},
+     {terminated, "--terminated",
+      "show only runs that were stopped by the user", [flag]},
+     {error, "--error",
+      "show only runs that stopped due to an error", [flag]},
+     {error_or_terminated, "--error-or-terminated",
+      "show only runs that were stopped by the user or due to an error",
+      [flag]},
      {with_export, "--with-export",
       "show only runs an exported model", [flag]}].
 
@@ -42,28 +49,50 @@ list_runs_opts() ->
 
 main(Opts, []) ->
     Project = guild_cmd_support:project_from_opts(Opts),
-    print_runs(guild_run:runs_for_project(Project), Opts).
+    guild_app:init_support([exec]),
+    print_runs(runs_for_project(Project), Opts).
+
+runs_for_project(Project) ->
+    [{Run, run_status(Run)} || Run <- guild_run:runs_for_project(Project)].
+
+run_status(R) ->
+    case guild_run_util:run_status(R) of
+        running -> running;
+        crashed -> terminated;
+        stopped ->
+            case guild_run:attr(R, "exit_status") of
+                {ok, <<"0">>} -> completed;
+                {ok, _} -> error;
+                error -> error
+            end
+    end.
 
 print_runs(Runs, Opts) ->
     Filtered = lists:filter(run_filter(Opts), Runs),
     lists:foreach(fun print_run/1, Filtered).
 
 run_filter(Opts) ->
-    Filters = [status_filter(Opts), exports_filter(Opts)],
+    Filters =
+        [status_filter(
+           [completed],
+           proplists:get_bool(completed, Opts)),
+         status_filter(
+           [terminated],
+           proplists:get_bool(terminated, Opts)),
+         status_filter(
+           [error],
+           proplists:get_bool(error, Opts)),
+         status_filter(
+           [error, terminated],
+           proplists:get_bool(error_or_terminated, Opts)),
+         exports_filter(Opts)
+        ],
     fun(Run) -> apply_filters(Run, Filters) end.
 
-status_filter(Opts) ->
-    case proplists:get_bool(completed, Opts) of
-        true -> fun(Run) -> is_completed(Run) end;
-        false -> ?true_filter
-    end.
-
-is_completed(Run) ->
-    case guild_run:attr(Run, "exit_status") of
-        {ok, <<"0">>} -> true;
-        {ok, _}       -> false;
-        error         -> false
-    end.
+status_filter(Tests, true) ->
+    fun({_Run, Status}) -> lists:member(Status, Tests) end;
+status_filter(_Status, false) ->
+    ?true_filter.
 
 exports_filter(Opts) ->
     case proplists:get_bool(with_export, Opts) of
@@ -71,7 +100,7 @@ exports_filter(Opts) ->
         false -> ?true_filter
     end.
 
-has_export(Run) ->
+has_export({Run, _Status}) ->
     Export = filename:join(guild_run:dir(Run), "model/export.meta"),
     filelib:is_file(Export).
 
@@ -83,6 +112,6 @@ apply_filters(Run, [F|Rest]) ->
 apply_filters(_Run, []) ->
     true.
 
-print_run(R) ->
-    Dir = guild_run:dir(R),
-    guild_cli:closeable_out("~s~n", [Dir]).
+print_run({Run, Status}) ->
+    Dir = guild_run:dir(Run),
+    guild_cli:closeable_out("~s\t~s~n", [Dir, Status]).
