@@ -454,8 +454,8 @@ def try_parse_pre_v1_stats(stats_str):
         "curr=([0-9]+) count=([0-9]+).*\n(.*) avg KB",
         stats_str, re.DOTALL)
     if m:
-        time, count, mem_kb = [int(group) for group in m.groups()]
-        return count, time, mem_kb / 1024
+        time, count, mem_kb = m.groups()
+        return int(count), int(time), int(float(mem_kb) * 1024)
     else:
         return None
 
