@@ -91,7 +91,7 @@ handle_page(_, _) ->
 
 handle_index(_Params) ->
     Vars =
-        [{html_title, "Guild Depot"},
+        [{html_title, "Depot - Guild"},
          {nav_title, "Guild Depot"}],
     Page = guild_dtl:render(guild_depot_index_page, Vars),
     guild_http:ok_html(Page).
