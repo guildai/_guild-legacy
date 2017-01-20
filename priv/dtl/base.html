@@ -43,7 +43,9 @@
           <div class="collapse navbar-collapse" id="navbar">
             {% block navbar_menu %}{% endblock %}
             <ul class="nav navbar-nav navbar-right">
+              {% block navbar_right %}
               <li><a href="/bye"><i class="fa fa-sign-out fa-fw"></i> Quit</a></li>
+              {% endblock %}
             </ul>
           </div>
         </div>

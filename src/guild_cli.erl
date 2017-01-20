@@ -38,6 +38,7 @@ parser_commands() ->
       ["check",
        "cmds-json",
        "delete-run",
+       "depot",
        "evaluate",
        "export",
        "import",
@@ -59,6 +60,7 @@ parser_commands(Names) ->
 cmd_info("check")       -> {guild_check_cmd, "check Guild setup"};
 cmd_info("cmds-json")   -> {guild_cmds_json_cmd, "commands JSON (hidden)"};
 cmd_info("delete-run")  -> {guild_delete_run_cmd, "deletes a run"};
+cmd_info("depot")       -> {guild_depot_cmd, "start Guild Depot"};
 cmd_info("evaluate")    -> {guild_eval_cmd, "evaluate a trained model"};
 cmd_info("export")      -> {guild_export_cmd, "export run results"};
 cmd_info("import")      -> {guild_import_cmd, "import run results"};
