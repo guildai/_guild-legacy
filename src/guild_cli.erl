@@ -73,7 +73,7 @@ cmd_info("prepare")     -> {guild_prepare_cmd, "prepare model for training"};
 cmd_info("serve")       -> {guild_serve_cmd, "serve a trained model"};
 cmd_info("status")      -> {guild_status_cmd, "train a model"};
 cmd_info("train")       -> {guild_train_cmd, "show project status"};
-cmd_info("view")        -> {guild_view_cmd, "start Guild viewer"}.
+cmd_info("view")        -> {guild_view_cmd, "start Guild View"}.
 
 %% ===================================================================
 %% Main

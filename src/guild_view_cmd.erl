@@ -27,7 +27,7 @@ parser() ->
     cli:parser(
       "guild view",
       "[OPTION]...",
-      "Start a web base app to view and interact with project runs.\n"
+      "Start a web based app to view and interact with project runs.\n"
       "\n"
       "When the server is running, open your browser on the specified port "
       "(default is " ++ integer_to_list(?default_port)
@@ -65,7 +65,7 @@ main(Opts, []) ->
     ServerOpts = server_opts(Opts),
     guild_app:init_support([json, exec, {app_child, guild_tensorflow_port}]),
     Server = start_http_server(View, Port, ServerOpts),
-    guild_cli:out("View server running on port ~b~n", [Port]),
+    guild_cli:out("Guild View running on port ~b~n", [Port]),
     wait_for_server_and_terminate(Server).
 
 init_project_view(Opts) ->
