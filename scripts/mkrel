@@ -13,9 +13,11 @@ REL_OTP_APPS=(
     crypto-3.7.1
     inets-6.3.3
     kernel-5.1
+    observer-2.2.2
     runtime_tools-1.10.1
     stdlib-3.1
     syntax_tools-2.1
+    wx-1.7.1
 )
 
 REL_ROOT=releases

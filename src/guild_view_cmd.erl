@@ -66,7 +66,7 @@ main(Opts, []) ->
     guild_app:init_support([json, exec, {app_child, guild_tensorflow_port}]),
     Server = start_http_server(View, Port, ServerOpts),
     guild_cli:out("Guild View running on port ~b~n", [Port]),
-    wait_for_server_and_terminate(Server).
+    wait_for_server_and_terminate(Server, Opts).
 
 init_project_view(Opts) ->
     Project = guild_cmd_support:project_from_opts(Opts),
@@ -106,12 +106,13 @@ port_in_use_error(Port) ->
         "Try 'guild view --port PORT' with a different port.",
         [Port])).
 
-wait_for_server_and_terminate(Pid) ->
+wait_for_server_and_terminate(Pid, MainOpts) ->
     guild_proc:reg(Pid),
     Exit = guild_proc:wait_for({proc, Pid}),
-    handle_server_exit(Exit).
+    handle_server_exit(Exit, MainOpts).
 
-handle_server_exit({_, normal}) ->
+handle_server_exit({_, normal}, _MainOpts) ->
     guild_cli:out("Server stopped by user~n");
-handle_server_exit({_, Other}) ->
-    {error, io_lib:format("Unexpected server exit: ~p", [Other])}.
+handle_server_exit({_, Other}, MainOpts) ->
+    guild_log:internal("Restarting server due to error: ~p~n", [Other]),
+    main(MainOpts, []).
