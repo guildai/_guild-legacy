@@ -33,6 +33,7 @@ handle_task([Request, Reply, Owner]) ->
     link(Owner),
     Reply(handle_request(Request)),
     {stop, normal}.
+
 handle_request({runs_json, RunRoots}) ->
     runs_json(RunRoots);
 handle_request({flags_json, Run}) ->
