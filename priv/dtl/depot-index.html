@@ -1,3 +1,130 @@
 {% extends "base.html" %}
 
+{% block styles %}
+<style>
+  .search {
+    margin-top: 2rem;
+  }
+  .tags {
+    margin-top: 2rem;
+  }
+  .p-row {
+    border-bottom: 1px solid #ccc;
+    padding: 30px 0;
+  }
+  .p-name {
+    margin-top: 0;
+    font-weight: 600;
+    font-size: 24px;
+  }
+  .p-meta {
+    margin-top: 5px;
+  }
+  .p-updated {
+    vertical-align: middle;
+    line-height: 1;
+    display: inline-block;
+    color: #666;
+    font-size: 13px;
+  }
+  .p-stars {
+    margin-right: 6px;
+    color: #666;
+  }
+  .p-stars i {
+    color: #32c5d2;
+  }
+  .p-tag {
+    padding: 4px 6px;
+    font-weight: 300;
+    border-radius: 0;
+    margin-right: 6px;
+  }
+  .tags-caption {
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .tags-caption-helper {
+    margin-left: 0.2em;
+    color: #666;
+  }
+  .badge-tagcount {
+    font-weight: 300;
+    background-color: #fff;
+    color: #777;
+    margin: -1px 4px 0 6px;
+    font-size: 10px !important;
+    height: 14px;
+    padding: 2px 4px;
+    line-height: 10px;
+  }
+  .label-tag {
+    display: inline-block;
+    padding: 6px 4px 6px 8px;
+    background-color: #d0d0d0;
+    color: #fff !important;
+    font-size: 12px !important;
+    margin: 3px 2px 3px 0;
+    font-weight: 300;
+  }
+  .panel-tags-filter .panel-heading {
+    padding: 0;
+  }
+  .panel-tags-filter .panel-body {
+    padding: 7px 0 0 0;
+  }
+</style>
+{% endblock %}
+
 {% block navbar_right %}{% endblock %}
+
+{% block page_content %}
+
+<div class="row">
+  <div class="col-lg-8 col-lg-offset-2">
+    <div class="row">
+      <div class="col-md-9">
+        <div class="row input-group search">
+          <input type="text" class="form-control" placeholder="Find something">
+          <span class="input-group-btn">
+            <button class="btn btn-default" type="button"><i class="fa fa-search"></i></button>
+          </span>
+        </div>
+        {% for p in projects %}
+        <div class="row p-row">
+          <h2 class="p-name"><a href="{{p.path}}">{{p.account}} / {{p.name}}</a></h2>
+          <div>{{p.description}}</div>
+          <div class="p-meta">
+            <span class="p-stars"><i class="fa fa-star"></i> {{p.stars}}</span>
+            {% for tag in p.tags %}
+            <span class="p-tag badge" style="background-color:{{tag.color}}">{{tag.name}}</span>
+            {% endfor %}
+            <span class="p-updated">{{p.updated}}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="col-md-3">
+        <div class="tags">
+          <div class="panel-tags-filter">
+            <div class="panel-heading">
+              <div class="caption">
+                <span class="tags-caption">Tags</span>
+                <span class="tags-caption-helper">click to filter</span>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="project-tags">
+                {% for tag in filter_tags %}
+                <a href="#" class="label label-tag">{{tag.name}}<span class="badge badge-tagcount">{{tag.count}}</span></a>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
