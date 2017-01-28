@@ -19,8 +19,7 @@
 -export([start_server/3, stop_server/1]).
 
 start_link() ->
-    Child = {guild_http, [{restart, transient}]},
-    e2_task_supervisor:start_link(?MODULE, Child, [registered]).
+    e2_task_supervisor:start_link(?MODULE, guild_http, [registered]).
 
 start_server(Port, App, Opts) ->
     e2_task_supervisor:start_task(?MODULE, [Port, App, Opts]).
