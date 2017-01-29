@@ -22,7 +22,7 @@
          resolve_value/1, format_value/2, resolve_icon_alias/1,
          navbar_links/1, navbar_item_active_class/2,
          navbar_item_link/2, render_page_view/2, page_view_css/1,
-         page_view_js/1]).
+         page_view_js/1, page_active_class/2]).
 
 version() -> 1.
 
@@ -38,7 +38,8 @@ inventory(filters) ->
      navbar_item_link,
      render_page_view,
      page_view_css,
-     page_view_js];
+     page_view_js,
+     page_active_class];
 inventory(tags) ->
     [].
 
@@ -296,3 +297,13 @@ page_view_widgets_acc([nothing|Rest], Acc) ->
     page_view_widgets_acc(Rest, Acc);
 page_view_widgets_acc([], Acc) ->
     Acc.
+
+%% ===================================================================
+%% Page active class
+%% ===================================================================
+
+page_active_class(Active, Target) ->
+    case binary_to_list(Target) of
+        Active -> "active";
+        _ -> ""
+    end.
