@@ -84,105 +84,75 @@ log_middleware() ->
 %% Page handler
 %% ===================================================================
 
-handle_page("GET", {"/", _, Params}) ->
-    handle_index(Params);
+handle_page("GET", {"/", _, _}) ->
+    handle_index();
+handle_page("GET", {Path, _, Params}) ->
+    handle_path(parse_path(Path), Params);
 handle_page(_, _) ->
     guild_http:bad_request().
 
-handle_index(_Params) ->
+handle_index() ->
     Vars =
-        [{html_title, "Depot - Guild"},
+        [{html_title, "Guild Depot"},
          {nav_title, "Guild Depot"},
-         {projects, fake_projects()},
-         {filter_tags, fake_filter_tags()}],
+         {projects, fake_data:projects()},
+         {filter_tags, fake_data:filter_tags()}],
     Page = guild_dtl:render(guild_depot_index_page, Vars),
     guild_http:ok_html(Page).
 
-fake_projects() ->
-    [
-     [{id, "8e25642a-63f6-4bed-b650-ca507589ce70"},
-      {path, "gar1t/mnist"},
-      {description, "Models for MNIST digit recognition"},
-      {name, "MNIST"},
-      {account, "gar1t"},
-      {updated, "Updated 3 minutes ago"},
-      {tags, [tag("MNIST"), tag("CNN")]},
-      {stars, 12}],
-     [{id, "ce7243ad-51c2-49c3-bb2c-2e37e68d4420"},
-      {path, "jjallaire/cifar10"},
-      {description, "Models for CIFAR-10 image recognition"},
-      {name, "CIFAR 10"},
-      {account, "jjallaire"},
-      {updated, "Updated on Dec 10, 2016"},
-      {tags, [tag("CIFAR-10"), tag("CNN")]},
-      {stars, 1}],
-     [{id, "060a1801-0f60-4547-94c5-3ade09c8f26f"},
-      {path, "jjallaire/mnist"},
-      {description, "Models for MNIST digit recognition"},
-      {name, "MNIST"},
-      {account, "jjallaire"},
-      {updated, "Updated 6 days ago"},
-      {tags, [tag("MNIST")]},
-      {stars, 5}]
-    ].
+parse_path(Path) ->
+    guild_util:find_apply(
+      [fun try_project_path/1,
+       fun try_account_path/1],
+      [Path]).
 
-tag(Name) ->
-    [{name, Name}, {color, color_for_name(Name)}].
+-define(project_path_part_pattern, "[\\w\\d-_]+").
 
-color_for_name(Name) ->
-    case (erlang:phash2(Name, 3) + 1) of
-        0 -> "#888";
-        1 -> "rgb(82,135,198)";
-        2 -> "rgb(48,163,141)";
-        3 -> "rgb(197,182,102)"
+try_project_path(Path) ->
+    Pattern =
+        "^/(" ?project_path_part_pattern "/"
+        ?project_path_part_pattern ")$",
+    case re:run(Path, Pattern, [{capture, [1], list}]) of
+        {match, [ProjectPath]} -> {ok, {project, ProjectPath}};
+        nomatch -> error
     end.
 
-fake_filter_tags() ->
-    [tag("Dataset", 36),
-     tag("TensorFlow", 29),
-     tag("Model", 27),
-     tag("Resource", 25),
-     tag("Paper", 23),
-     tag("Images", 18),
-     tag("Deep Learning", 12),
-     tag("CNN", 10),
-     tag("Music", 4),
-     tag("ImageNet", 3),
-     tag("AlexNet", 3),
-     tag("LSTM", 3),
-     tag("MLP", 2),
-     tag("Video", 2),
-     tag("Speech", 2),
-     tag("Torch", 2),
-     tag("Reinforcement", 2),
-     tag("Classifier", 2),
-     tag("Tutorial", 2),
-     tag("Inception", 2),
-     tag("Keras", 2),
-     tag("Word2vec", 1),
-     tag("DCGAN", 1),
-     tag("Motion", 1),
-     tag("Titanic", 1),
-     tag("Scikit Flow", 1),
-     tag("Scikit-learn", 1),
-     tag("Software", 1),
-     tag("Unsupervised", 1),
-     tag("Multi GPU", 1),
-     tag("Bayesian", 1),
-     tag("Ratings", 1),
-     tag("nlp", 1),
-     tag("chatbot", 1),
-     tag("seq2seq", 1),
-     tag("Website", 1),
-     tag("Tracking", 1),
-     tag("Art", 1),
-     tag("GRU", 1),
-     tag("MR", 1),
-     tag("Julia", 1),
-     tag("Book", 1),
-     tag("Spark", 1),
-     tag("Supervised", 1),
-     tag("Kaggle", 1)].
+try_account_path(Path) ->
+    Pattern = "^/(" ?project_path_part_pattern ")$",
+    case re:run(Path, Pattern, [{capture, [1], list}]) of
+        {match, [AccountPath]} -> {ok, {account, AccountPath}};
+        nomatch -> error
+    end.
 
-tag(Name, Count) ->
-    [{name, Name}, {count, Count}].
+handle_path({ok, {project, Path}}, Params) ->
+    handle_project(fake_data:project_by_path(Path), Params);
+handle_path({ok, {account, Name}}, _Params) ->
+    guild_http:ok_text("TODO: account page for " ++ Name);
+handle_path(error, _Params) ->
+    guild_http:bad_request().
+
+handle_project({ok, P}, Params) ->
+    Vars =
+        [{html_title, project_title(P)},
+         {nav_title, "Guild Depot"},
+         {p, P},
+         {active_file, active_file(Params)}],
+    Page = guild_dtl:render(guild_depot_project_page, Vars),
+    guild_http:ok_html(Page);
+handle_project(error, _Params) ->
+    guild_http:not_found().
+
+project_title(P) ->
+    io_lib:format(
+      "~s / ~s - Guild Depot",
+      [proplists:get_value(account, P, ""),
+       proplists:get_value(name, P, "")]).
+
+active_file(Params) ->
+    Defined =
+        [proplists:is_defined("readme", Params),
+         proplists:is_defined("guild", Params)],
+    case Defined of
+        [_, true] -> "guild";
+        [_, _] -> "readme"
+    end.

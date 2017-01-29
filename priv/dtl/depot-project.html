@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<link href="/assets/css/widgets.css" rel="stylesheet">
+<link href="/assets/css/depot.css" rel="stylesheet">
+
+{% endblock %}
+
+{% block navbar_right %}{% endblock %}
+
+{% block page_content %}
+
+<div class="row">
+  <div class="col-lg-8 col-lg-offset-2">
+    <div class="row project-header">
+      <div class="col-md-12">
+        <div class="project-actions pull-right">
+          <a class="btn btn-star {% if p.starred %}btn-primary{% else %}btn-default{% endif %}"
+             data-toggle="tooltip"
+             title="{% if p.starred %}You starred this project - click to unstar{% else %}Click to star this project{% endif %}"
+             href="/{{p.path}}?unstar">
+            <i class="fa fa-star fa-fw"></i> {% if p.starred %}Starred{% else %}Star{% endif %}
+            <span class="badge badge-count">{{p.stars}}</span>
+          </a>
+          <a class="btn btn-default"
+             data-toggle="tooltip"
+             title="Click to launch Guild View for this project"
+             href="/view/{{p.path}}">Open in Guild View </a>
+        </div>
+        <h1 class="project">
+          <span class="project-account"><a href="/{{p.account}}">{{p.account}}</a></span><span class="path-sep">/</span><span class="project-name"><a href="/{{p.path}}">{{p.name}}</a></span>
+        </h1>
+        <div class="project-desc">{{p.description}}</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-7 col-md-8 col-lg-9">
+        <div class="p-meta">
+          {% for tag in p.tags %}
+          <span class="p-tag badge" style="background-color:{{tag.color}}">{{tag.name}}</span>
+          {% endfor %}
+          <span class="p-metaval"><i class="fa fa-retweet"></i> <a href="/view/{{p.path}}"><strong>{{p.runs}}</strong> runs</a></span>
+          <span class="p-updated">{{p.updated}}</span>
+        </div>
+        <ul class="nav nav-tabs p-tabs">
+          <li role="presentation" class="{% if active_file == 'readme' %}active{% endif %}"><a href="?readme">README.md</a></li>
+          <li role="presentation" class="{% if active_file == 'guild' %}active{% endif %}"><a href="?guild">Guild</a></li>
+        </ul>
+        <div class="p-tabs-body">
+        {% if active_file == 'readme' %}
+        {% include "fake-readme.html" %}
+        {% elif active_file == 'guild' %}
+        <pre>{% include "fake-guild" %}</pre>
+        {% endif %}
+        </div>
+      </div>
+      <div class="col-sm-5 col-md-4 col-lg-3">
+        <div class="panel-fields">
+          <div class="caption">
+            <span class="caption-main">Stats</span>
+            <span class="caption-helper">from latest run</span>
+          </div>
+          <div class="fields">
+            {% for field in p.fields %}
+            <div class="panel panel-widget mdc-bg-{{field.color}}">
+              <div class="panel-heading">
+                <div class="row">
+                  <div class="col-xs-3 label-icon-col">
+                    <i class="fa fa-{{field.icon}} fa-fw label-icon"></i>
+                  </div>
+                  <div class="col-xs-9 text-right">
+                    <div class="label-value label-value-default">
+                      <span>{{field.value}}</span>
+                    </div>
+                    <div class="label-caption">{{field.caption}}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+            <div><a href="/view/{{p.path}}">View stats for all runs</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+</script>
+{% endblock %}

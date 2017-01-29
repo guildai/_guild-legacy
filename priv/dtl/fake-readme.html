@@ -1,0 +1,102 @@
+<article class="markdown-body entry-content" itemprop="text">
+  <h1><a id="user-content-mnist" class="anchor" href="#mnist" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>MNIST</h1>
+
+<p>This is a <a href="http://guild.ai">Guild AI</a> example that defines two MNIST
+models:</p>
+
+<ul>
+<li><strong>intro</strong> - logistic regression</li>
+<li><strong>expert</strong> - convolutional neural network</li>
+</ul>
+
+<p>The terms <em>intro</em> and <em>expert</em> — along with the corresponding models
+themselves — are from TensorFlow's excellent
+<a href="https://www.tensorflow.org/get_started/">Introduction</a>.</p>
+
+<h2><a id="user-content-project-files" class="anchor" href="#project-files" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Project files</h2>
+
+<ul>
+<li><strong><a href="/guildai/guild-examples/blob/master/mnist/expert.py">expert.py</a></strong> - Implementation of the <em>expert</em> model</li>
+<li><strong><a href="/guildai/guild-examples/blob/master/mnist/Guild">Guild</a></strong> - Guild project file (<a href="https://guild.ai/project-reference/">more info</a>)</li>
+<li><strong><a href="/guildai/guild-examples/blob/master/mnist/intro.py">intro.py</a></strong> - Implementation of the <em>intro</em> model</li>
+<li><strong><a href="/guildai/guild-examples/blob/master/mnist/samples.py">samples.py</a></strong> - Implementation of the <em>samples</em> resource</li>
+</ul>
+
+<h2><a id="user-content-requirements" class="anchor" href="#requirements" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Requirements</h2>
+
+<p>To work with this project, <a href="https://guild.ai/getting-started/setup/">ensure that you have Guild AI installed along
+with its requirements</a>.</p>
+
+<p>If you haven't already, clone Guild AI examples:</p>
+
+<pre><code>$ git clone https://github.com/guildai/guild-examples.git
+</code></pre>
+
+<h2><a id="user-content-training" class="anchor" href="#training" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Training</h2>
+
+<p>Prepare and train the MNIST model:</p>
+
+<div class="highlight highlight-source-shell"><pre>$ <span class="pl-c1">cd</span> guild-examples/mnist
+$ guild prepare
+$ guild train</pre></div>
+
+<p>The <code>prepare</code> command downloads the MNIST data, which will be used for
+subsequent operations.</p>
+
+<p>This project is configured to train the <code>intro</code> model by trained. You
+can train <code>expert</code> by specifying it explicitly:</p>
+
+<div class="highlight highlight-source-shell"><pre><span class="pl-c"><span class="pl-c">#</span> Alternatively train the expert model</span>
+$ guild train expert</pre></div>
+
+<h2><a id="user-content-viewing" class="anchor" href="#viewing" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Viewing</h2>
+
+<p>At any point you can view project run results by in <a href="https://guild.ai/user-guide/guild-view">Guild
+View</a> by running the
+<code>view</code> command in a separate terminal:</p>
+
+<div class="highlight highlight-source-shell"><pre>$ guild view</pre></div>
+
+<p>Guild View runs on port <code>6333</code> by default — to view it,
+open <a href="http://localhost:6333">http://localhost:6333</a> in your browser.</p>
+
+<h2><a id="user-content-evaluating" class="anchor" href="#evaluating" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Evaluating</h2>
+
+<p>To calculate the most recently trained model's final accuracy using
+test data, use the <code>evaluate</code> command:</p>
+
+<div class="highlight highlight-source-shell"><pre>$ guild evaluate --latest-run</pre></div>
+
+<h2><a id="user-content-serving" class="anchor" href="#serving" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Serving</h2>
+
+<p>To run a model as an HTTP service in <a href="https://guild.ai/user-guide/guild-serve/">Guild
+Serve</a> run:</p>
+
+<div class="highlight highlight-source-shell"><pre>$ guild serve RUN</pre></div>
+
+<p>where <code>RUN</code> is a value returned by <code>list-runs</code> (i.e. a path to the run
+directory) or <code>--latest-run</code> to serve the model exported in the last
+run.</p>
+
+<h2><a id="user-content-generating-sample-inputs" class="anchor" href="#generating-sample-inputs" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Generating sample inputs</h2>
+
+<p>This example provides a <code>samples</code> resource that can be used to
+generate a number of MNIST images and their corresponding JSON
+encodings. These file can be used to run ad hoc inference on the model
+in Guild View (see the <strong>Serve</strong> tab) or Guild Serve
+(see <a href="#user-content-serving">Serving</a> above).</p>
+
+<p>Images are generated from the MNIST training/test data.</p>
+
+<p>To generate samples, run:</p>
+
+<div class="highlight highlight-source-shell"><pre>$ guild prepare samples</pre></div>
+
+<p>This will create a local <code>samples</code> subdirectory containing the samples
+images.</p>
+
+<h2><a id="user-content-more-about-guild-ai" class="anchor" href="#more-about-guild-ai" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>More about Guild AI</h2>
+
+<p>For more information about the Guild AI project, see
+<a href="https://guild.ai">https://guild.ai</a>.</p>
+</article>

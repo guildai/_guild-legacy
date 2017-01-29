@@ -2,16 +2,16 @@
  * Panel widget
  * =================================================================== */
 
-.panel .label-icon {
+.panel-widget .label-icon {
     font-size: 58px;
     margin-top: 6px;
 }
 
-.panel .label-icon-col {
+.panel-widget .label-icon-col {
     padding: 0 0 0 4px;
 }
 
-.panel .label-value {
+.panel-widget .label-value {
     font-size: 36px;
     white-space: nowrap;
     line-height: 36px;
@@ -21,11 +21,11 @@
     text-shadow: 0 1px 1px rgba(0,0,0,0.25);
 }
 
-.panel .label-value-small {
+.panel-widget .label-value-small {
     font-size: 28px;
 }
 
-.panel .label-caption {
+.panel-widget .label-caption {
     font-size: 18px;
     line-height: 18px;
     white-space: nowrap;
@@ -34,7 +34,7 @@
     text-shadow: 0 1px 1px rgba(0,0,0,0.25);
 }
 
-.panel-heading {
+.panel-widget .panel-heading {
     color: #fff;
 }
 

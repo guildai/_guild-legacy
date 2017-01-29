@@ -1,0 +1,51 @@
+#-*-conf-*-
+
+[project]
+
+name            = MNIST
+
+[model "intro"]
+
+runtime         = tensorflow
+train           = intro
+prepare         = intro --prepare
+train_requires  = ./data
+evaluate        = intro --evaluate
+
+[model "expert"]
+
+runtime         = tensorflow
+train           = expert
+prepare         = expert --prepare
+train_requires  = ./data
+evaluate        = expert --evaluate
+
+[flags]
+
+datadir         = ./data
+rundir          = $RUNDIR
+batch_size      = 100
+epochs          = 10
+
+[flags "intro"]
+
+stats_interval  = 1
+
+[view]
+
+fields           = validation-accuracy train-accuracy steps time
+
+series-b         = loss accuracy op-cpu-percent op-memory \
+                   gpu-percent gpu-memory gpu-powerdraw
+
+compare          = validation-accuracy train-accuracy batch-size-flag \
+                   steps time
+
+[resource "samples"]
+
+runtime         = tensorflow
+prepare         = samples --sample-dir samples
+
+[flags "samples"]
+
+sample-count    = 100

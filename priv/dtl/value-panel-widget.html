@@ -1,4 +1,4 @@
-<div class="panel mdc-bg-{{color|default:'grey'}}"
+<div class="panel panel-widget mdc-bg-{{color|default:'grey'}}"
      data-widget="value-panel"
      {# value existing has special meaning - it overrides source even if empty #}
      {% if value|default_if_none:false %}data-widget-value="{{value}}"{% endif %}
