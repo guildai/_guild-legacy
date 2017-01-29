@@ -11,7 +11,9 @@
 </style>
 {% endblock %}
 
-{% block navbar_right %}{% endblock %}
+{% block navbar_right %}
+<li><a href="/bye"><i class="fa fa-sign-out fa-fw"></i> Quit</a></li>
+{% endblock %}
 
 {% block page_content %}
 
@@ -27,14 +29,16 @@
         </div>
         {% for p in projects %}
         <div class="row p-row">
-          <h2 class="p-name"><a href="{{p.path}}">{{p.account}} / {{p.name}}</a></h2>
-          <div class="p-desc">{{p.description}}</div>
-          <div class="p-meta">
-            <span class="p-stars"><i class="fa fa-star"></i> {{p.stars}}</span>
-            {% for tag in p.tags %}
-            <span class="p-tag badge" style="background-color:{{tag.color}}">{{tag.name}}</span>
-            {% endfor %}
-            <span class="p-updated">{{p.updated}}</span>
+          <div class="col-xs-12">
+            <h2 class="p-name"><a href="{{p.path}}">{{p.account}} / {{p.name}}</a></h2>
+            <div class="p-desc">{{p.description}}</div>
+            <div class="p-meta">
+              <span class="p-stars"><i class="fa fa-star"></i> {{p.stars}}</span>
+              {% for tag in p.tags %}
+              <span class="p-tag badge" style="background-color:{{tag.color}}">{{tag.name}}</span>
+              {% endfor %}
+              <span class="p-updated">{{p.updated}}</span>
+            </div>
           </div>
         </div>
         {% endfor %}
