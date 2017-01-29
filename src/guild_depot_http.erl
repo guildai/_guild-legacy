@@ -95,6 +95,7 @@ handle_index() ->
     Vars =
         [{html_title, "Guild Depot"},
          {nav_title, "Guild Depot"},
+         {narrow_page, true},
          {projects, fake_data:projects()},
          {filter_tags, fake_data:filter_tags()}],
     Page = guild_dtl:render(guild_depot_index_page, Vars),
@@ -135,6 +136,7 @@ handle_project({ok, P}, Params) ->
     Vars =
         [{html_title, project_title(P)},
          {nav_title, "Guild Depot"},
+         {narrow_page, true},
          {p, P},
          {active_file, active_file(Params)}],
     Page = guild_dtl:render(guild_depot_project_page, Vars),

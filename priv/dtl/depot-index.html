@@ -11,53 +11,59 @@
 </style>
 {% endblock %}
 
-{% block navbar_right %}
-<li><a href="/bye"><i class="fa fa-sign-out fa-fw"></i> Quit</a></li>
+{% block navbar_menu %}
+{% include "depot-navbar.html" %}
 {% endblock %}
 
 {% block page_content %}
-
 <div class="row">
-  <div class="col-lg-8 col-lg-offset-2">
+  <div class="col-md-9">
     <div class="row">
-      <div class="col-md-9">
-        <div class="row input-group search">
+      <div class="col-xs-12">
+        <div class="input-group search">
           <input type="text" class="form-control" placeholder="Find something">
           <span class="input-group-btn">
             <button class="btn btn-default" type="button"><i class="fa fa-search"></i></button>
           </span>
         </div>
-        {% for p in projects %}
-        <div class="row p-row">
-          <div class="col-xs-12">
-            <h2 class="p-name"><a href="{{p.path}}">{{p.account}} / {{p.name}}</a></h2>
-            <div class="p-desc">{{p.description}}</div>
-            <div class="p-meta">
-              <span class="p-stars"><i class="fa fa-star"></i> {{p.stars}}</span>
-              {% for tag in p.tags %}
-              <span class="p-tag badge" style="background-color:{{tag.color}}">{{tag.name}}</span>
-              {% endfor %}
-              <span class="p-updated">{{p.updated}}</span>
-            </div>
-          </div>
-        </div>
-        {% endfor %}
       </div>
-      <div class="col-md-3">
-        <div class="panel-tags-filter">
-          <div class="caption">
-            <span class="caption-main">Tags</span>
-            <span class="caption-helper">click to filter</span>
-          </div>
-          <div class="project-tags">
-            {% for tag in filter_tags %}
-            <a href="#" class="label label-tag tag-{{tag.id}}">{{tag.name}}<span class="badge badge-tagcount">{{tag.count}}</span></a>
-            {% endfor %}
-          </div>
+    </div>
+    {% for p in projects %}
+    <div class="row p-row">
+      <div class="col-xs-12">
+        <h2 class="p-name"><a href="{{p.path}}">{{p.account}} / {{p.name}}</a></h2>
+        <div class="p-desc">{{p.description}}</div>
+        <div class="p-meta">
+          <span class="p-stars"><i class="fa fa-star"></i> {{p.stars}}</span>
+          {% for tag in p.tags %}
+          <span class="p-tag badge" style="background-color:{{tag.color}}">{{tag.name}}</span>
+          {% endfor %}
+          <span class="p-updated">{{p.updated}}</span>
         </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="col-md-3">
+    <div class="panel-tags-filter">
+      <div class="caption">
+        <span class="caption-main">Tags</span>
+        <span class="caption-helper">click to filter</span>
+      </div>
+      <div class="project-tags">
+        {% for tag in filter_tags %}
+        <a href="#" class="label label-tag tag-{{tag.id}}">{{tag.name}}<span class="badge badge-tagcount">{{tag.count}}</span></a>
+        {% endfor %}
       </div>
     </div>
   </div>
 </div>
+{% endblock %}
 
+{% block scripts %}
+<script>
+ $(function() {
+     guild.depot.baseInit();
+ });
+</script>
 {% endblock %}
