@@ -28,6 +28,8 @@ parser() ->
       "[OPTION]...",
       "Start a server to store published projects.\n"
       "\n"
+      "NOTE: This is an experimental feature.\n"
+      "\n"
       "When the server is running, open your browser on the specified port "
       "(default is " ++ integer_to_list(?default_port)
       ++ ") - e.g. http://localhost:" ++ integer_to_list(?default_port) ++ ".\n"
@@ -41,7 +43,10 @@ depot_options() ->
       fmt("HTTP server port (default is ~b)", [?default_port]),
       [{metavar, "PORT"}]},
      {logging, "-l, --logging",
-      "enable logging", [flag]}].
+      "enable logging", [flag]},
+     {depot_dir, "-D, --depot",
+      "depot directory (default is current directory)",
+      [{metavar, "DIR"}]}].
 
 fmt(Msg, Data) -> io_lib:format(Msg, Data).
 
@@ -50,12 +55,22 @@ fmt(Msg, Data) -> io_lib:format(Msg, Data).
 %% ===================================================================
 
 main(Opts, []) ->
+    View = init_depot_view(Opts),
     Port = guild_cmd_support:port_opt(Opts, ?default_port),
     ServerOpts = server_opts(Opts),
     guild_app:init_support([json, exec]),
-    Server = start_http_server(Port, ServerOpts),
+    Server = start_http_server(View, Port, ServerOpts),
     guild_cli:out("Guild Depot running on port ~b~n", [Port]),
     wait_for_server_and_terminate(Server, Opts).
+
+init_depot_view(Opts) ->
+    Depot = depot_from_opts(Opts),
+    {ok, View} = guild_depot_view_sup:start_view(Depot),
+    View.
+
+depot_from_opts(Opts) ->
+    %% Using depot dir to represent depot for now.
+    proplists:get_value(depot_dir, Opts, ".").
 
 server_opts(Opts) ->
     [recompile_templates, {log, server_log_opt(Opts)}].
@@ -63,8 +78,8 @@ server_opts(Opts) ->
 server_log_opt(Opts) ->
     proplists:get_value(logging, Opts).
 
-start_http_server(Port, Opts) ->
-    case guild_depot_http:start_server(Port, Opts) of
+start_http_server(View, Port, Opts) ->
+    case guild_depot_http:start_server(View, Port, Opts) of
         {ok, Server} ->
             Server;
         {error, {{listen, eaddrinuse}, _Stack}} ->

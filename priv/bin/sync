@@ -1,0 +1,6 @@
+#!/bin/bash -eu
+
+src="$1"
+dest="$2"
+
+echo "rsync $src to $dest"

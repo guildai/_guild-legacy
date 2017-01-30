@@ -168,3 +168,7 @@ a.anchor {
     padding: 15px 20px;
     margin-bottom: 20px;
 }
+
+.panel-widget {
+    opacity: 0.8;
+}

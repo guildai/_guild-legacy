@@ -14,9 +14,9 @@
 
 -module(guild_depot_http).
 
--export([start_server/2, stop_server/0]).
+-export([start_server/3, stop_server/0]).
 
--export([handle_page/2]).
+-export([handle_page/3]).
 
 -export([init/1, handle_msg/3]).
 
@@ -24,9 +24,9 @@
 %% Start / stop server
 %% ===================================================================
 
-start_server(Port, Opts) ->
+start_server(View, Port, Opts) ->
     guild_dtl:init(Opts),
-    App = create_app(Opts),
+    App = create_app(View, Opts),
     ServerOpts = [{proc_callback, {?MODULE, []}}],
     guild_http_sup:start_server(Port, App, ServerOpts).
 
@@ -43,18 +43,22 @@ handle_msg(stop, _From, _App) ->
 %% Main app / routes
 %% ===================================================================
 
-create_app(Opts) ->
-    psycho_util:chain_apps(routes(), middleware(Opts)).
+create_app(View, Opts) ->
+    psycho_util:chain_apps(routes(View), middleware(Opts)).
 
-routes() ->
+routes(View) ->
     psycho_route:create_app(
       [{{starts_with, "/assets/"}, static_handler()},
+       {"/login",                  login_handler()},
        {"/bye",                    bye_handler()},
-       {'_',                       page_handler()}
+       {'_',                       page_handler(View)}
       ]).
 
 static_handler() ->
     psycho_static:create_app(guild_app:priv_dir()).
+
+login_handler() ->
+    fun(_Env) -> guild_http:ok_text("TODO: login") end.
 
 bye_handler() ->
     fun(_Env) -> handle_bye() end.
@@ -63,10 +67,10 @@ handle_bye() ->
     timer:apply_after(500, ?MODULE, stop_server, []),
     guild_http:ok_text("Stopping server\n").
 
-page_handler() ->
+page_handler(View) ->
     psycho_util:dispatch_app(
       {?MODULE, handle_page},
-      [method, parsed_path]).
+      [method, parsed_path, View]).
 
 middleware(Opts) ->
     maybe_apply_log_middleware(Opts, []).
@@ -84,20 +88,20 @@ log_middleware() ->
 %% Page handler
 %% ===================================================================
 
-handle_page("GET", {"/", _, _}) ->
-    handle_index();
-handle_page("GET", {Path, _, Params}) ->
-    handle_path(parse_path(Path), Params);
-handle_page(_, _) ->
+handle_page("GET", {"/", _, _}, View) ->
+    handle_index(View);
+handle_page("GET", {Path, _, Params}, View) ->
+    handle_path(parse_path(Path), Params, View);
+handle_page(_Method, _Path, _View) ->
     guild_http:bad_request().
 
-handle_index() ->
+handle_index(View) ->
     Vars =
         [{html_title, "Guild Depot"},
          {nav_title, "Guild Depot"},
          {narrow_page, true},
          {active_page, "depot-index"},
-         {projects, fake_data:projects()},
+         {projects, guild_depot_view:projects(View)},
          {filter_tags, fake_data:filter_tags()}],
     Page = guild_dtl:render(guild_depot_index_page, Vars),
     guild_http:ok_html(Page).
@@ -126,11 +130,11 @@ try_account_path(Path) ->
         nomatch -> error
     end.
 
-handle_path({ok, {project, Path}}, Params) ->
+handle_path({ok, {project, Path}}, Params, _View) ->
     handle_project(fake_data:project_by_path(Path), Params);
-handle_path({ok, {account, Name}}, _Params) ->
+handle_path({ok, {account, Name}}, _Params, _View) ->
     guild_http:ok_text("TODO: account page for " ++ Name);
-handle_path(error, _Params) ->
+handle_path(error, _Params, _View) ->
     guild_http:bad_request().
 
 handle_project({ok, P}, Params) ->
