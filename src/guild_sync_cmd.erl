@@ -41,6 +41,6 @@ sync_options() -> [].
 %% ===================================================================
 
 main(Opts, [DepotDir]) ->
-    _Project = guild_cmd_support:project_from_opts(Opts),
+    Project = guild_cmd_support:project_from_opts(Opts),
     io:format(
       "TODO: use rsync to sync Guild and runs to ~s~n", [DepotDir]).
