@@ -34,7 +34,9 @@ parser() ->
       sync_options() ++ guild_cmd_support:project_options(),
       [{pos_args, 1}]).
 
-sync_options() -> [].
+sync_options() ->
+    [{account, "-a, --account", "Depot account to sync with"},
+     {preview, "--preview", "display info but do not sync", [flag]}].
 
 %% ===================================================================
 %% Main
@@ -42,5 +44,49 @@ sync_options() -> [].
 
 main(Opts, [DepotDir]) ->
     Project = guild_cmd_support:project_from_opts(Opts),
-    io:format(
-      "TODO: use rsync to sync Guild and runs to ~s~n", [DepotDir]).
+    ProjectDir = guild_project:project_dir(Project),
+    Account = account(Opts),
+    Env = sync_env(Opts),
+    guild_app:init_support([exec]),
+    exec_sync(Account, ProjectDir, DepotDir, Env).
+
+account(Opts) ->
+    Methods =
+        [fun account_option/1,
+         fun system_account/1],
+    case guild_util:find_apply(Methods, [Opts]) of
+        {ok, Account} -> Account;
+        error -> account_required_error()
+    end.
+
+account_option(Opts) ->
+    case proplists:get_value(account, Opts) of
+        undefined -> error;
+        Val -> {ok, Val}
+    end.
+
+system_account(_Opts) ->
+    %% TODO: implement system wide user settings, including account
+    error.
+
+account_required_error() ->
+    guild_cli:cli_error(
+      "system account undefined\n"
+      "Try specifying an account using the --account option.").
+
+sync_env(Opts) ->
+    case proplists:get_bool(preview, Opts) of
+        true -> [{"PREVIEW", "1"}];
+        false -> []
+    end.
+
+exec_sync(Account, ProjectDir, DepotDir, Env) ->
+    Cmd = [guild_app:priv_bin("sync"), Account, ProjectDir, DepotDir],
+    Opts = [{env, Env}],
+    handle_sync_exec(guild_exec:run(Cmd, Opts)).
+
+handle_sync_exec({ok, []}) ->
+    ok;
+handle_sync_exec({error, [{exit_status, Status}]}) ->
+    {status, Code} = exec:status(Status),
+    {error, Code}.

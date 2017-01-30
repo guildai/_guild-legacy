@@ -14,8 +14,8 @@
 
 -module(guild_exec).
 
--export([init/0, run_link/2, run_quiet/1, send/2, stop_and_wait/2,
-         apply_user_opts/2]).
+-export([init/0, run_link/2, run_quiet/1, run/1, run/2, send/2,
+         stop_and_wait/2, apply_user_opts/2]).
 
 init() ->
     ok = application:ensure_started(erlexec).
@@ -28,6 +28,18 @@ run_quiet(Args) ->
         {ok, _} -> ok;
         {error, Err} -> error({exec_run, Err, Args})
     end.
+
+run(Args) ->
+    run(Args, []).
+
+run(Args, RunOpts) ->
+    Opts = [sync, {stdout, fun console/3}, {stderr, fun console/3}|RunOpts],
+    exec:run(Args, Opts).
+
+console(stdout, _Pid, Bin) ->
+    io:put_chars(standard_io, Bin);
+console(stderr, _Pid, Bin) ->
+    io:put_chars(standard_error, Bin).
 
 send(Pid, Bin) ->
     exec:send(Pid, Bin).
