@@ -31,7 +31,7 @@
     {% for p in projects %}
     <div class="row p-row">
       <div class="col-xs-12">
-        <h2 class="p-name"><a href="{{p.path}}">{{p.account}} / {{p.name}}</a></h2>
+        <h2 class="p-name"><a href="{{p.path}}">{{p.account.name}} / {{p.name}}</a></h2>
         <div class="p-desc">{{p.description}}</div>
         <div class="p-meta">
           <span class="p-stars"><i class="fa fa-star"></i> {{p.stars}}</span>

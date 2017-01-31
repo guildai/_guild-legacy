@@ -106,12 +106,23 @@ init_tty_error_logger() ->
 global_opts() ->
     [{trace,     "--trace",     "trace a module/function", [hidden]},
      {reload,    "--reload",    "reload modified modules", [hidden, flag]},
-     {observer,  "--observer",  "run observer",            [hidden, flag]}].
+     {observer,  "--observer",  "run observer",            [hidden, flag]},
+     {debug,     "--debug",     "enable detailed logging", [hidden, flag]}].
 
 apply_global_opts(Opts) ->
     guild_trace:init_from_opts(Opts),
     guild_reload:init_from_opts(Opts),
+    maybe_start_sasl(Opts),
     guild_observer:maybe_start_from_opts(Opts).
+
+maybe_start_sasl(Opts) ->
+    case proplists:get_bool(debug, Opts) of
+        true -> start_sasl();
+        false -> ok
+    end.
+
+start_sasl() ->
+    ok = application:ensure_started(sasl).
 
 %% ===================================================================
 %% Generate CLI error

@@ -40,7 +40,8 @@ run() ->
     test_consult_string(),
     test_port_io(),
     test_tensorflow_port_protocol(),
-    test_tensorflow_read_image().
+    test_tensorflow_read_image(),
+    test_depot_db().
 
 run(Test) ->
     guild_trace:init_from_env(os:getenv("TRACE")),
@@ -749,7 +750,7 @@ test_run_db() ->
     {error, missing} = M:open(RunDir),
     ok = M:open(RunDir, [create_if_missing]),
 
-    %% Initial the db is empty.
+    %% Initially the db is empty.
 
     {ok, []} = M:flags(RunDir),
     {ok, []} = M:series_keys(RunDir),
@@ -838,7 +839,7 @@ test_run_db() ->
 
     %% Let's close up!
 
-    ok = guild_run_db:close(RunDir),
+    ok = M:close(RunDir),
 
     ok().
 
@@ -1175,3 +1176,70 @@ test_tensorflow_read_image() ->
         = Load(RunDir, 1),
 
     ok().
+
+%% ===================================================================
+%% Depot DB
+%% ===================================================================
+
+test_depot_db() ->
+    start("depot_db"),
+
+    M = guild_depot_db,
+
+    {ok, _} = application:ensure_all_started(guild),
+
+    %% Ensure our test depot is empty.
+
+    Depot = init_depot(),
+
+    %% If we open without the create_if_missing, we get an error.
+
+    {error, missing} = M:open(Depot),
+    ok = M:open(Depot, [create_if_missing]),
+
+    %% Let's star some projects. Initially there are no starred
+    %% projects.
+
+    {ok, 0} = M:project_stars("foo"),
+    {ok, 0} = M:project_stars("bar"),
+
+    %% Let's star the projects for some users.
+
+    ok = M:star_project("foo", "mary"),
+    ok = M:star_project("foo", "bob"),
+    ok = M:star_project("foo", "jane"),
+    ok = M:star_project("bar", "mary"),
+
+    %% And get our latest counts.
+
+    {ok, 3} = M:project_stars("foo"),
+    {ok, 1} = M:project_stars("bar"),
+
+    %% We can unstar as well!
+
+    ok = M:unstar_project("foo", "mary"),
+    ok = M:unstar_project("foo", "jane"),
+    ok = M:unstar_project("bar", "mary"),
+
+    {ok, 1} = M:project_stars("foo"),
+    {ok, 0} = M:project_stars("bar"),
+
+    %% Unstarring a non-existing project or user is okay.
+
+    ok = M:unstar_project("baz", "mary"),
+    ok = M:unstar_project("foo", "sam"),
+
+    {ok, 1} = M:project_stars("foo"),
+    {ok, 0} = M:project_stars("bar"),
+
+    %% Let's close up!
+
+    ok = M:close(),
+
+    ok().
+
+init_depot() ->
+    Depot = "/tmp/guild_test.depot",
+    [] = os:cmd("rm -rf \"" ++ Depot ++ "\""),
+    [] = os:cmd("mkdir \"" ++ Depot ++ "\""),
+    Depot.

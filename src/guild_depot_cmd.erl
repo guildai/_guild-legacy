@@ -55,22 +55,23 @@ fmt(Msg, Data) -> io_lib:format(Msg, Data).
 %% ===================================================================
 
 main(Opts, []) ->
-    View = init_depot_view(Opts),
+    Depot = depot_from_opts(Opts),
+    View = init_depot_view(Depot),
     Port = guild_cmd_support:port_opt(Opts, ?default_port),
     ServerOpts = server_opts(Opts),
     guild_app:init_support([json, exec]),
+    guild_depot_db:open(Depot, [create_if_missing]),
     Server = start_http_server(View, Port, ServerOpts),
     guild_cli:out("Guild Depot running on port ~b~n", [Port]),
     wait_for_server_and_terminate(Server, Opts).
 
-init_depot_view(Opts) ->
-    Depot = depot_from_opts(Opts),
-    {ok, View} = guild_depot_view_sup:start_view(Depot),
-    View.
-
 depot_from_opts(Opts) ->
     %% Using depot dir to represent depot for now.
     proplists:get_value(depot_dir, Opts, ".").
+
+init_depot_view(Depot) ->
+    {ok, View} = guild_depot_view_sup:start_view(Depot),
+    View.
 
 server_opts(Opts) ->
     [recompile_templates, {log, server_log_opt(Opts)}].

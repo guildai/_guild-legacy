@@ -54,5 +54,21 @@ handle_msg(projects, _From, State) ->
 %% ===================================================================
 
 handle_projects(State) ->
-    Projects = fake_data:projects(),
-    {reply, Projects, State}.
+    {reply, projects_(State), State}.
+
+projects_(#state{d=Depot}) ->
+    Accounts = guild_depot:accounts(Depot),
+    lists:foldl(fun account_projects_acc/2, [], Accounts).
+
+account_projects_acc(Account, Acc) ->
+    Projects =
+        [apply_project_extra(P)
+         || P <- guild_depot:account_projects(Account)],
+    lists:foldl(fun(P, AccIn) -> [P|AccIn] end, Acc, Projects).
+
+apply_project_extra(P) ->
+    guild_util:fold_apply([fun apply_project_stars/1], P).
+
+apply_project_stars(#{path:=Path}=P) ->
+    {ok, N} = guild_depot_db:project_stars(Path),
+    P#{stars => N}.
