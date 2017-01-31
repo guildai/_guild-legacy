@@ -168,3 +168,12 @@ a.anchor {
 .panel-widget {
     opacity: 0.8;
 }
+
+a:not([href]) {
+    color: inherit;
+}
+
+a:not([href]):hover {
+    color: inherit;
+    text-decoration: inherit;
+}

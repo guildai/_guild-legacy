@@ -1,9 +1,19 @@
 LOCAL_DEPS = $(wildcard local-deps/*)
 
-compile:
+compile: bin-deps
 	./rebar3 compile
 
-clean: clean-local-deps
+bin-deps: priv/bin/multimarkdown
+
+mmd_repo = https://github.com/fletcher/MultiMarkdown-4.git
+
+priv/bin/multimarkdown:
+	mkdir -p build/default/lib
+	git clone $(mmd_repo) build/default/lib/mmd
+	cd build/default/lib/mmd && git submodule init && git submodule update && make
+	cp build/default/lib/mmd/multimarkdown priv/bin/multimarkdown
+
+clean: clean-local-deps clean-bin-deps
 	rm -rf build; rm -f rebar.lock
 	rm -f compile_commands.json
 
@@ -11,6 +21,9 @@ clean-local-deps: $(LOCAL_DEPS:=.clean)
 
 local-deps/%.clean:
 	make -C local-deps/$* clean
+
+clean-bin-deps:
+	rm -f priv/bin/multimarkdown
 
 upgrade:
 	./rebar3 upgrade

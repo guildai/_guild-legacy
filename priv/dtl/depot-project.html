@@ -45,7 +45,9 @@
     </ul>
     <div class="p-tabs-body">
       {% if active_file == 'readme' %}
-      {% include "fake-readme.html" %}
+      {% autoescape off %}
+      {{p|depot_project_source:'README.md.html'|remove_unsafe_links}}
+      {% endautoescape %}
       {% elif active_file == 'guild' %}
       <pre>{{p|depot_project_source:'Guild'}}</pre>
       {% endif %}

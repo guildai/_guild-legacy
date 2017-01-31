@@ -23,7 +23,8 @@
          navbar_links/1, navbar_item_active_class/2,
          navbar_item_link/2, render_page_view/2, page_view_css/1,
          page_view_js/1, page_active_class/2, depot_project_source/2,
-         format_runs_count/1, format_updated/2]).
+         format_runs_count/1, format_updated/2,
+         remove_unsafe_links/1]).
 
 version() -> 1.
 
@@ -43,7 +44,8 @@ inventory(filters) ->
      page_active_class,
      depot_project_source,
      format_runs_count,
-     format_updated];
+     format_updated,
+     remove_unsafe_links];
 inventory(tags) ->
     [].
 
@@ -354,3 +356,18 @@ format_updated(Updated, Now) ->
         true ->
             ["on ", guild_datetime:format_date(Updated)]
     end.
+
+%% ===================================================================
+%% Remove unsafe links
+%% ===================================================================
+
+remove_unsafe_links(Bin) ->
+    Parts = re:split(Bin, "(href=\".+?\")"),
+    [remove_unsafe_link(Part) || Part <- Parts].
+
+remove_unsafe_link(<<"href=\"https://", _/binary>>=P) -> P;
+remove_unsafe_link(<<"href=\"http://",  _/binary>>=P) -> P;
+remove_unsafe_link(<<"href=\"ftp://",   _/binary>>=P) -> P;
+remove_unsafe_link(<<"href=\"mailto:",  _/binary>>=P) -> P;
+remove_unsafe_link(<<"href=\"",         _/binary>>)   -> "";
+remove_unsafe_link(P)                                 -> P.
