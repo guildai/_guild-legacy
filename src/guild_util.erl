@@ -21,7 +21,9 @@
          normalize_series/3, os_pid_exists/1, format_cmd_args/1,
          make_tmp_dir/0, random_name/0, delete_tmp_dir/1,
          resolve_args/2, resolve_keyvals/2, consult_string/1,
-         format_exec_error/1]).
+         format_exec_error/1, latest_mtime/1]).
+
+-include_lib("kernel/include/file.hrl").
 
 %% ===================================================================
 %% Common programming patterns support
@@ -394,7 +396,7 @@ parse_tokens_acc([], Acc) ->
     {ok, lists:reverse(Acc)}.
 
 %% ===================================================================
-%% Formt exec error
+%% Format exec error
 %% ===================================================================
 
 format_exec_error(Err) ->
@@ -410,3 +412,29 @@ format_exec_error(Err) ->
 strip(S0) ->
     {match, [S]} = re:run(S0, "^\s*(.*?)\s*$", [{capture, [1], list}, dotall]),
     S.
+
+%% ===================================================================
+%% Lastest mtime
+%% ===================================================================
+
+latest_mtime(FilePatterns) ->
+    case mtimes(match_files(FilePatterns)) of
+        [] -> undefined;
+        Files -> lists:max(Files)
+    end.
+
+match_files(Patterns) ->
+    lists:foldl(fun match_file_acc/2, [], Patterns).
+
+match_file_acc(Pattern, Acc) ->
+    Matches = filelib:wildcard(Pattern),
+    lists:foldl(fun(F, AccIn) -> [F|AccIn] end, Acc, Matches).
+
+mtimes(Files) ->
+    lists:foldl(fun mtime_acc/2, [], Files).
+
+mtime_acc(File, Acc) ->
+    case file:read_file_info(File, [{time, posix}]) of
+        {ok,  #file_info{mtime=Time}} -> [Time|Acc];
+        {error, _} -> Acc
+    end.

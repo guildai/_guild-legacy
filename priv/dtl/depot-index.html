@@ -38,7 +38,7 @@
           {% for tag in p.tags %}
           <span class="p-tag badge" style="background-color:{{tag.color}}">{{tag.name}}</span>
           {% endfor %}
-          <span class="p-updated">{{p.updated}}</span>
+          <span class="p-updated">{{p.updated|format_updated:now_seconds}}</span>
         </div>
       </div>
     </div>

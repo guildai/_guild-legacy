@@ -22,8 +22,8 @@
          resolve_value/1, format_value/2, resolve_icon_alias/1,
          navbar_links/1, navbar_item_active_class/2,
          navbar_item_link/2, render_page_view/2, page_view_css/1,
-         page_view_js/1, page_active_class/2,
-         depot_project_source/2]).
+         page_view_js/1, page_active_class/2, depot_project_source/2,
+         format_runs_count/1, format_updated/2]).
 
 version() -> 1.
 
@@ -41,7 +41,9 @@ inventory(filters) ->
      page_view_css,
      page_view_js,
      page_active_class,
-     depot_project_source];
+     depot_project_source,
+     format_runs_count,
+     format_updated];
 inventory(tags) ->
     [].
 
@@ -323,3 +325,32 @@ depot_project_source(P, Name) ->
 
 depot_project_source_path(#{source_path:=Path}, Name) ->
     filename:join(Path, Name).
+
+%% ===================================================================
+%% Format runs count
+%% ===================================================================
+
+format_runs_count(undefined) -> "No runs yet";
+format_runs_count([]) -> "No runs yet";
+format_runs_count([_]) -> "1 run";
+format_runs_count(Rs) -> [integer_to_list(length(Rs)), " runs"].
+
+%% ===================================================================
+%% Format updated
+%% ===================================================================
+
+format_updated(undefined, _Now) ->
+    "";
+format_updated(Updated, Now) ->
+    Age = Now - Updated,
+    if
+        Age < 60      -> "moments ago";
+        Age < 120     -> "a minute ago";
+        Age < 3600    -> io_lib:format("~b minutes ago", [Age div 60]);
+        Age < 7200    -> "an hour ago";
+        Age < 86400   -> io_lib:format("~b hours ago", [Age div 3600]);
+        Age < 172800  -> "a day ago";
+        Age < 2592000 -> io_lib:format("~b days ago", [Age div 86400]);
+        true ->
+            ["on ", guild_datetime:format_date(Updated)]
+    end.

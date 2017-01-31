@@ -36,8 +36,8 @@
       {% for tag in p.tags %}
       <span class="p-tag badge" style="background-color:{{tag.color}}">{{tag.name}}</span>
       {% endfor %}
-      <span class="p-metaval"><i class="fa fa-retweet"></i> <a href="/view/{{p.path}}"><strong>{{p.runs}}</strong> runs</a></span>
-      <span class="p-updated">{{p.updated}}</span>
+      <span class="p-metaval"><i class="fa fa-retweet"></i> <a href="/view/{{p.path}}">{{p.runs|format_runs_count}}</a></span>
+      <span class="p-updated">{{p.updated|format_updated:now_seconds}}</span>
     </div>
     <ul class="nav nav-tabs p-tabs">
       <li role="presentation" class="{% if active_file == 'readme' %}active{% endif %}"><a href="?readme">README.md</a></li>

@@ -66,25 +66,25 @@ project(Account, Dir) ->
 project_dir(#{source_path:=AccountDir}, Dir) ->
     filename:join(AccountDir, Dir).
 
-depot_project(P, Dir, Account) ->
-    #{
-       path => project_path(Account, Dir),
-       name => project_name(P, Dir),
-       description => project_description(P),
-       account => Account,
-       source_path => guild_project:project_dir(P)}.
+depot_project(GuildP, Dir, Account) ->
+    #{guild_p     => GuildP,
+      path        => project_path(Account, Dir),
+      name        => project_name(GuildP, Dir),
+      description => project_description(GuildP),
+      account     => Account,
+      source_path => guild_project:project_dir(GuildP)}.
 
 project_path(#{name:=Account}, Dir) ->
-    iolist_to_binary([Account, <<"/">>, Dir]).
+    binary_to_list(iolist_to_binary([Account, <<"/">>, Dir])).
 
-project_name(P, Default) ->
-    case guild_project:attr(P, ["project"], "name") of
+project_name(GuildP, Default) ->
+    case guild_project:attr(GuildP, ["project"], "name") of
         {ok, Name} -> Name;
         error -> Default
     end.
 
-project_description(P) ->
-    case guild_project:attr(P, ["project"], "description") of
+project_description(GuildP) ->
+    case guild_project:attr(GuildP, ["project"], "description") of
         {ok, Desc} -> Desc;
         error -> ""
     end.
@@ -97,7 +97,7 @@ project_by_path(Depot, Path) ->
     project_by_split_path(Depot, split_project_path(Path)).
 
 split_project_path(Path) ->
-    case re:split(Path, "/") of
+    case re:split(Path, "/", [{return, list}]) of
         [Account, Project] -> {Account, Project};
         _ -> error
     end.

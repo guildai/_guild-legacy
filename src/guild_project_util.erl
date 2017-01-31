@@ -16,6 +16,8 @@
 
 -export([runroot/1, runroot/2, all_runroots/1, flags/2]).
 
+-define(default_runroot, "runs").
+
 %% ===================================================================
 %% Runroot
 %% ===================================================================
@@ -29,7 +31,7 @@ runroot(Section, Project) ->
           [fun() -> section_runroot(Section) end,
            fun() -> project_runroot(Project) end,
            fun() -> user_configured_runroot() end,
-           fun() -> {ok, default_runroot(Project)} end],
+           fun() -> {ok, ?default_runroot} end],
           []),
     filename:absname(Root, guild_project:project_dir(Project)).
 
@@ -44,8 +46,9 @@ project_runroot(Project) ->
 user_configured_runroot() ->
     guild_user:config(["defaults"], "runroot").
 
-default_runroot(Project) ->
-    filename:join(guild_project:project_dir(Project), "runs").
+%% ===================================================================
+%% All runroots
+%% ===================================================================
 
 all_runroots(Project) ->
     guild_util:fold_apply(

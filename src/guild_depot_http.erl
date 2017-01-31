@@ -137,17 +137,38 @@ handle_index(View) ->
          {nav_title, "Guild Depot"},
          {narrow_page, true},
          {active_page, "depot-index"},
-         {projects, guild_depot_view:projects(View)},
-         {filter_tags, fake_data:filter_tags()}],
+         {projects, index_projects(View)},
+         {filter_tags, fake_data:filter_tags()},
+         {now_seconds, now_seconds()}],
     Page = guild_dtl:render(guild_depot_index_page, Vars),
     guild_http:ok_html(Page).
+
+index_projects(View) ->
+    Projects = guild_depot_view:projects(View),
+    Extra =
+        [stars,
+         updated],
+    guild_depot_view:apply_projects_extra(Projects, Extra).
 
 %% ===================================================================
 %% Project
 %% ===================================================================
 
 handle_project_path(Path, Params, View) ->
-    handle_project(guild_depot_view:project_by_path(View, Path), Params).
+    handle_project(project_by_path(View, Path), Params).
+
+project_by_path(View, Path) ->
+    case guild_depot_view:project_by_path(View, Path) of
+        {ok, P} -> {ok, apply_project_extra(P)};
+        {error, Err} -> {error, Path, Err}
+    end.
+
+apply_project_extra(P) ->
+    Extras =
+        [stars,
+         runs,
+         updated],
+    guild_depot_view:apply_project_extra(P, Extras).
 
 handle_project({ok, P}, Params) ->
     Vars =
@@ -156,10 +177,12 @@ handle_project({ok, P}, Params) ->
          {narrow_page, true},
          {active_page, "depot-project"},
          {p, P},
-         {active_file, active_file(Params)}],
+         {active_file, active_file(Params)},
+         {now_seconds, now_seconds()}],
     Page = guild_dtl:render(guild_depot_project_page, Vars),
     guild_http:ok_html(Page);
-handle_project(error, _Params) ->
+handle_project({error, Path, Err}, _Params) ->
+    guild_log:internal("Error loading project from ~p: ~p~n", [Path, Err]),
     guild_http:not_found().
 
 project_title(#{account:=#{name:=Account}, name:=Project}) ->
@@ -173,3 +196,6 @@ active_file(Params) ->
         [_, true] -> "guild";
         [_, _] -> "readme"
     end.
+
+now_seconds() ->
+    erlang:system_time() div 1000000000.
