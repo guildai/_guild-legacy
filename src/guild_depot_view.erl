@@ -95,7 +95,8 @@ project_extra_funs(Extra) ->
 
 project_extra_fun(stars)   -> fun apply_project_stars/1;
 project_extra_fun(runs)    -> fun apply_project_runs/1;
-project_extra_fun(updated) -> fun apply_project_updated/1.
+project_extra_fun(updated) -> fun apply_project_updated/1;
+project_extra_fun(tags)    -> fun apply_project_tags/1.
 
 apply_project_stars(#{path:=Path}=P) ->
     {ok, N} = guild_depot_db:project_stars(Path),
@@ -118,3 +119,15 @@ project_file_patterns_for_updated(GuildP) ->
     [filename:join(Dir, "Guild"),
      filename:join(Dir, "README.md"),
      filename:join(Dir, "runs/*")].
+
+apply_project_tags(#{guild_p:=GuildP}=P) ->
+    P#{tags => project_tags(GuildP)}.
+
+project_tags(GuildP) ->
+    case guild_project:attr(GuildP, ["project"], "tags")of
+        {ok, Tags} -> split_tags(Tags);
+        error -> []
+    end.
+
+split_tags(Tags) ->
+    re:split(Tags, "\\s+", [{return, list}, trim]).

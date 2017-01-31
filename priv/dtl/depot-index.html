@@ -36,7 +36,7 @@
         <div class="p-meta">
           <span class="p-stars"><i class="fa fa-star"></i> {{p.stars}}</span>
           {% for tag in p.tags %}
-          <span class="p-tag badge" style="background-color:{{tag.color}}">{{tag.name}}</span>
+          <span class="p-tag badge" style="background-color:{{tag|tag_color}}">{{tag}}</span>
           {% endfor %}
           <span class="p-updated">{{p.updated|format_updated:now_seconds}}</span>
         </div>

@@ -23,8 +23,8 @@
          navbar_links/1, navbar_item_active_class/2,
          navbar_item_link/2, render_page_view/2, page_view_css/1,
          page_view_js/1, page_active_class/2, depot_project_source/2,
-         format_runs_count/1, format_updated/2,
-         remove_unsafe_links/1, depot_project_readme_html/1]).
+         format_runs_count/1, format_updated/2, remove_unsafe_links/1,
+         depot_project_readme_html/1, tag_color/1]).
 
 version() -> 1.
 
@@ -46,7 +46,8 @@ inventory(filters) ->
      format_runs_count,
      format_updated,
      remove_unsafe_links,
-     depot_project_readme_html];
+     depot_project_readme_html,
+     tag_color];
 inventory(tags) ->
     [].
 
@@ -394,4 +395,16 @@ markdown_to_safe_html(Path) ->
               "Error converting ~s to markdown: ~p~n",
               [Path, Err]),
             ""
+    end.
+
+%% ===================================================================
+%% Tag color
+%% ===================================================================
+
+tag_color(Tag) ->
+    TagLower = string:to_lower(Tag),
+    case (erlang:phash2(TagLower, 3)) of
+        0 -> "rgb(82,135,198)";
+        1 -> "rgb(48,163,141)";
+        2 -> "rgb(197,182,102)"
     end.

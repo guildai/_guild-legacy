@@ -147,7 +147,8 @@ index_projects(View) ->
     Projects = guild_depot_view:projects(View),
     Extra =
         [stars,
-         updated],
+         updated,
+         tags],
     guild_depot_view:apply_projects_extra(Projects, Extra).
 
 %% ===================================================================
@@ -167,7 +168,8 @@ apply_project_extra(P) ->
     Extras =
         [stars,
          runs,
-         updated],
+         updated,
+         tags],
     guild_depot_view:apply_project_extra(P, Extras).
 
 handle_project({ok, P}, Params) ->

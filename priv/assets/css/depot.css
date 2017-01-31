@@ -23,11 +23,11 @@
 .p-updated {
     color: #777;
     font-size: 13px;
+    margin-left: 6px;
 }
 
 .p-metaval {
-    margin-right: 6px;
-    margin-left: 2px;
+    margin-left: 6px;
 }
 
 .p-metaval i {
@@ -47,7 +47,7 @@
     padding: 4px 6px;
     font-weight: 300;
     border-radius: 0;
-    margin-right: 6px;
+    margin-right: 2px;
 }
 
 .caption {
