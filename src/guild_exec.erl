@@ -14,8 +14,8 @@
 
 -module(guild_exec).
 
--export([init/0, run_link/2, run_quiet/1, run/1, run/2, send/2,
-         stop_and_wait/2, apply_user_opts/2]).
+-export([init/0, run_link/2, run_quiet/1, run/1, run/2, run_capture/1,
+         run_capture/2, send/2, stop_and_wait/2, apply_user_opts/2]).
 
 init() ->
     ok = application:ensure_started(erlexec).
@@ -40,6 +40,13 @@ console(stdout, _Pid, Bin) ->
     io:put_chars(standard_io, Bin);
 console(stderr, _Pid, Bin) ->
     io:put_chars(standard_error, Bin).
+
+run_capture(Args) ->
+    run_capture(Args, []).
+
+run_capture(Args, RunOpts) ->
+    Opts = [sync, stdout, stderr|RunOpts],
+    exec:run(Args, Opts).
 
 send(Pid, Bin) ->
     exec:send(Pid, Bin).

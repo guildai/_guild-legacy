@@ -24,7 +24,7 @@
          navbar_item_link/2, render_page_view/2, page_view_css/1,
          page_view_js/1, page_active_class/2, depot_project_source/2,
          format_runs_count/1, format_updated/2,
-         remove_unsafe_links/1]).
+         remove_unsafe_links/1, depot_project_readme_html/1]).
 
 version() -> 1.
 
@@ -45,7 +45,8 @@ inventory(filters) ->
      depot_project_source,
      format_runs_count,
      format_updated,
-     remove_unsafe_links];
+     remove_unsafe_links,
+     depot_project_readme_html];
 inventory(tags) ->
     [].
 
@@ -371,3 +372,26 @@ remove_unsafe_link(<<"href=\"ftp://",   _/binary>>=P) -> P;
 remove_unsafe_link(<<"href=\"mailto:",  _/binary>>=P) -> P;
 remove_unsafe_link(<<"href=\"",         _/binary>>)   -> "";
 remove_unsafe_link(P)                                 -> P.
+
+%% ===================================================================
+%% Depot project README HTML
+%% ===================================================================
+
+depot_project_readme_html(P) ->
+    ReadmePath = depot_project_source_path(P, "README.md"),
+    case filelib:is_file(ReadmePath) of
+        true -> markdown_to_safe_html(ReadmePath);
+        false -> ""
+    end.
+
+markdown_to_safe_html(Path) ->
+    Cmd = [guild_app:priv_bin("multimarkdown"), Path],
+    case guild_exec:run_capture(Cmd) of
+        {ok, [{stdout, Out}]} ->
+            remove_unsafe_links(Out);
+        {error, Err} ->
+            guild_log:internal(
+              "Error converting ~s to markdown: ~p~n",
+              [Path, Err]),
+            ""
+    end.

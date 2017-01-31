@@ -116,4 +116,5 @@ apply_project_updated(#{guild_p:=GuildP}=P) ->
 project_file_patterns_for_updated(GuildP) ->
     Dir = guild_project:project_dir(GuildP),
     [filename:join(Dir, "Guild"),
+     filename:join(Dir, "README.md"),
      filename:join(Dir, "runs/*")].

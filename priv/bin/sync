@@ -32,7 +32,11 @@ backup-or-preview-run-dbs() {
 sync-or-preview-files() {
     rsync \
         $(rsync-preview-opts) \
-        -va \
+        --verbose \
+        --recursive \
+        --links \
+        --delete \
+        --update \
         --include Guild \
         --include README.md \
         --exclude 'runs/*/guild.d/run.db' \

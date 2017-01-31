@@ -45,9 +45,18 @@
     </ul>
     <div class="p-tabs-body">
       {% if active_file == 'readme' %}
-      {% autoescape off %}
-      {{p|depot_project_source:'README.md.html'|remove_unsafe_links}}
-      {% endautoescape %}
+        {% autoescape off %}
+          {% with readme_html=p|depot_project_readme_html %}
+            {% if readme_html %}
+            {{readme_html}}
+            {% else %}
+
+      This project does not have a README. Create a file named
+      <code>README.md</code> in the project directory and re-publish your project.
+
+            {% endif %}
+          {% endwith %}
+        {% endautoescape %}
       {% elif active_file == 'guild' %}
       <pre>{{p|depot_project_source:'Guild'}}</pre>
       {% endif %}
