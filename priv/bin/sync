@@ -1,5 +1,9 @@
 #!/bin/bash -eu
 
+if [ ! -z "${DEBUG:-}" ]; then
+    set -x
+fi
+
 account="$1"
 project_dir="$2"
 depot="$3"
@@ -8,22 +12,40 @@ abs_project_dir=$( (cd $project_dir && pwd) )
 project_name=$(basename $abs_project_dir)
 full_depot_path=$(echo $depot/data/$account/$project_name/ | sed s://*:/:g)
 
-if [ ! -z "${PREVIEW:-}" ]; then
-    preview_opts="--list-only"
-    echo "account:          $account"
-    echo "abs_project_dir:  $abs_project_dir"
-    echo "depot:            $depot"
-    echo "project_name:     $project_name"
-    echo "full_depot_path:  $full_depot_path"
-else
-    preview_opts=""
-fi
+backup-or-preview-run-dbs() {
+    local db bak bakgz
+    for db in `find $project_dir/runs -name run.db`; do
+        bak=$db.bak
+        bakgz=$bak.gz
+        if test $db -nt $bakgz; then
+            if [ ! -z "${PREVIEW:-}" ]; then
+                echo "$db is new or has changed"
+            else
+                echo "Snapshotting $db"
+                echo ".backup $bak" | sqlite3 $db
+                gzip -f $bak
+            fi
+        fi
+    done
+}
 
-rsync \
-    $preview_opts \
-    -va \
-    --include Guild \
-    --exclude 'runs/*/guild.d/run.db' \
-    --include 'runs/***' \
-    --exclude '*' \
-    $abs_project_dir/ $full_depot_path
+sync-or-preview-files() {
+    rsync \
+        $(rsync-preview-opts) \
+        -va \
+        --include Guild \
+        --include README.md \
+        --exclude 'runs/*/guild.d/run.db' \
+        --include 'runs/***' \
+        --exclude '*' \
+        $abs_project_dir/ $full_depot_path
+}
+
+rsync-preview-opts() {
+    if [ ! -z "${PREVIEW:-}" ]; then
+        echo "--list-only"
+    fi
+}
+
+backup-or-preview-run-dbs
+sync-or-preview-files

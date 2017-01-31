@@ -75,10 +75,11 @@ account_required_error() ->
       "Try specifying an account using the --account option.").
 
 sync_env(Opts) ->
-    case proplists:get_bool(preview, Opts) of
-        true -> [{"PREVIEW", "1"}];
-        false -> []
-    end.
+    lists:foldl(fun sync_env_acc/2, [], proplists:compact(Opts)).
+
+sync_env_acc(preview, Env) -> [{"PREVIEW", "1"}|Env];
+sync_env_acc(debug, Env)   -> [{"DEBUG", "1"}|Env];
+sync_env_acc(_, Env)       -> Env.
 
 exec_sync(Account, ProjectDir, DepotDir, Env) ->
     Cmd = [guild_app:priv_bin("sync"), Account, ProjectDir, DepotDir],
