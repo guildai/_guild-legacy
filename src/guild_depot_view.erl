@@ -16,7 +16,7 @@
 
 -behavior(e2_service).
 
--export([start_link/1, projects/1]).
+-export([start_link/1, projects/1, project_by_path/2]).
 
 -export([init/1, handle_msg/3]).
 
@@ -42,12 +42,17 @@ init_state(Depot) ->
 projects(View) ->
     e2_service:call(View, projects).
 
+project_by_path(View, Path) ->
+    e2_service:call(View, {project_by_path, Path}).
+
 %% ===================================================================
 %% Message dispatch
 %% ===================================================================
 
 handle_msg(projects, _From, State) ->
-    handle_projects(State).
+    handle_projects(State);
+handle_msg({project_by_path, Path}, _From, State) ->
+    handle_project_by_path(Path, State).
 
 %% ===================================================================
 %% Projects
@@ -72,3 +77,16 @@ apply_project_extra(P) ->
 apply_project_stars(#{path:=Path}=P) ->
     {ok, N} = guild_depot_db:project_stars(Path),
     P#{stars => N}.
+
+%% ===================================================================
+%% Project by path
+%% ===================================================================
+
+handle_project_by_path(Path, State) ->
+    {reply, project_by_path_(Path, State), State}.
+
+project_by_path_(Path, #state{d=Depot}) ->
+    case guild_depot:project_by_path(Depot, Path) of
+        {ok, P} -> {ok, apply_project_extra(P)};
+        error -> error
+    end.

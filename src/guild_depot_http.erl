@@ -27,10 +27,11 @@
 start_server(View, Port, Opts) ->
     guild_dtl:init(Opts),
     App = create_app(View, Opts),
-    ServerOpts = [{proc_callback, {?MODULE, []}}],
+    ServerOpts = [{proc_callback, {?MODULE, [View]}}],
     guild_http_sup:start_server(Port, App, ServerOpts).
 
-init([]) ->
+init([View]) ->
+    erlang:monitor(process, View),
     erlang:register(?MODULE, self()).
 
 stop_server() ->
@@ -95,16 +96,12 @@ handle_page("GET", {Path, _, Params}, View) ->
 handle_page(_Method, _Path, _View) ->
     guild_http:bad_request().
 
-handle_index(View) ->
-    Vars =
-        [{html_title, "Guild Depot"},
-         {nav_title, "Guild Depot"},
-         {narrow_page, true},
-         {active_page, "depot-index"},
-         {projects, guild_depot_view:projects(View)},
-         {filter_tags, fake_data:filter_tags()}],
-    Page = guild_dtl:render(guild_depot_index_page, Vars),
-    guild_http:ok_html(Page).
+handle_path({ok, {project, Path}}, Params, View) ->
+    handle_project_path(Path, Params, View);
+handle_path({ok, {account, Name}}, _Params, _View) ->
+    guild_http:ok_text("TODO: account page for " ++ Name);
+handle_path(error, _Params, _View) ->
+    guild_http:bad_request().
 
 parse_path(Path) ->
     guild_util:find_apply(
@@ -130,12 +127,27 @@ try_account_path(Path) ->
         nomatch -> error
     end.
 
-handle_path({ok, {project, Path}}, Params, _View) ->
-    handle_project(fake_data:project_by_path(Path), Params);
-handle_path({ok, {account, Name}}, _Params, _View) ->
-    guild_http:ok_text("TODO: account page for " ++ Name);
-handle_path(error, _Params, _View) ->
-    guild_http:bad_request().
+%% ===================================================================
+%% Index
+%% ===================================================================
+
+handle_index(View) ->
+    Vars =
+        [{html_title, "Guild Depot"},
+         {nav_title, "Guild Depot"},
+         {narrow_page, true},
+         {active_page, "depot-index"},
+         {projects, guild_depot_view:projects(View)},
+         {filter_tags, fake_data:filter_tags()}],
+    Page = guild_dtl:render(guild_depot_index_page, Vars),
+    guild_http:ok_html(Page).
+
+%% ===================================================================
+%% Project
+%% ===================================================================
+
+handle_project_path(Path, Params, View) ->
+    handle_project(guild_depot_view:project_by_path(View, Path), Params).
 
 handle_project({ok, P}, Params) ->
     Vars =
@@ -150,11 +162,8 @@ handle_project({ok, P}, Params) ->
 handle_project(error, _Params) ->
     guild_http:not_found().
 
-project_title(P) ->
-    io_lib:format(
-      "~s / ~s - Guild Depot",
-      [proplists:get_value(account, P, ""),
-       proplists:get_value(name, P, "")]).
+project_title(#{account:=#{name:=Account}, name:=Project}) ->
+    io_lib:format("~s / ~s - Guild Depot", [Account, Project]).
 
 active_file(Params) ->
     Defined =

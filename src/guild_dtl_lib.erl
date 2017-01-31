@@ -22,7 +22,8 @@
          resolve_value/1, format_value/2, resolve_icon_alias/1,
          navbar_links/1, navbar_item_active_class/2,
          navbar_item_link/2, render_page_view/2, page_view_css/1,
-         page_view_js/1, page_active_class/2]).
+         page_view_js/1, page_active_class/2,
+         depot_project_source/2]).
 
 version() -> 1.
 
@@ -39,7 +40,8 @@ inventory(filters) ->
      render_page_view,
      page_view_css,
      page_view_js,
-     page_active_class];
+     page_active_class,
+     depot_project_source];
 inventory(tags) ->
     [].
 
@@ -307,3 +309,17 @@ page_active_class(Active, Target) ->
         Active -> "active";
         _ -> ""
     end.
+
+%% ===================================================================
+%% Depot project source
+%% ===================================================================
+
+depot_project_source(P, Name) ->
+    Source = depot_project_source_path(P, Name),
+    case file:read_file(Source) of
+        {ok, Bin} -> Bin;
+        {error, enoent} -> ""
+    end.
+
+depot_project_source_path(#{source_path:=Path}, Name) ->
+    filename:join(Path, Name).

@@ -1,5 +1,7 @@
 #-*-conf-*-
 
+<hello>
+
 [project]
 
 name            = MNIST

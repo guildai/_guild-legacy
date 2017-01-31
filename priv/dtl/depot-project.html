@@ -14,7 +14,7 @@
   <div class="col-md-12">
     <div class="pull-left">
       <h1 class="project">
-        <span class="project-account"><a href="/{{p.account}}">{{p.account}}</a></span><span class="path-sep">/</span><span class="project-name"><a href="/{{p.path}}">{{p.name}}</a></span>
+        <span class="project-account"><a href="/{{p.account.name}}">{{p.account.name}}</a></span><span class="path-sep">/</span><span class="project-name"><a href="/{{p.path}}">{{p.name}}</a></span>
       </h1>
       <div class="project-desc">{{p.description}}</div>
     </div>
@@ -47,7 +47,7 @@
       {% if active_file == 'readme' %}
       {% include "fake-readme.html" %}
       {% elif active_file == 'guild' %}
-      <pre>{% include "fake-guild" %}</pre>
+      <pre>{{p|depot_project_source:'Guild'}}</pre>
       {% endif %}
     </div>
   </div>

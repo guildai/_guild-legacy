@@ -14,7 +14,11 @@
 
 -module(guild_depot).
 
--export([accounts/1, account_projects/1]).
+-export([accounts/1, account_projects/1, project_by_path/2]).
+
+%% ===================================================================
+%% Accounts
+%% ===================================================================
 
 accounts(Depot) ->
     {ok, AccountDirs} = file:list_dir(data_dir(Depot)),
@@ -30,6 +34,10 @@ account(Depot, Name) ->
 
 account_dir(Depot, Name) ->
     filename:join(data_dir(Depot), Name).
+
+%% ===================================================================
+%% Account projects
+%% ===================================================================
 
 account_projects(#{source_path:=AccountDir}=Account) ->
     {ok, ProjectDirs} = file:list_dir(AccountDir),
@@ -67,7 +75,7 @@ depot_project(P, Dir, Account) ->
        source_path => guild_project:project_dir(P)}.
 
 project_path(#{name:=Account}, Dir) ->
-    Account ++ "/" ++ Dir.
+    iolist_to_binary([Account, <<"/">>, Dir]).
 
 project_name(P, Default) ->
     case guild_project:attr(P, ["project"], "name") of
@@ -80,3 +88,21 @@ project_description(P) ->
         {ok, Desc} -> Desc;
         error -> ""
     end.
+
+%% ===================================================================
+%% Project by path
+%% ===================================================================
+
+project_by_path(Depot, Path) ->
+    project_by_split_path(Depot, split_project_path(Path)).
+
+split_project_path(Path) ->
+    case re:split(Path, "/") of
+        [Account, Project] -> {Account, Project};
+        _ -> error
+    end.
+
+project_by_split_path(Depot, {AccountName, ProjectDir}) ->
+    project(account(Depot, AccountName), ProjectDir);
+project_by_split_path(_Depot, error) ->
+    error.
