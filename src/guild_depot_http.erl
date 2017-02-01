@@ -102,8 +102,8 @@ log_middleware() ->
 %% Page handler
 %% ===================================================================
 
-handle_page("GET", {"/", _, _}, View, Env) ->
-    handle_index(View, Env);
+handle_page("GET", {"/", _, Params}, View, Env) ->
+    handle_index(View, Params, Env);
 handle_page("GET", {Path, _, Params}, View, Env) ->
     handle_path(parse_path(Path), Params, View, Env);
 handle_page(_Method, _Path, _View, _Env) ->
@@ -111,8 +111,8 @@ handle_page(_Method, _Path, _View, _Env) ->
 
 handle_path({ok, {project, Path}}, Params, View, Env) ->
     handle_project_path(Path, Params, View, Env);
-handle_path({ok, {account, Name}}, _Params, _View, _Env) ->
-    guild_http:ok_text("TODO: account page for " ++ Name);
+handle_path({ok, {account, Name}}, Params, View, Env) ->
+    handle_account_path(Name, Params, View, Env);
 handle_path(error, _Params, _View, _Env) ->
     guild_http:bad_request().
 
@@ -144,26 +144,49 @@ try_account_path(Path) ->
 %% Index
 %% ===================================================================
 
-handle_index(View, Env) ->
+handle_index(View, Params, Env) ->
+    Projects = filter_projects(all_projects(View), Params),
+    Tags = apply_tag_selected(tags(Projects), Params),
     Vars =
         [{html_title, "Guild Depot"},
          {nav_title, "Guild Depot"},
          {narrow_page, true},
          {active_page, "depot-index"},
-         {projects, index_projects(View)},
-         {filter_tags, fake_data:filter_tags()},
+         {projects, Projects},
+         {tags, Tags},
          {now_seconds, now_seconds()},
-         {env, Env}],
+         {env, Env},
+         {params, Params}],
     Page = guild_dtl:render(guild_depot_index_page, Vars),
     guild_http:ok_html(Page).
 
-index_projects(View) ->
+all_projects(View) ->
     Projects = guild_depot_view:projects(View),
     Extra =
         [stars,
          updated,
          tags],
     guild_depot_view:apply_projects_extra(Projects, Extra).
+
+filter_projects(Projects, Params) ->
+    Opts =
+        [{text, proplists:get_value("q", Params)},
+         {tags, proplists:get_all_values("t", Params)}],
+    guild_depot_util:filter_projects(Projects, Opts).
+
+tags(Projects) ->
+    TagCounts = guild_depot_util:count_tags(Projects),
+    [#{name => Tag,
+       count => Count,
+       color => guild_dtl_lib:tag_color(Tag),
+       id => guild_dtl_lib:tag_id(Tag)}
+     || {Tag, Count} <- TagCounts].
+
+apply_tag_selected(Tags, Params) ->
+    Selected = proplists:get_all_values("t", Params),
+    [T#{selected => tag_selected(T, Selected)} || T <- Tags].
+
+tag_selected(#{name:=Name}, Selected) -> lists:member(Name, Selected).
 
 %% ===================================================================
 %% Project
@@ -173,7 +196,7 @@ handle_project_path(Path, Params, View, Env) ->
     handle_project(project_by_path(View, Path), Params, Env).
 
 project_by_path(View, Path) ->
-    case guild_depot_view:project_by_path(View, Path) of
+    case guild_depot_view:project(View, Path) of
         {ok, P} -> {ok, apply_project_extra(P)};
         {error, Err} -> {error, Path, Err}
     end.
@@ -188,7 +211,7 @@ apply_project_extra(P) ->
 
 handle_project({ok, P}, Params, Env) ->
     Vars =
-        [{html_title, project_title(P)},
+        [{html_title, project_page_title(P)},
          {nav_title, "Guild Depot"},
          {narrow_page, true},
          {active_page, "depot-project"},
@@ -202,8 +225,8 @@ handle_project({error, Path, Err}, _Params, _Env) ->
     guild_log:internal("Error loading project from ~p: ~p~n", [Path, Err]),
     guild_http:not_found().
 
-project_title(#{account:=#{name:=Account}, name:=Project}) ->
-    io_lib:format("~s / ~s - Guild Depot", [Account, Project]).
+project_page_title(#{account:=#{name:=Account}, name:=Project}) ->
+    [Account, " / ", Project, " - Guild Depot"].
 
 active_file(Params) ->
     Defined =
@@ -216,3 +239,33 @@ active_file(Params) ->
 
 now_seconds() ->
     erlang:system_time() div 1000000000.
+
+%% ===================================================================
+%% Account
+%% ===================================================================
+
+handle_account_path(Path, Params, View, Env) ->
+    handle_account(guild_depot_view:account(View, Path), Params, Env).
+
+handle_account({ok, A0}, _Params, Env) ->
+    A = apply_account_project_extras(A0),
+    Vars =
+        [{html_title, account_page_title(A)},
+         {nav_title, "Guild Depot"},
+         {narrow_page, true},
+         {a, A},
+         {now_seconds, now_seconds()},
+         {env, Env}],
+    Page = guild_dtl:render(guild_depot_account_index_page, Vars),
+    guild_http:ok_html(Page).
+
+account_page_title(#{name:=Account}) ->
+    [Account, " - Guild Depot"].
+
+apply_account_project_extras(#{projects:=P0}=A) ->
+    Extra =
+        [stars,
+         updated,
+         tags],
+    P = guild_depot_view:apply_projects_extra(P0, Extra),
+    A#{projects:=P}.

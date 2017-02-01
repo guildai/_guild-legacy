@@ -21,6 +21,7 @@
          {"bye.html",                  guild_bye_page},
          {"compare-table-widget.html", guild_compare_table_widget},
          {"depot-index.html",          guild_depot_index_page},
+         {"depot-account-index.html",  guild_depot_account_index_page},
          {"depot-project.html",        guild_depot_project_page},
          {"flags-widget.html",         guild_flags_widget},
          {"output-widget.html",        guild_output_widget},

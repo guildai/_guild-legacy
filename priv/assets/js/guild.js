@@ -466,7 +466,7 @@ guild.login = function() {
         "message": "Logging in with GitHub...",
         "css": {
             "top": "33%",
-            "padding": 20,
+            "padding": 15,
             "width": "20%",
             "left": "40%",
             "border": "none",

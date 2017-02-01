@@ -34,7 +34,9 @@
   <div class="col-lg-9">
     <div class="p-meta">
       {% for tag in p.tags %}
-      <span class="p-tag badge" style="background-color:{{tag|tag_color}}">{{tag}}</span>
+      <span class="p-tag badge" style="background-color:{{tag|tag_color}}">
+        <a href="/?t={{tag}}">{{tag}}</a>
+      </span>
       {% endfor %}
       <span class="p-metaval"><i class="fa fa-retweet"></i> <a href="/view/{{p.path}}">{{p.runs|format_runs_count}}</a></span>
       <span class="p-updated">{{p.updated|format_updated:now_seconds}}</span>

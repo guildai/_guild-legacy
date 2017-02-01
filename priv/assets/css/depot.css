@@ -50,6 +50,14 @@
     margin-right: 2px;
 }
 
+.p-tag a {
+    color: inherit;
+}
+
+.p-tag a:hover {
+    text-decoration: none;
+}
+
 .caption {
     margin-bottom: 5px;
 }
@@ -83,12 +91,10 @@
     font-size: 13px !important;
     margin: 3px 2px 3px 0;
     font-weight: 300;
-    -webkit-transition: 0.35s;
-    transition: 0.35s;
 }
 
 .label-tag:hover {
-    background-color: #999;
+    opacity: 0.7;
 }
 
 .panel-tags-filter {
@@ -192,4 +198,33 @@ a.user-avatar-dropdown {
 a.user-avatar-dropdown:hover img.user-avatar {
     -webkit-filter: brightness(105%);
     filter: brightness(105%);
+}
+
+.no-matches {
+    margin-top: 20px;
+}
+
+.account-details {
+    text-align: center;
+}
+
+#account-status {
+    text-align: center;
+}
+
+h1.account {
+    font-size: 28px;
+    text-align: center;
+}
+
+.account-fullname {
+    font-size: 18px;
+    margin-top: 10px;
+    font-weight: 600;
+}
+
+.account-avatar {
+    width: 80%;
+    border-radius: 6px;
+    border: 1px solid #eee;
 }

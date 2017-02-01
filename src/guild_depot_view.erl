@@ -17,8 +17,8 @@
 -behavior(e2_service).
 
 -export([start_link/1, depot_config/2, depot_config/3, projects/1,
-         project_by_path/2, apply_projects_extra/2,
-         apply_project_extra/2]).
+         project/2, apply_projects_extra/2, apply_project_extra/2,
+         account/2]).
 
 -export([init/1, handle_msg/3]).
 
@@ -51,63 +51,19 @@ load_depot_config(Depot) ->
 %% ===================================================================
 
 depot_config(View, Attr) ->
-    e2_service:call(View, {config, Attr}).
+    e2_service:call(View, {fun config_/2, [Attr]}).
 
 depot_config(View, Attr, Default) ->
-    case depot_config(View, Attr) of
-        {ok, Val} -> Val;
-        error -> Default
-    end.
+    guild_util:maybe_default(depot_config(View, Attr), Default).
 
 projects(View) ->
-    e2_service:call(View, projects).
+    e2_service:call(View, {fun projects_/1, []}).
 
-project_by_path(View, Path) ->
-    e2_service:call(View, {project_by_path, Path}).
+project(View, Path) ->
+    e2_service:call(View, {fun project_/2, [Path]}).
 
-%% ===================================================================
-%% Message dispatch
-%% ===================================================================
-
-handle_msg({config, Attr}, _From, State) ->
-    handle_config(Attr, State);
-handle_msg(projects, _From, State) ->
-    handle_projects(State);
-handle_msg({project_by_path, Path}, _From, State) ->
-    handle_project_by_path(Path, State).
-
-%% ===================================================================
-%% Config
-%% ===================================================================
-
-handle_config(Attr, #state{config=Config}=State) ->
-    Resp = guild_project:attr(Config, ["depot"], Attr),
-    {reply, Resp, State}.
-
-%% ===================================================================
-%% Projects
-%% ===================================================================
-
-handle_projects(State) ->
-    {reply, projects_(State), State}.
-
-projects_(#state{d=Depot}) ->
-    Accounts = guild_depot:accounts(Depot),
-    lists:foldl(fun account_projects_acc/2, [], Accounts).
-
-account_projects_acc(Account, Acc) ->
-    Projects = guild_depot:account_projects(Account),
-    lists:foldl(fun(P, AccIn) -> [P|AccIn] end, Acc, Projects).
-
-%% ===================================================================
-%% Project by path
-%% ===================================================================
-
-handle_project_by_path(Path, State) ->
-    {reply, project_by_path_(Path, State), State}.
-
-project_by_path_(Path, #state{d=Depot}) ->
-    guild_depot:project_by_path(Depot, Path).
+account(View, Name) ->
+    e2_service:call(View, {fun account_/2, [Name]}).
 
 %% ===================================================================
 %% Project extra
@@ -160,3 +116,57 @@ project_tags(GuildP) ->
 
 split_tags(Tags) ->
     re:split(Tags, "\\s+", [{return, list}, trim]).
+
+%% ===================================================================
+%% Message dispatch
+%% ===================================================================
+
+handle_msg({Fun, Args}, _From, State) when is_function(Fun) ->
+    Resp = erlang:apply(Fun, Args ++ [State]),
+    {reply, Resp, State}.
+
+%% ===================================================================
+%% Config
+%% ===================================================================
+
+config_(Attr, #state{config=Config}) ->
+    guild_project:attr(Config, ["depot"], Attr).
+
+%% ===================================================================
+%% Projects
+%% ===================================================================
+
+projects_(#state{d=Depot}) ->
+    Accounts = guild_depot:accounts(Depot),
+    lists:foldl(fun account_projects_acc/2, [], Accounts).
+
+account_projects_acc(Account, Acc) ->
+    Projects = guild_depot:account_projects(Account),
+    lists:foldl(fun(P, AccIn) -> [P|AccIn] end, Acc, Projects).
+
+%% ===================================================================
+%% Project
+%% ===================================================================
+
+project_(Path, #state{d=Depot}) ->
+    guild_depot:project_by_path(Depot, Path).
+
+%% ===================================================================
+%% Account
+%% ===================================================================
+
+account_(Name, #state{d=Depot}) ->
+    Accounts = guild_depot:accounts(Depot),
+    case find_account(Name, Accounts) of
+        {ok, Account} ->
+            {ok, apply_account_projects(Account)};
+        error ->
+            error
+    end.
+
+find_account(Name, [#{name:=Name}=A|_]) -> {ok, A};
+find_account(Name, [_|Rest]) -> find_account(Name, Rest);
+find_account(_Name, []) -> error.
+
+apply_account_projects(A) ->
+    A#{projects => guild_depot:account_projects(A)}.

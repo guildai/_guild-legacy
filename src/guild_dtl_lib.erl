@@ -24,7 +24,7 @@
          navbar_item_link/2, render_page_view/2, page_view_css/1,
          page_view_js/1, page_active_class/2, depot_project_source/2,
          format_runs_count/1, format_updated/2, remove_unsafe_links/1,
-         depot_project_readme_html/1, tag_color/1]).
+         depot_project_readme_html/1, tag_color/1, tag_id/1]).
 
 version() -> 1.
 
@@ -47,7 +47,8 @@ inventory(filters) ->
      format_updated,
      remove_unsafe_links,
      depot_project_readme_html,
-     tag_color];
+     tag_color,
+     tag_id];
 inventory(tags) ->
     [].
 
@@ -408,3 +409,10 @@ tag_color(Tag) ->
         1 -> "rgb(48,163,141)";
         2 -> "rgb(197,182,102)"
     end.
+
+%% ===================================================================
+%% Tag ID
+%% ===================================================================
+
+tag_id(Tag) ->
+    erlang:phash2(Tag, 10000000).

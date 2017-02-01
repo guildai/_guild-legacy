@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<link href="/assets/css/depot.css" rel="stylesheet">
+{% endblock %}
+
+{% block navbar_menu %}
+{% include "depot-navbar.html" %}
+{% endblock %}
+
+{% block page_content %}
+<div class="row">
+  <div class="col-md-3">
+    <h1 class="account">
+      <span class="project-account"><a href="/{{a.name}}">{{a.name}}</a></span>
+    </h1>
+    <div id="account-status"><i class="fa fa-circle-o-notch fa-spin"></i> Getting info</div>
+    <div class="account-details" id="account-details" style="display:none">
+      <h2 class="account-fullname" id="account-fullname"></h2>
+      <img class="account-avatar" id="account-avatar">
+    </div>
+  </div>
+  <div class="col-md-9">
+    <div class="caption" style="margin-top:30px">
+      <span class="caption-main">Projects</span>
+    </div>
+    {% for p in a.projects %}
+    <div class="row p-row">
+      <div class="col-xs-12">
+        <h2 class="p-name"><a href="{{p.path}}">{{p.name}}</a></h2>
+        <div class="p-desc">{{p.description}}</div>
+        <div class="p-meta">
+          <span class="p-stars"><i class="fa fa-star"></i> {{p.stars}}</span>
+          {% for tag in p.tags %}
+          <span class="p-tag badge" style="background-color:{{tag|tag_color}}">
+            <a href="/?t={{tag}}">{{tag}}</a>
+          </span>
+          {% endfor %}
+          <span class="p-updated">{{p.updated|format_updated:now_seconds}}</span>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="no-matches">
+      <p>This account hasn't published any projects, yet.</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+ $(function() {
+     guild.depot.baseInit();
+     $.ajax({
+         "url": "https://api.github.com/users/{{a.name}}",
+         "success": function(data) {
+             $("#account-avatar").attr("src", data.avatar_url);
+             $("#account-fullname").text(data.name);
+             $("#account-status").hide();
+             $("#account-details").show();
+             console.log(data);
+         },
+         "error": function(data) {
+             $("#account-status").html("Error loading account info");
+             console.error(data);
+         }
+     });
+ });
+</script>
+{% endblock %}
