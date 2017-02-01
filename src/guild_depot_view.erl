@@ -16,12 +16,13 @@
 
 -behavior(e2_service).
 
--export([start_link/1, projects/1, project_by_path/2,
-         apply_projects_extra/2, apply_project_extra/2]).
+-export([start_link/1, depot_config/2, depot_config/3, projects/1,
+         project_by_path/2, apply_projects_extra/2,
+         apply_project_extra/2]).
 
 -export([init/1, handle_msg/3]).
 
--record(state, {d}).
+-record(state, {d, config}).
 
 %% ===================================================================
 %% New / init
@@ -34,11 +35,29 @@ init([Depot]) ->
     {ok, init_state(Depot)}.
 
 init_state(Depot) ->
-    #state{d=Depot}.
+    #state{
+       d=Depot,
+       config=load_depot_config(Depot)}.
+
+load_depot_config(Depot) ->
+    %% Using Guild project structure for Depot config
+    case guild_project:from_dir(Depot) of
+        {ok, Config} -> Config;
+        {error, _} -> []
+    end.
 
 %% ===================================================================
 %% API
 %% ===================================================================
+
+depot_config(View, Attr) ->
+    e2_service:call(View, {config, Attr}).
+
+depot_config(View, Attr, Default) ->
+    case depot_config(View, Attr) of
+        {ok, Val} -> Val;
+        error -> Default
+    end.
 
 projects(View) ->
     e2_service:call(View, projects).
@@ -50,10 +69,20 @@ project_by_path(View, Path) ->
 %% Message dispatch
 %% ===================================================================
 
+handle_msg({config, Attr}, _From, State) ->
+    handle_config(Attr, State);
 handle_msg(projects, _From, State) ->
     handle_projects(State);
 handle_msg({project_by_path, Path}, _From, State) ->
     handle_project_by_path(Path, State).
+
+%% ===================================================================
+%% Config
+%% ===================================================================
+
+handle_config(Attr, #state{config=Config}=State) ->
+    Resp = guild_project:attr(Config, ["depot"], Attr),
+    {reply, Resp, State}.
 
 %% ===================================================================
 %% Projects

@@ -16,7 +16,7 @@
 
 -export([start_server/3, stop_server/0]).
 
--export([handle_page/3]).
+-export([handle_page/4]).
 
 -export([init/1, handle_msg/3]).
 
@@ -50,7 +50,9 @@ create_app(View, Opts) ->
 routes(View) ->
     psycho_route:create_app(
       [{{starts_with, "/assets/"}, static_handler()},
-       {"/login",                  login_handler()},
+       {"/login",                  login_handler(View)},
+       {"/logout",                 logout_handler()},
+       {"/oauthcb",                oauth_callback_handler(View)},
        {"/bye",                    bye_handler()},
        {'_',                       page_handler(View)}
       ]).
@@ -58,8 +60,14 @@ routes(View) ->
 static_handler() ->
     psycho_static:create_app(guild_app:priv_dir()).
 
-login_handler() ->
-    fun(_Env) -> guild_http:ok_text("TODO: login") end.
+login_handler(View) ->
+    guild_depot_auth_http:login_handler(View).
+
+logout_handler() ->
+    guild_depot_auth_http:logout_handler().
+
+oauth_callback_handler(View) ->
+    guild_depot_auth_http:oauth_callback_handler(View).
 
 bye_handler() ->
     fun(_Env) -> handle_bye() end.
@@ -69,18 +77,23 @@ handle_bye() ->
     guild_http:ok_text("Stopping server\n").
 
 page_handler(View) ->
+    psycho_util:chain_apps(page_app(View), [user_middleware(View)]).
+
+page_app(View) ->
     psycho_util:dispatch_app(
       {?MODULE, handle_page},
-      [method, parsed_path, View]).
+      [method, parsed_path, View, env]).
+
+user_middleware(View) ->
+    fun(Upstream) -> guild_depot_auth_http:user_middleware(View, Upstream) end.
 
 middleware(Opts) ->
-    maybe_apply_log_middleware(Opts, []).
+    lists:foldl(fun middleware_acc/2, [], proplists:compact(Opts)).
 
-maybe_apply_log_middleware(Opts, Acc) ->
-    case proplists:get_bool(log, Opts) of
-        true -> [log_middleware()|Acc];
-        false -> Acc
-    end.
+middleware_acc(log, Acc) ->
+    [log_middleware()|Acc];
+middleware_acc(_, Acc) ->
+    Acc.
 
 log_middleware() ->
     fun(Upstream) -> guild_log_http:create_app(Upstream) end.
@@ -89,18 +102,18 @@ log_middleware() ->
 %% Page handler
 %% ===================================================================
 
-handle_page("GET", {"/", _, _}, View) ->
-    handle_index(View);
-handle_page("GET", {Path, _, Params}, View) ->
-    handle_path(parse_path(Path), Params, View);
-handle_page(_Method, _Path, _View) ->
+handle_page("GET", {"/", _, _}, View, Env) ->
+    handle_index(View, Env);
+handle_page("GET", {Path, _, Params}, View, Env) ->
+    handle_path(parse_path(Path), Params, View, Env);
+handle_page(_Method, _Path, _View, _Env) ->
     guild_http:bad_request().
 
-handle_path({ok, {project, Path}}, Params, View) ->
-    handle_project_path(Path, Params, View);
-handle_path({ok, {account, Name}}, _Params, _View) ->
+handle_path({ok, {project, Path}}, Params, View, Env) ->
+    handle_project_path(Path, Params, View, Env);
+handle_path({ok, {account, Name}}, _Params, _View, _Env) ->
     guild_http:ok_text("TODO: account page for " ++ Name);
-handle_path(error, _Params, _View) ->
+handle_path(error, _Params, _View, _Env) ->
     guild_http:bad_request().
 
 parse_path(Path) ->
@@ -131,7 +144,7 @@ try_account_path(Path) ->
 %% Index
 %% ===================================================================
 
-handle_index(View) ->
+handle_index(View, Env) ->
     Vars =
         [{html_title, "Guild Depot"},
          {nav_title, "Guild Depot"},
@@ -139,7 +152,8 @@ handle_index(View) ->
          {active_page, "depot-index"},
          {projects, index_projects(View)},
          {filter_tags, fake_data:filter_tags()},
-         {now_seconds, now_seconds()}],
+         {now_seconds, now_seconds()},
+         {env, Env}],
     Page = guild_dtl:render(guild_depot_index_page, Vars),
     guild_http:ok_html(Page).
 
@@ -155,8 +169,8 @@ index_projects(View) ->
 %% Project
 %% ===================================================================
 
-handle_project_path(Path, Params, View) ->
-    handle_project(project_by_path(View, Path), Params).
+handle_project_path(Path, Params, View, Env) ->
+    handle_project(project_by_path(View, Path), Params, Env).
 
 project_by_path(View, Path) ->
     case guild_depot_view:project_by_path(View, Path) of
@@ -172,7 +186,7 @@ apply_project_extra(P) ->
          tags],
     guild_depot_view:apply_project_extra(P, Extras).
 
-handle_project({ok, P}, Params) ->
+handle_project({ok, P}, Params, Env) ->
     Vars =
         [{html_title, project_title(P)},
          {nav_title, "Guild Depot"},
@@ -180,10 +194,11 @@ handle_project({ok, P}, Params) ->
          {active_page, "depot-project"},
          {p, P},
          {active_file, active_file(Params)},
-         {now_seconds, now_seconds()}],
+         {now_seconds, now_seconds()},
+         {env, Env}],
     Page = guild_dtl:render(guild_depot_project_page, Vars),
     guild_http:ok_html(Page);
-handle_project({error, Path, Err}, _Params) ->
+handle_project({error, Path, Err}, _Params, _Env) ->
     guild_log:internal("Error loading project from ~p: ~p~n", [Path, Err]),
     guild_http:not_found().
 

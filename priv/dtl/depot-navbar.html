@@ -4,8 +4,15 @@
   </li>
 </ul>
 <ul class="nav navbar-nav navbar-right">
+  {% if env.user %}
+  <li><a href="/logout"
+         data-toggle="tooltip"
+         data-placement="bottom"
+         title="Logged in as {{env.user.login}}"><i class="fa fa-sign-out"></i> Logout</a></li>
+  {% else %}
   <li><a href="/login"
          data-toggle="tooltip"
          data-placement="bottom"
          title="Login using your GitHub credentials"><i class="fa fa-github"></i> Login</a></li>
+  {% endif %}
 </ul>
