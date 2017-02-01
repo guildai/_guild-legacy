@@ -177,3 +177,19 @@ a:not([href]):hover {
     color: inherit;
     text-decoration: inherit;
 }
+
+img.user-avatar {
+    height: 30px;
+    position: absolute;
+    top: 10px;
+    left: 15px;
+}
+
+a.user-avatar-dropdown {
+    padding-left: 50px !important;
+}
+
+a.user-avatar-dropdown:hover img.user-avatar {
+    -webkit-filter: brightness(105%);
+    filter: brightness(105%);
+}

@@ -5,14 +5,38 @@
 </ul>
 <ul class="nav navbar-nav navbar-right">
   {% if env.user %}
-  <li><a href="/logout"
-         data-toggle="tooltip"
-         data-placement="bottom"
-         title="Logged in as {{env.user.login}}"><i class="fa fa-sign-out"></i> Logout</a></li>
+
+  <li>
+    <a class="dropdown-toggle user-avatar-dropdown"
+       href="javascript:void(0)"
+       data-toggle="dropdown">
+      <span
+          data-toggle="tooltip"
+          data-placement="bottom"
+          title="Profile options">
+        <img alt="" class="img-circle user-avatar" src="{{env.user.avatar}}">
+        {{env.user.login}} <span class="caret"></span></span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+      <!--
+      <li><a href="#">Action</a></li>
+      <li><a href="#">Another action</a></li>
+      <li><a href="#">Something else here</a></li>
+      <li role="separator" class="divider"></li>
+      -->
+      <li>
+        <a href="/logout"><i class="fa fa-sign-out"></i> Logout</a>
+      </li>
+    </ul>
+  </li>
   {% else %}
-  <li><a href="/login"
-         data-toggle="tooltip"
-         data-placement="bottom"
-         title="Login using your GitHub credentials"><i class="fa fa-github"></i> Login</a></li>
+  <li>
+    <a href="javascript:guild.login()">
+      <span
+          data-toggle="tooltip"
+          data-placement="bottom"
+          title="Login with GitHub">
+        <i class="fa fa-github"></i> Login</a><span>
+  </li>
   {% endif %}
 </ul>

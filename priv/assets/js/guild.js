@@ -102,6 +102,9 @@ guild.depot = new function() {
 
     var baseInit = function() {
         $('[data-toggle="tooltip"]').tooltip({"delay": 400, "html": true});
+        $('[data-toggle="tooltip"]').click(function() {
+            $('[data-toggle="tooltip"]').tooltip("hide");
+        });
     };
 
     this.baseInit = baseInit;
@@ -452,4 +455,28 @@ guild.reduce = new function() {
     this.last = last;
     this.steps = steps;
     this.duration = duration;
+};
+
+/********************************************************************
+ * Loging
+ ********************************************************************/
+
+guild.login = function() {
+    $.blockUI({
+        "message": "Logging in with GitHub...",
+        "css": {
+            "top": "33%",
+            "padding": 20,
+            "width": "20%",
+            "left": "40%",
+            "border": "none",
+            "color": "#ddd",
+            "background": "#000",
+            "border-radius": "4px"
+        },
+        "overlayCSS": {
+            "opacity": 0.4
+        }
+    });
+    window.location = "/login?next=" + window.location;
 };
