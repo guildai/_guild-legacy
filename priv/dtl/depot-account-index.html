@@ -11,40 +11,55 @@
 {% block page_content %}
 <div class="row">
   <div class="col-md-3">
-    <h1 class="account">
-      <span class="project-account"><a href="/{{a.name}}">{{a.name}}</a></span>
-    </h1>
-    <div id="account-status"><i class="fa fa-circle-o-notch fa-spin"></i> Getting info</div>
-    <div class="account-details" id="account-details" style="display:none">
-      <h2 class="account-fullname" id="account-fullname"></h2>
-      <img class="account-avatar" id="account-avatar">
+    <div class="a-details">
+      <div id="a-status"><i class="fa fa-circle-o-notch fa-spin"></i> Getting info</div>
+      <img class="a-avatar" id="a-avatar">
+      <h1 class="a-fullname" id="a-fullname"></h1>
+      <h2 class="a-name"> <a href="/{{a.name}}">{{a.name}}</a></h2>
+      <ul class="list-unstyled a-links">
+        <li>
+          <i class="fa fa-fw fa-map-marker"></i> <span id="a-location"></span>
+        </li>
+        <li><a href="https://github.com/{{a.name}}" target="_blank">
+          <i class="fa fa-fw fa-github"></i> https://github.com/{{a.name}}</a>
+        </li>
+      </ul>
     </div>
   </div>
   <div class="col-md-9">
-    <div class="caption" style="margin-top:30px">
-      <span class="caption-main">Projects</span>
-    </div>
-    {% for p in a.projects %}
-    <div class="row p-row">
-      <div class="col-xs-12">
-        <h2 class="p-name"><a href="{{p.path}}">{{p.name}}</a></h2>
-        <div class="p-desc">{{p.description}}</div>
-        <div class="p-meta">
-          <span class="p-stars"><i class="fa fa-star"></i> {{p.stars}}</span>
-          {% for tag in p.tags %}
-          <span class="p-tag badge" style="background-color:{{tag|tag_color}}">
-            <a href="/?t={{tag}}">{{tag}}</a>
-          </span>
-          {% endfor %}
-          <span class="p-updated">{{p.updated|format_updated:now_seconds}}</span>
+
+    <ul class="nav nav-tabs guild-tabs">
+      <li role="presentation" class="{% if active_tab == 'projects' %}active{% endif %}"><a href="?projects">Projects</a></li>
+      <li role="presentation" class="{% if active_tab == 'stars' %}active{% endif %}"><a href="?stars">Stars</a></li>
+    </ul>
+
+    <div class="guild-tabs-body">
+      {% if active_tab == 'projects' %}
+      {% for p in a.projects %}
+      <div class="row p-row">
+        <div class="col-xs-12">
+          <h2 class="p-name"><a href="{{p.path}}">{{p.name}}</a></h2>
+          <div class="p-desc">{{p.description}}</div>
+          <div class="p-meta">
+            <span class="p-stars"><i class="fa fa-star"></i> {{p.stars}}</span>
+            {% for tag in p.tags %}
+            <span class="p-tag badge" style="background-color:{{tag|tag_color}}">
+              <a href="/?t={{tag}}">{{tag}}</a>
+            </span>
+            {% endfor %}
+            <span class="p-updated">{{p.updated|format_updated:now_seconds}}</span>
+          </div>
         </div>
       </div>
+      {% empty %}
+      <div class="no-matches">
+        <p>This account hasn't published any projects, yet.</p>
+      </div>
+      {% endfor %}
+      {% elif active_tab == 'stars' %}
+      TODO: show stars here
+      {% endif %}
     </div>
-    {% empty %}
-    <div class="no-matches">
-      <p>This account hasn't published any projects, yet.</p>
-    </div>
-    {% endfor %}
   </div>
 </div>
 {% endblock %}
@@ -56,14 +71,19 @@
      $.ajax({
          "url": "https://api.github.com/users/{{a.name}}",
          "success": function(data) {
-             $("#account-avatar").attr("src", data.avatar_url);
-             $("#account-fullname").text(data.name);
-             $("#account-status").hide();
-             $("#account-details").show();
+             $("#a-avatar").attr("src", data.avatar_url);
+             $("#a-fullname").text(data.name);
+             if (data.location) {
+                 $("#a-location").text(data.location);
+             } else {
+                 $("#a-location").closest("li").remove();
+             }
+             $("#a-status").hide();
+             $("#a-details").show();
              console.log(data);
          },
          "error": function(data) {
-             $("#account-status").html("Error loading account info");
+             $("#a-status").html("Error loading account info");
              console.error(data);
          }
      });

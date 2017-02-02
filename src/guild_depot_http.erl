@@ -216,7 +216,7 @@ handle_project({ok, P}, Params, Env) ->
          {narrow_page, true},
          {active_page, "depot-project"},
          {p, P},
-         {active_file, active_file(Params)},
+         {active_tab, active_project_tab(Params)},
          {now_seconds, now_seconds()},
          {env, Env}],
     Page = guild_dtl:render(guild_depot_project_page, Vars),
@@ -228,14 +228,18 @@ handle_project({error, Path, Err}, _Params, _Env) ->
 project_page_title(#{account:=#{name:=Account}, name:=Project}) ->
     [Account, " / ", Project, " - Guild Depot"].
 
-active_file(Params) ->
-    Defined =
-        [proplists:is_defined("readme", Params),
-         proplists:is_defined("guild", Params)],
-    case Defined of
-        [_, true] -> "guild";
-        [_, _] -> "readme"
-    end.
+active_project_tab(Params) ->
+    active_tab(["readme", "guild"], Params).
+
+active_tab([First|_]=Tabs, Params) ->
+    active_tab(Tabs, Params, First).
+
+active_tab([Tab|Rest], Params, Default) ->
+    case proplists:is_defined(Tab, Params) of
+        true -> Tab;
+        false -> active_tab(Rest, Params, Default)
+    end;
+active_tab([], _Params, Default) -> Default.
 
 now_seconds() ->
     erlang:system_time() div 1000000000.
@@ -247,17 +251,20 @@ now_seconds() ->
 handle_account_path(Path, Params, View, Env) ->
     handle_account(guild_depot_view:account(View, Path), Params, Env).
 
-handle_account({ok, A0}, _Params, Env) ->
+handle_account({ok, A0}, Params, Env) ->
     A = apply_account_project_extras(A0),
     Vars =
         [{html_title, account_page_title(A)},
          {nav_title, "Guild Depot"},
          {narrow_page, true},
          {a, A},
+         {active_tab, active_account_tab(Params)},
          {now_seconds, now_seconds()},
          {env, Env}],
     Page = guild_dtl:render(guild_depot_account_index_page, Vars),
-    guild_http:ok_html(Page).
+    guild_http:ok_html(Page);
+handle_account(error, _Params, _Env) ->
+    guild_http:not_found().
 
 account_page_title(#{name:=Account}) ->
     [Account, " - Guild Depot"].
@@ -269,3 +276,6 @@ apply_account_project_extras(#{projects:=P0}=A) ->
          tags],
     P = guild_depot_view:apply_projects_extra(P0, Extra),
     A#{projects:=P}.
+
+active_account_tab(Params) ->
+    active_tab(["projects", "stars"], Params).

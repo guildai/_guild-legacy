@@ -5,6 +5,16 @@
 .p-row {
     border-bottom: 1px solid #ccc;
     padding: 30px 0;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.p-row:first-child {
+    padding-top: 10px;
+}
+
+.p-row:last-child {
+    border-bottom: none;
 }
 
 .p-name {
@@ -151,19 +161,25 @@ a.anchor {
     display: none;
 }
 
-.p-tabs-body h1 {
-    margin-top: 0;
-}
-
-.p-tabs {
+.guild-tabs {
     margin-top: 25px;
 }
 
-.p-tabs li a {
+.nav-tabs > li.active > a,
+.nav-tabs > li.active > a:focus,
+.nav-tabs > li.active > a:hover {
     font-weight: 600;
 }
 
-.p-tabs-body {
+.nav-tabs > li.active > a:hover {
+    cursor: pointer;
+}
+
+.guild-tabs-body > h1 {
+    margin-top: 0;
+}
+
+.guild-tabs-body {
     border-left: 1px solid #ddd;
     border-right: 1px solid #ddd;
     border-bottom: 1px solid #ddd;
@@ -204,27 +220,42 @@ a.user-avatar-dropdown:hover img.user-avatar {
     margin-top: 20px;
 }
 
-.account-details {
-    text-align: center;
+.a-details {
+    margin-top: 20px;
 }
 
-#account-status {
-    text-align: center;
-}
-
-h1.account {
-    font-size: 28px;
-    text-align: center;
-}
-
-.account-fullname {
-    font-size: 18px;
-    margin-top: 15px;
-    font-weight: 600;
-}
-
-.account-avatar {
-    width: 80%;
+.a-avatar {
+    width: 100%;
+    max-width: 240px;
     border-radius: 6px;
     border: 1px solid #eee;
+}
+
+.a-fullname {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 10px 0 0;
+}
+
+.a-name {
+    margin-top: 5px;
+    font-size: 18px;
+}
+
+.a-links {
+    padding-top: 15px;
+    margin-top: 15px;
+}
+
+.a-links li {
+    margin-bottom: 6px;
+}
+
+.a-tabs {
+    margin-top: 30px;
+    text-transform: uppercase;
+}
+
+.a-tabs .active {
+    font-weight: 600;
 }

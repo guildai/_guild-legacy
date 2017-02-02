@@ -41,12 +41,12 @@
       <span class="p-metaval"><i class="fa fa-retweet"></i> <a href="/view/{{p.path}}">{{p.runs|format_runs_count}}</a></span>
       <span class="p-updated">{{p.updated|format_updated:now_seconds}}</span>
     </div>
-    <ul class="nav nav-tabs p-tabs">
-      <li role="presentation" class="{% if active_file == 'readme' %}active{% endif %}"><a href="?readme">README.md</a></li>
-      <li role="presentation" class="{% if active_file == 'guild' %}active{% endif %}"><a href="?guild">Guild</a></li>
+    <ul class="nav nav-tabs guild-tabs">
+      <li role="presentation" class="{% if active_tab == 'readme' %}active{% endif %}"><a href="?readme">README.md</a></li>
+      <li role="presentation" class="{% if active_tab == 'guild' %}active{% endif %}"><a href="?guild">Guild</a></li>
     </ul>
-    <div class="p-tabs-body">
-      {% if active_file == 'readme' %}
+    <div class="guild-tabs-body">
+      {% if active_tab == 'readme' %}
         {% autoescape off %}
           {% with readme_html=p|depot_project_readme_html %}
             {% if readme_html %}
@@ -59,7 +59,7 @@
             {% endif %}
           {% endwith %}
         {% endautoescape %}
-      {% elif active_file == 'guild' %}
+      {% elif active_tab == 'guild' %}
       <pre>{{p|depot_project_source:'Guild'}}</pre>
       {% endif %}
     </div>
