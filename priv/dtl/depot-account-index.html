@@ -2,6 +2,11 @@
 
 {% block styles %}
 <link href="/assets/css/depot.css" rel="stylesheet">
+<style>
+ .a-dynamic {
+     display: none;
+ }
+</style>
 {% endblock %}
 
 {% block navbar_menu %}
@@ -13,11 +18,11 @@
   <div class="col-md-3">
     <div class="a-details">
       <div id="a-status"><i class="fa fa-circle-o-notch fa-spin"></i> Getting info</div>
-      <img class="a-avatar" id="a-avatar">
+      <img class="a-avatar a-dynamic" id="a-avatar">
       <h1 class="a-fullname" id="a-fullname"></h1>
       <h2 class="a-name"> <a href="/{{a.name}}">{{a.name}}</a></h2>
       <ul class="list-unstyled a-links">
-        <li>
+        <li class="a-dynamic">
           <i class="fa fa-fw fa-map-marker"></i> <span id="a-location"></span>
         </li>
         <li><a href="https://github.com/{{a.name}}" target="_blank">
@@ -79,7 +84,7 @@
                  $("#a-location").closest("li").remove();
              }
              $("#a-status").hide();
-             $("#a-details").show();
+             $(".a-dynamic").show();
              console.log(data);
          },
          "error": function(data) {
