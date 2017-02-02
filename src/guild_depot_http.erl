@@ -294,7 +294,7 @@ handle_account({ok, A0}, Params, Env) ->
          {active_tab, active_account_tab(Params)},
          {now_seconds, now_seconds()},
          {env, Env}],
-    Page = guild_dtl:render(guild_depot_account_index_page, Vars),
+    Page = guild_dtl:render(guild_depot_profile_page, Vars),
     guild_http:ok_html(Page);
 handle_account(error, _Params, _Env) ->
     guild_http:not_found().
