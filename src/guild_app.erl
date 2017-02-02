@@ -38,14 +38,14 @@ supervisors() ->
      ?sup_child(guild_project_view_sup),
      ?sup_child(guild_depot_view_sup),
      ?sup_child(guild_runtime_sup),
-     ?sup_child(guild_data_reader_sup)].
+     ?sup_child(guild_data_reader_sup),
+     ?sup_child(guild_db_sup)].
 
 core_services() ->
     [?core_child(guild_proc,     100),
      ?core_child(guild_sys,      100),
      ?core_child(guild_runtime,  100),
-     ?core_child(guild_run_db,   1000),
-     ?core_child(guild_depot_db, 1000)].
+     ?core_child(guild_run_db,   1000)].
 
 %% ===================================================================
 %% Init support

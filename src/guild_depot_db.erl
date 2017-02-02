@@ -16,8 +16,8 @@
 
 -behavior(e2_service).
 
--export([start_link/0, open/1, open/2, star_project/2,
-         unstar_project/2, project_stars/1, close/0]).
+-export([start_link/1, open/1, star_project/2, unstar_project/2,
+         project_stars/1, close/0]).
 
 -export([init/1, handle_msg/3, terminate/2]).
 
@@ -29,21 +29,20 @@
 %% Start / init
 %% ===================================================================
 
-start_link() ->
-    e2_service:start_link(?MODULE, [], [registered]).
+start_link(Depot) ->
+    e2_service:start_link(?MODULE, [Depot], [registered]).
 
-init([]) ->
-    {ok, #state{}}.
+init([Depot]) ->
+    {ok, #state{}, {handle_msg, {open, Depot}}}.
+
+open(Depot) ->
+    MFA = {?MODULE, start_link, [Depot]},
+    Opts = [{restart, transient}],
+    guild_db_sup:start_child({MFA, Opts}).
 
 %% ===================================================================
 %% API
 %% ===================================================================
-
-open(Depot) ->
-    open(Depot, []).
-
-open(Depot, Options) ->
-    e2_service:call(?MODULE, {open, Depot, Options}).
 
 star_project(Project, User) ->
     e2_service:call(?MODULE, {op, {star_project, Project, User}}).
@@ -61,8 +60,8 @@ close() ->
 %% Dispatch
 %% ===================================================================
 
-handle_msg({open, Depot, Options}, _From, State) ->
-    handle_open(Depot, Options, State);
+handle_msg({open, Depot}, noreply, State) ->
+    handle_open(Depot, State);
 handle_msg(close, _From, State) ->
     handle_close(State);
 handle_msg({op, Op}, _From, State) ->
@@ -77,43 +76,31 @@ handle_db_op(Op, #state{db=Db}=State) ->
 % Open
 %% ===================================================================
 
-handle_open(Depot, Options, State) ->
-    {Reply, Next} = ensure_opened(Depot, Options, State),
-    {reply, Reply, Next}.
+handle_open(Depot, State) ->
+    Next = ensure_opened(Depot, State),
+    {noreply, Next}.
 
-ensure_opened(Depot, Options, State) ->
+ensure_opened(Depot, State) ->
     case is_db_open(Depot, State) of
-        true ->
-            {ok, State};
+        true -> State;
         false ->
             try_close_db(State),
-            try_open_db(Depot, Options, State)
+            open_db(Depot, State)
     end.
 
 is_db_open(Depot, #state{depot=Depot}) -> true;
 is_db_open(_Depot, _State) -> false.
 
-try_open_db(Depot, Opts, State) ->
+open_db(Depot, State) ->
     Path = db_path(Depot),
     Exists = filelib:is_file(Path),
-    Create = proplists:get_bool(create_if_missing, Opts),
-    maybe_open_db(Exists, Create, Path, Depot, State).
+    ok = filelib:ensure_dir(Path),
+    Db = sqlite3_open_db(Path),
+    maybe_init_schema(not Exists, Db),
+    add_db(Depot, Db, State).
 
 db_path(Depot) ->
     filename:join(Depot, ?depot_db_name).
-
-maybe_open_db(_Exists=true, _Create, Path, Depot, State) ->
-    open_db(Path, [], Depot, State);
-maybe_open_db(_Exists=false, _Create=true, Path, Depot, State) ->
-    open_db(Path, [init_schema], Depot, State);
-maybe_open_db(_Exsts=false, _Create=false, _Path, _Depot, State) ->
-    {{error, missing}, State}.
-
-open_db(Path, Opts, Depot, State) ->
-    ok = filelib:ensure_dir(Path),
-    Db = sqlite3_open_db(Path),
-    maybe_init_schema(proplists:get_bool(init_schema, Opts), Db),
-    {ok, add_db(Depot, Db, State)}.
 
 sqlite3_open_db(File) ->
     {ok, Db} = sqlite3:open(anonymous, [{file, File}]),
@@ -163,10 +150,10 @@ unstar_project_(Db, P, User) ->
 %% -------------------------------------------------------------------
 
 project_stars_(Db, P) ->
-    SQL = "select count(*) from project_star where project = ?",
+    SQL = "select user from project_star where project = ?",
     Args = [P],
     case guild_sql:exec_select(Db, SQL, Args) of
-        {ok, {_, [{Count}]}} -> {ok, Count};
+        {ok, {_, Users}} -> {ok, [U || {U} <- Users]};
         {error, Error} -> {error, Error}
     end.
 
@@ -176,7 +163,7 @@ project_stars_(Db, P) ->
 
 handle_close(State) ->
     Next = try_close_db(State),
-    {reply, ok, Next}.
+    {stop, normal, ok, Next}.
 
 try_close_db(#state{db=undefined}=State) ->
     State;

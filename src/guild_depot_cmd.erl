@@ -60,7 +60,7 @@ main(Opts, []) ->
     Port = guild_cmd_support:port_opt(Opts, ?default_port),
     ServerOpts = server_opts(Opts),
     guild_app:init_support([json, exec]),
-    guild_depot_db:open(Depot, [create_if_missing]),
+    guild_depot_db:open(Depot),
     Server = start_http_server(View, Port, ServerOpts),
     guild_cli:out("Guild Depot running on port ~b~n", [Port]),
     wait_for_server_and_terminate(Server, Opts).

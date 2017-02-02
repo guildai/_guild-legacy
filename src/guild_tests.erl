@@ -1192,16 +1192,16 @@ test_depot_db() ->
 
     Depot = init_depot(),
 
-    %% If we open without the create_if_missing, we get an error.
+    %% Calling open starts a DB process under supervision.
 
-    {error, missing} = M:open(Depot),
-    ok = M:open(Depot, [create_if_missing]),
+    {ok, Pid} = M:open(Depot),
+    true = is_process_alive(Pid),
 
     %% Let's star some projects. Initially there are no starred
     %% projects.
 
-    {ok, 0} = M:project_stars("foo"),
-    {ok, 0} = M:project_stars("bar"),
+    {ok, []} = M:project_stars("foo"),
+    {ok, []} = M:project_stars("bar"),
 
     %% Let's star the projects for some users.
 
@@ -1210,10 +1210,10 @@ test_depot_db() ->
     ok = M:star_project("foo", "jane"),
     ok = M:star_project("bar", "mary"),
 
-    %% And get our latest counts.
+    %% And get our stars.
 
-    {ok, 3} = M:project_stars("foo"),
-    {ok, 1} = M:project_stars("bar"),
+    {ok, [<<"bob">>,<<"jane">>,<<"mary">>]} = M:project_stars("foo"),
+    {ok, [<<"mary">>]} = M:project_stars("bar"),
 
     %% We can unstar as well!
 
@@ -1221,20 +1221,21 @@ test_depot_db() ->
     ok = M:unstar_project("foo", "jane"),
     ok = M:unstar_project("bar", "mary"),
 
-    {ok, 1} = M:project_stars("foo"),
-    {ok, 0} = M:project_stars("bar"),
+    {ok, [<<"bob">>]} = M:project_stars("foo"),
+    {ok, []} = M:project_stars("bar"),
 
     %% Unstarring a non-existing project or user is okay.
 
     ok = M:unstar_project("baz", "mary"),
     ok = M:unstar_project("foo", "sam"),
 
-    {ok, 1} = M:project_stars("foo"),
-    {ok, 0} = M:project_stars("bar"),
+    {ok, [<<"bob">>]} = M:project_stars("foo"),
+    {ok, []} = M:project_stars("bar"),
 
     %% Let's close up!
 
     ok = M:close(),
+    false = is_process_alive(Pid),
 
     ok().
 
