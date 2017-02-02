@@ -41,7 +41,10 @@ login_handler(View) ->
       {?MODULE, handle_login},
       [parsed_query_string, parsed_cookie, Config]).
 
-logout_handler() -> {?MODULE, handle_logout}.
+logout_handler() ->
+    psycho_util:dispatch_app(
+      {?MODULE, handle_logout},
+      [parsed_query_string]).
 
 oauth_callback_handler(View) ->
     Config = init_auth_config(View),
@@ -123,8 +126,9 @@ encoded_next_url_from_params(Params) ->
 %% Logout handler
 %% ===================================================================
 
-handle_logout(_Env) ->
-    guild_http:redirect("/", [clear_user_cookie()]).
+handle_logout(Params) ->
+    Next = proplists:get_value("next", Params, "/"),
+    guild_http:redirect(Next, [clear_user_cookie()]).
 
 clear_user_cookie() ->
     psycho_util:cookie_header("user", "", [{path, "/"}]).

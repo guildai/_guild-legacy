@@ -458,25 +458,34 @@ guild.reduce = new function() {
 };
 
 /********************************************************************
- * Loging
+ * Auth
  ********************************************************************/
 
-guild.login = function() {
-    $.blockUI({
-        "message": "Logging in with GitHub...",
-        "css": {
-            "top": "33%",
-            "padding": 15,
-            "width": "20%",
-            "left": "40%",
-            "border": "none",
-            "color": "#ddd",
-            "background": "#000",
-            "border-radius": "4px"
-        },
-        "overlayCSS": {
-            "opacity": 0.4
-        }
-    });
-    window.location = "/login?next=" + window.location;
+guild.auth = new function() {
+    var login = function() {
+        $.blockUI({
+            "message": "Logging in with GitHub...",
+            "css": {
+                "top": "33%",
+                "padding": 15,
+                "width": "20%",
+                "left": "40%",
+                "border": "none",
+                "color": "#ddd",
+                "background": "#000",
+                "border-radius": "4px"
+            },
+            "overlayCSS": {
+                "opacity": 0.4
+            }
+        });
+        window.location = "/login?next=" + window.location;
+    };
+
+    var logout = function() {
+        window.location = "/logout?next=" + window.location;
+    };
+
+    this.login = login;
+    this.logout = logout;
 };

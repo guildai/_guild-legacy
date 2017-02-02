@@ -22,7 +22,7 @@
       <a class="btn btn-star {% if p.starred %}btn-primary{% else %}btn-default{% endif %}"
          data-toggle="tooltip"
          title="{% if p.starred %}You starred this project<br>(click to unstar){% else %}Click to star this project{% endif %}"
-         href="/{{p.path}}?unstar">
+         href="/{{p.path}}?{% if p.starred %}unstar{% else %}star{% endif %}">
         <i class="fa fa-star fa-fw"></i> {% if p.starred %}Starred{% else %}Star{% endif %}
         <span class="badge badge-count">{{p.stars}}</span>
       </a>

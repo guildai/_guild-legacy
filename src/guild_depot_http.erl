@@ -197,19 +197,25 @@ handle_project_path(Path, Params, View, Env) ->
 
 project_by_path(View, Path) ->
     case guild_depot_view:project(View, Path) of
-        {ok, P} -> {ok, apply_project_extra(P)};
+        {ok, P} -> {ok, P};
         {error, Err} -> {error, Path, Err}
     end.
 
-apply_project_extra(P) ->
-    Extras =
-        [stars,
-         runs,
-         updated,
-         tags],
-    guild_depot_view:apply_project_extra(P, Extras).
-
 handle_project({ok, P}, Params, Env) ->
+    case project_action(Params) of
+        "view"   -> view_project(P, Params, Env);
+        "star"   -> star_project(P, Env);
+        "unstar" -> unstar_project(P, Env)
+    end;
+handle_project({error, Path, Err}, _Params, _Env) ->
+    guild_log:internal("Error loading project from ~p: ~p~n", [Path, Err]),
+    guild_http:not_found().
+
+project_action(Params) ->
+    find_param(["view", "star", "unstar"], Params).
+
+view_project(P0, Params, Env) ->
+    P = apply_project_extra(P0),
     Vars =
         [{html_title, project_page_title(P)},
          {nav_title, "Guild Depot"},
@@ -220,29 +226,33 @@ handle_project({ok, P}, Params, Env) ->
          {now_seconds, now_seconds()},
          {env, Env}],
     Page = guild_dtl:render(guild_depot_project_page, Vars),
-    guild_http:ok_html(Page);
-handle_project({error, Path, Err}, _Params, _Env) ->
-    guild_log:internal("Error loading project from ~p: ~p~n", [Path, Err]),
-    guild_http:not_found().
+    guild_http:ok_html(Page).
+
+apply_project_extra(P) ->
+    Extras =
+        [stars,
+         runs,
+         updated,
+         tags],
+    guild_depot_view:apply_project_extra(P, Extras).
 
 project_page_title(#{account:=#{name:=Account}, name:=Project}) ->
     [Account, " / ", Project, " - Guild Depot"].
 
 active_project_tab(Params) ->
-    active_tab(["readme", "guild"], Params).
+    find_param(["readme", "guild"], Params).
 
-active_tab([First|_]=Tabs, Params) ->
-    active_tab(Tabs, Params, First).
+star_project(#{path:=Path}, Env) ->
+    guild_http:ok_text(
+      io_lib:format(
+        "TODO: star ~s using ~p",
+        [Path, proplists:get_value(user, Env)])).
 
-active_tab([Tab|Rest], Params, Default) ->
-    case proplists:is_defined(Tab, Params) of
-        true -> Tab;
-        false -> active_tab(Rest, Params, Default)
-    end;
-active_tab([], _Params, Default) -> Default.
-
-now_seconds() ->
-    erlang:system_time() div 1000000000.
+unstar_project(#{path:=Path}, Env) ->
+    guild_http:ok_text(
+      io_lib:format(
+        "TODO: unstar ~s using ~p",
+        [Path, proplists:get_value(user, Env)])).
 
 %% ===================================================================
 %% Account
@@ -278,4 +288,21 @@ apply_account_project_extras(#{projects:=P0}=A) ->
     A#{projects:=P}.
 
 active_account_tab(Params) ->
-    active_tab(["projects", "stars"], Params).
+    find_param(["projects", "stars"], Params).
+
+%% ===================================================================
+%% Helpers
+%% ===================================================================
+
+find_param([First|_]=Targets, Params) ->
+    find_param(Targets, Params, First).
+
+find_param([Name|Rest], Params, Default) ->
+    case proplists:is_defined(Name, Params) of
+        true -> Name;
+        false -> find_param(Rest, Params, Default)
+    end;
+find_param([], _Params, Default) -> Default.
+
+now_seconds() ->
+    erlang:system_time() div 1000000000.
