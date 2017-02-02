@@ -48,6 +48,7 @@ inventory(filters) ->
      remove_unsafe_links,
      depot_project_readme_html,
      tag_color,
+     tag_colors,
      tag_id];
 inventory(tags) ->
     [].
@@ -402,13 +403,29 @@ markdown_to_safe_html(Path) ->
 %% Tag color
 %% ===================================================================
 
-tag_color(Tag) ->
-    TagLower = string:to_lower(Tag),
-    case (erlang:phash2(TagLower, 3)) of
-        0 -> "rgb(82,135,198)";
-        1 -> "rgb(48,163,141)";
-        2 -> "rgb(197,182,102)"
-    end.
+%% Colors from Material Design color palette:
+%% https://material.io/guidelines/style/color.htm
+
+tag_color(T) when is_list(T) ->
+    tag_color(tag_hash_binary(T));
+tag_color(<<"1">>)  -> "#00ACC1"; % cyan-600
+tag_color(<<"2">>)  -> "#9FA8DA"; % indigo-200
+tag_color(<<"3">>)  -> "#7986CB"; % indigo-300
+tag_color(<<"4">>)  -> "#26A69A"; % teal-400
+tag_color(<<"5">>)  -> "#66BB6A"; % green-600
+tag_color(<<"6">>)  -> "#A1887F"; % brown-300
+tag_color(<<"7">>)  -> "#F9A825"; % yellow-800
+tag_color(<<"8">>)  -> "#F06292"; % pink-300
+tag_color(<<"9">>)  -> "#FF7043"; % deep-orange-400
+tag_color(<<"10">>) -> "#9CCC65"; % light-green-400
+tag_color(_)        -> "#90A4AE". % blue-grey-300
+
+tag_hash_binary(T) ->
+    %% Used to map tag string val to one of the indexed colors
+    %% above. We use binaries as a convenience to test the palette in
+    %% a template using notation like {{3|tag_color}}.
+    TagLower = string:to_lower(T),
+    integer_to_binary(erlang:phash2(TagLower, 11) + 1).
 
 %% ===================================================================
 %% Tag ID
