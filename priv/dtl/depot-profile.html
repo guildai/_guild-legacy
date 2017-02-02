@@ -58,11 +58,31 @@
       </div>
       {% empty %}
       <div class="no-matches">
-        <p>This account hasn't published any projects, yet.</p>
+        <p>This account hasn't published any projects yet.</p>
       </div>
       {% endfor %}
       {% elif active_tab == 'stars' %}
-      TODO: show stars here
+      {% for p in a.stars %}
+      <div class="row p-row">
+        <div class="col-xs-12">
+          <h2 class="p-name"><a href="{{p.path}}">{{p.name}}</a></h2>
+          <div class="p-desc">{{p.description}}</div>
+          <div class="p-meta">
+            <span class="p-stars"><i class="fa fa-star"></i> {{p.stars_count}}</span>
+            {% for tag in p.tags %}
+            <span class="p-tag badge" style="background-color:{{tag|tag_color}}">
+              <a href="/?t={{tag}}">{{tag}}</a>
+            </span>
+            {% endfor %}
+            <span class="p-updated">{{p.updated|format_updated:now_seconds}}</span>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="no-matches">
+        <p>This account hasn't starred any projects yet.</p>
+      </div>
+      {% endfor %}
       {% endif %}
     </div>
   </div>

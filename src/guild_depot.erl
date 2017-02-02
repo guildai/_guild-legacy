@@ -14,7 +14,7 @@
 
 -module(guild_depot).
 
--export([accounts/1, account_projects/1, project_by_path/2]).
+-export([accounts/1, account_projects/1, project_for_path/2]).
 
 %% ===================================================================
 %% Accounts
@@ -90,11 +90,11 @@ project_description(GuildP) ->
     end.
 
 %% ===================================================================
-%% Project by path
+%% Project for path
 %% ===================================================================
 
-project_by_path(Depot, Path) ->
-    project_by_split_path(Depot, split_project_path(Path)).
+project_for_path(Depot, Path) ->
+    project_for_split_path(Depot, split_project_path(Path)).
 
 split_project_path(Path) ->
     case re:split(Path, "/", [{return, list}]) of
@@ -102,7 +102,7 @@ split_project_path(Path) ->
         _ -> error
     end.
 
-project_by_split_path(Depot, {AccountName, ProjectDir}) ->
+project_for_split_path(Depot, {AccountName, ProjectDir}) ->
     project(account(Depot, AccountName), ProjectDir);
-project_by_split_path(_Depot, error) ->
-    error.
+project_for_split_path(_Depot, error) ->
+    {error, bad_path}.

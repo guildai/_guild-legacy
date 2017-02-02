@@ -17,8 +17,8 @@
 -behavior(e2_service).
 
 -export([start_link/1, depot_config/2, depot_config/3, projects/1,
-         project/2, apply_projects_extra/2, apply_project_extra/2,
-         account/2]).
+         projects/2, project/2, apply_projects_extra/2,
+         apply_project_extra/2, account/2]).
 
 -export([init/1, handle_msg/3]).
 
@@ -58,6 +58,9 @@ depot_config(View, Attr, Default) ->
 
 projects(View) ->
     e2_service:call(View, {fun projects_/1, []}).
+
+projects(View, Filter) ->
+    e2_service:call(View, {fun projects_/2, [Filter]}).
 
 project(View, Path) ->
     e2_service:call(View, {fun project_/2, [Path]}).
@@ -147,12 +150,15 @@ account_projects_acc(Account, Acc) ->
     Projects = guild_depot:account_projects(Account),
     lists:foldl(fun(P, AccIn) -> [P|AccIn] end, Acc, Projects).
 
+projects_(Paths, #state{d=Depot}) ->
+    [guild_depot:project_for_path(Depot, Path) || Path <- Paths].
+
 %% ===================================================================
 %% Project
 %% ===================================================================
 
 project_(Path, #state{d=Depot}) ->
-    guild_depot:project_by_path(Depot, Path).
+    guild_depot:project_for_path(Depot, Path).
 
 %% ===================================================================
 %% Account

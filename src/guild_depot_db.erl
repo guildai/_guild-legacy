@@ -17,7 +17,7 @@
 -behavior(e2_service).
 
 -export([start_link/1, open/1, star_project/2, unstar_project/2,
-         project_stars/1, close/0]).
+         project_stars/1, user_stars/1, close/0]).
 
 -export([init/1, handle_msg/3, terminate/2]).
 
@@ -52,6 +52,9 @@ unstar_project(Project, User) ->
 
 project_stars(Project) ->
     e2_service:call(?MODULE, {op, {project_stars, Project}}).
+
+user_stars(User) ->
+    e2_service:call(?MODULE, {op, {user_stars, User}}).
 
 close() ->
     e2_service:call(?MODULE, close).
@@ -125,7 +128,8 @@ add_db(Depot, Db, S) ->
 
 db_op(Db, {star_project, P, User})   -> star_project_(Db, P, User);
 db_op(Db, {unstar_project, P, User}) -> unstar_project_(Db, P, User);
-db_op(Db, {project_stars, P})        -> project_stars_(Db, P).
+db_op(Db, {project_stars, P})        -> project_stars_(Db, P);
+db_op(Db, {user_stars, User})        -> user_stars_(Db, User).
 
 %% -------------------------------------------------------------------
 %% Star project
@@ -154,6 +158,18 @@ project_stars_(Db, P) ->
     Args = [P],
     case guild_sql:exec_select(Db, SQL, Args) of
         {ok, {_, Users}} -> {ok, [U || {U} <- Users]};
+        {error, Error} -> {error, Error}
+    end.
+
+%% -------------------------------------------------------------------
+%% User stars
+%% -------------------------------------------------------------------
+
+user_stars_(Db, User) ->
+    SQL = "select project from project_star where user = ?",
+    Args = [User],
+    case guild_sql:exec_select(Db, SQL, Args) of
+        {ok, {_, Projects}} -> {ok, [P || {P} <- Projects]};
         {error, Error} -> {error, Error}
     end.
 

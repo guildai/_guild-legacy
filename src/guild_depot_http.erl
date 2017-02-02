@@ -193,9 +193,11 @@ tag_selected(#{name:=Name}, Selected) -> lists:member(Name, Selected).
 %% ===================================================================
 
 handle_project_path(Path, Params, View, Env) ->
-    handle_project(project_by_path(View, Path), Params, Env).
+    handle_project(
+      project_for_path(View, Path),
+      Params, Env).
 
-project_by_path(View, Path) ->
+project_for_path(View, Path) ->
     case guild_depot_view:project(View, Path) of
         {ok, P} -> {ok, P};
         {error, Err} -> {error, Path, Err}
@@ -282,10 +284,12 @@ update_db_star_project(Project, User, false) ->
 %% ===================================================================
 
 handle_account_path(Path, Params, View, Env) ->
-    handle_account(guild_depot_view:account(View, Path), Params, Env).
+    handle_account(
+      guild_depot_view:account(View, Path),
+      Params, Env).
 
 handle_account({ok, A0}, Params, Env) ->
-    A = apply_account_project_extras(A0),
+    A = apply_account_extras(A0),
     Vars =
         [{html_title, account_page_title(A)},
          {nav_title, "Guild Depot"},
@@ -299,16 +303,48 @@ handle_account({ok, A0}, Params, Env) ->
 handle_account(error, _Params, _Env) ->
     guild_http:not_found().
 
-account_page_title(#{name:=Account}) ->
-    [Account, " - Guild Depot"].
+apply_account_extras(A) ->
+    guild_util:fold_apply(
+      [fun apply_account_project_extras/1,
+       fun apply_account_stars/1],
+      A).
 
-apply_account_project_extras(#{projects:=P0}=A) ->
+apply_account_project_extras(#{projects:=Ps0}=A) ->
     Extra =
         [stars,
          updated,
          tags],
-    P = guild_depot_view:apply_projects_extra(P0, Extra),
-    A#{projects:=P}.
+    Ps = guild_depot_view:apply_projects_extra(Ps0, Extra),
+    A#{projects:=Ps}.
+
+apply_account_stars(#{name:=Name, depot:=Depot}=A) ->
+    {ok, Paths} = guild_depot_db:user_stars(Name),
+    Projects = starred_projects(Paths, Depot),
+    apply_account_stars_extras(A#{stars => Projects}).
+
+starred_projects(Paths, Depot) ->
+    F = fun(Path, Acc) -> starred_project_acc(Path, Depot, Acc) end,
+    lists:foldl(F, [], Paths).
+
+starred_project_acc(Path, Depot, Acc) ->
+    case guild_depot:project_for_path(Depot, Path) of
+        {ok, Project} -> [Project|Acc];
+        {error, Err} ->
+            guild_log:internal(
+              "Error reading project for ~p: ~p~n",
+              [Path, Err])
+    end.
+
+apply_account_stars_extras(#{stars:=Ps0}=A) ->
+    Extra =
+        [stars,
+         updated,
+         tags],
+    Ps = guild_depot_view:apply_projects_extra(Ps0, Extra),
+    A#{stars:=Ps}.
+
+account_page_title(#{name:=Account}) ->
+    [Account, " - Guild Depot"].
 
 active_account_tab(Params) ->
     find_param(["projects", "stars"], Params).
