@@ -44,7 +44,7 @@
         <h2 class="p-name"><a href="{{p.path}}">{{p.account.name}} / {{p.name}}</a></h2>
         <div class="p-desc">{{p.description}}</div>
         <div class="p-meta">
-          <span class="p-stars"><i class="fa fa-star"></i> {{p.stars}}</span>
+          <span class="p-stars"><i class="fa fa-star"></i> {{p.stars_count}}</span>
           {% for tag in p.tags %}
           <span class="p-tag badge" style="background-color:{{tag|tag_color}}">
             <a href="/?t={{tag}}">{{tag}}</a>

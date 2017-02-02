@@ -19,12 +19,12 @@
       <div class="project-desc">{{p.description}}</div>
     </div>
     <div class="project-actions pull-right">
-      <a class="btn btn-star {% if p.starred %}btn-primary{% else %}btn-default{% endif %}"
+      <a class="btn btn-star {% if p.starred %}btn-success{% else %}btn-default{% endif %}"
          data-toggle="tooltip"
          title="{% if p.starred %}You starred this project<br>(click to unstar){% else %}Click to star this project{% endif %}"
          href="/{{p.path}}?{% if p.starred %}unstar{% else %}star{% endif %}">
         <i class="fa fa-star fa-fw"></i> {% if p.starred %}Starred{% else %}Star{% endif %}
-        <span class="badge badge-count">{{p.stars}}</span>
+        <span class="badge badge-count">{{p.stars_count}}</span>
       </a>
       <a class="btn btn-default" href="/view/{{p.path}}">Open in Guild View</a>
     </div>
@@ -38,8 +38,10 @@
         <a href="/?t={{tag}}">{{tag}}</a>
       </span>
       {% endfor %}
+      <span style="white-space:nowrap">
       <span class="p-metaval"><i class="fa fa-retweet"></i> <a href="/view/{{p.path}}">{{p.runs|format_runs_count}}</a></span>
       <span class="p-updated">{{p.updated|format_updated:now_seconds}}</span>
+      </span>
     </div>
     <ul class="nav nav-tabs guild-tabs">
       <li role="presentation" class="{% if active_tab == 'readme' %}active{% endif %}"><a href="?readme">README.md</a></li>

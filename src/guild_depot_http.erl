@@ -214,8 +214,12 @@ handle_project({error, Path, Err}, _Params, _Env) ->
 project_action(Params) ->
     find_param(["view", "star", "unstar"], Params).
 
+%% -------------------------------------------------------------------
+%% View project
+%% -------------------------------------------------------------------
+
 view_project(P0, Params, Env) ->
-    P = apply_project_extra(P0),
+    P = apply_project_extra(P0, Env),
     Vars =
         [{html_title, project_page_title(P)},
          {nav_title, "Guild Depot"},
@@ -228,13 +232,23 @@ view_project(P0, Params, Env) ->
     Page = guild_dtl:render(guild_depot_project_page, Vars),
     guild_http:ok_html(Page).
 
-apply_project_extra(P) ->
+apply_project_extra(P, Env) ->
     Extras =
         [stars,
          runs,
          updated,
-         tags],
+         tags,
+         project_starred_extra(Env)],
     guild_depot_view:apply_project_extra(P, Extras).
+
+project_starred_extra(Env) ->
+    User = psycho:env(user, Env),
+    fun(P) -> apply_starred(User, P) end.
+
+apply_starred(#{login:=User}, #{stars:=Stars}=P) ->
+    P#{starred=>lists:member(User, Stars)};
+apply_starred(undefined, P) ->
+    P.
 
 project_page_title(#{account:=#{name:=Account}, name:=Project}) ->
     [Account, " / ", Project, " - Guild Depot"].
@@ -242,17 +256,26 @@ project_page_title(#{account:=#{name:=Account}, name:=Project}) ->
 active_project_tab(Params) ->
     find_param(["readme", "guild"], Params).
 
-star_project(#{path:=Path}, Env) ->
-    guild_http:ok_text(
-      io_lib:format(
-        "TODO: star ~s using ~p",
-        [Path, proplists:get_value(user, Env)])).
+%% -------------------------------------------------------------------
+%% Star / unstar project
+%% -------------------------------------------------------------------
 
-unstar_project(#{path:=Path}, Env) ->
-    guild_http:ok_text(
-      io_lib:format(
-        "TODO: unstar ~s using ~p",
-        [Path, proplists:get_value(user, Env)])).
+star_project(P, Env) ->
+    star_project(psycho:env(user, Env), P, true).
+
+unstar_project(P, Env) ->
+    star_project(psycho:env(user, Env), P, false).
+
+star_project(#{login:=User}, #{path:=Path}, Flag) ->
+    ok = update_db_star_project(Path, User, Flag),
+    guild_http:redirect(["/", Path]);
+star_project(undefined, _Path, _Flag) ->
+    guild_http:bad_request("Must be logged in to star projects").
+
+update_db_star_project(Project, User, true) ->
+    guild_depot_db:star_project(Project, User);
+update_db_star_project(Project, User, false) ->
+    guild_depot_db:unstar_project(Project, User).
 
 %% ===================================================================
 %% Account

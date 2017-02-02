@@ -81,11 +81,14 @@ project_extra_funs(Extra) ->
 project_extra_fun(stars)   -> fun apply_project_stars/1;
 project_extra_fun(runs)    -> fun apply_project_runs/1;
 project_extra_fun(updated) -> fun apply_project_updated/1;
-project_extra_fun(tags)    -> fun apply_project_tags/1.
+project_extra_fun(tags)    -> fun apply_project_tags/1;
+project_extra_fun(F) when is_function(F)
+                           -> F.
 
 apply_project_stars(#{path:=Path}=P) ->
-    {ok, N} = guild_depot_db:project_stars(Path),
-    P#{stars => N}.
+    {ok, Stars} = guild_depot_db:project_stars(Path),
+    P#{stars => Stars,
+       stars_count => length(Stars)}.
 
 apply_project_runs(#{guild_p:=GuildP}=P) ->
     Runs = guild_run:runs_for_project(GuildP),
