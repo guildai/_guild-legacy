@@ -43,7 +43,9 @@
         </a>
       </span>
       {% endif %}
+      <!-- TODO
       <a class="btn btn-default" href="/view/{{p.path}}">Open in Guild View</a>
+      -->
     </div>
   </div>
 </div>
@@ -56,8 +58,7 @@
       </span>
       {% endfor %}
       <span style="white-space:nowrap">
-      <span class="p-metaval"><i class="fa fa-retweet"></i> <a href="/view/{{p.path}}">{{p.runs|format_runs_count}}</a></span>
-      <span class="p-updated">{{p.updated|format_updated:now_seconds}}</span>
+      <span class="p-updated">updated {{p.updated|format_updated:now_seconds}}</span>
       </span>
     </div>
     <ul class="nav nav-tabs guild-tabs">
@@ -86,9 +87,26 @@
   <div class="col-lg-3">
     <div class="panel-fields">
       <div class="caption">
-        <span class="caption-main">Stats</span>
-        <span class="caption-helper">from latest run</span>
+        <span class="caption-main">Runs</span>
+        <!--
+        <span class="caption-helper"></span>
+        -->
       </div>
+      <div class="p-runs">
+        <div class="table-responsive">
+          <table class="table">
+            <tr>
+              <th>Date</th><th>Model</th><th>Status</th>
+            </tr>
+            {% for run in p.runs %}
+            <tr>
+              <td>{{run.date}}</td><td>{{run.model}}</td><td>{{run.status}}</td>
+            </tr>
+            {% endfor %}
+          </table>
+        </div>
+      </div>
+      {# TODO?
       <div class="fields">
         {% for field in p.fields %}
         <div class="panel panel-widget mdc-bg-{{field.color}}">
@@ -109,6 +127,7 @@
         {% endfor %}
         <div style="margin-top:-5px"><a href="/view/{{p.path}}">View stats for all runs</a></div>
       </div>
+      #}
     </div>
   </div>
 </div>

@@ -240,8 +240,30 @@ apply_project_extra(P, Env) ->
          runs,
          updated,
          tags,
+         formatted_runs_extra(),
          project_starred_extra(Env)],
     guild_depot_view:apply_project_extra(P, Extras).
+
+formatted_runs_extra() ->
+    fun(#{runs:=Runs}=P) -> P#{runs:=format_runs(Runs)} end.
+
+format_runs(Runs) ->
+    [format_run(R) || R <- Runs].
+
+format_run(Run) ->
+    Str = fun(Name) -> guild_run:attr(Run, Name, "") end,
+    Int = fun(Name) -> guild_run:int_attr(Run, Name, undefined) end,
+    #{model => Str("model"),
+      date => format_run_date(Int("started")),
+      status => format_run_status(Int("exit_status"))}.
+
+format_run_date(I) when is_integer(I) ->
+    guild_datetime:format_date(I div 1000);
+format_run_date(undefined) -> "".
+
+format_run_status(undefined) -> "Unknown";
+format_run_status(0) -> "Completed";
+format_run_status(_) -> "Error".
 
 project_starred_extra(Env) ->
     User = psycho:env(user, Env),
