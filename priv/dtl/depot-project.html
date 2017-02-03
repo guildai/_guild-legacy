@@ -19,6 +19,7 @@
       <div class="project-desc">{{p.description}}</div>
     </div>
     <div class="project-actions pull-right">
+      {% if env.user %}
       <a class="btn btn-star {% if p.starred %}btn-success{% else %}btn-default{% endif %}"
          data-toggle="tooltip"
          title="{% if p.starred %}You starred this project<br>(click to unstar){% else %}Click to star this project{% endif %}"
@@ -26,6 +27,22 @@
         <i class="fa fa-star fa-fw"></i> {% if p.starred %}Starred{% else %}Star{% endif %}
         <span class="badge badge-count">{{p.stars_count}}</span>
       </a>
+      {% else %}
+      <span
+         data-toggle="tooltip"
+         title="Login to star this project">
+        <a class="btn btn-star btn-default"
+           role="button"
+           tabindex="0"
+           data-toggle="popover"
+           data-trigger="focus"
+           data-content="Please <strong><a href='javascript:guild.auth.login()'>login</a></strong> to star this project"
+           href="#">
+          <i class="fa fa-star fa-fw"></i> Star
+          <span class="badge badge-count">{{p.stars_count}}</span>
+        </a>
+      </span>
+      {% endif %}
       <a class="btn btn-default" href="/view/{{p.path}}">Open in Guild View</a>
     </div>
   </div>
@@ -101,6 +118,9 @@
 <script>
  $(function() {
      guild.depot.baseInit();
+     {% if not env.user %}
+     $("a.btn-star").popover({"html": true});
+     {% endif %}
  });
 </script>
 {% endblock %}
