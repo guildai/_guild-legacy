@@ -29,6 +29,7 @@
       </a>
       {% else %}
       <span
+         id="star-tooltip"
          data-toggle="tooltip"
          title="Login to star this project">
         <a class="btn btn-star btn-default"
@@ -37,8 +38,8 @@
            data-toggle="popover"
            data-trigger="focus"
            data-placement="bottom"
-           data-content="Please <a href='javascript:guild.auth.login()'>login</a> to star this project"
-           href="#">
+           data-content="<a href='javascript:guild.auth.login()'>Login</a> to star this project"
+           href="javascript:logintostar()">
           <i class="fa fa-star fa-fw"></i> Star
           <span class="badge badge-count">{{p.stars_count}}</span>
         </a>
@@ -142,5 +143,8 @@
      $("a.btn-star").popover({"html": true});
      {% endif %}
  });
+  var logintostar = function() {
+      $('#star-tooltip').tooltip('destroy');
+  };
 </script>
 {% endblock %}
