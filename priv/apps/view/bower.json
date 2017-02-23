@@ -1,0 +1,11 @@
+{
+    "name": "guild-view",
+    "authors": [
+        "Garrett Smith <g@rre.tt>"
+    ],
+    "license": "Apache-2.0",
+    "dependencies": {
+        "polymer": "Polymer/polymer#^1.6.0"
+    },
+    "private": true
+}

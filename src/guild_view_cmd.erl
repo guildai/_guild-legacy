@@ -51,7 +51,8 @@ view_options() ->
           [?default_refresh_interval]),
       [{metavar, "SECONDS"}]},
      {logging, "-l, --logging",
-      "enable logging", [flag]}].
+      "enable logging", [flag]},
+     {alt, "--alt", "start alternative view (experimental)", [flag, hidden]}].
 
 fmt(Msg, Data) -> io_lib:format(Msg, Data).
 
@@ -60,6 +61,12 @@ fmt(Msg, Data) -> io_lib:format(Msg, Data).
 %% ===================================================================
 
 main(Opts, []) ->
+    case proplists:get_bool(alt, Opts) of
+        true -> guild_alt_view_cmd:main(Opts, []);
+        false -> default_view(Opts)
+    end.
+
+default_view(Opts) ->
     View = init_project_view(Opts),
     Port = guild_cmd_support:port_opt(Opts, ?default_port),
     ServerOpts = server_opts(Opts),
