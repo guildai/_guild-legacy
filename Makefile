@@ -52,10 +52,3 @@ version:
 
 release: version compile
 	scripts/mkrel $(VERSION)
-
-.PHONY : docs
-docs:
-	cd docs && make
-
-serve-docs:
-	cd docs && make serve
