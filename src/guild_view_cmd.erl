@@ -52,7 +52,7 @@ view_options() ->
       [{metavar, "SECONDS"}]},
      {logging, "-l, --logging",
       "enable logging", [flag]},
-     {alt, "--alt", "start alternative view (experimental)", [flag, hidden]}].
+     {v2, "--v2", "use Polymer based view (experimental)", [flag]}].
 
 fmt(Msg, Data) -> io_lib:format(Msg, Data).
 
@@ -61,8 +61,8 @@ fmt(Msg, Data) -> io_lib:format(Msg, Data).
 %% ===================================================================
 
 main(Opts, []) ->
-    case proplists:get_bool(alt, Opts) of
-        true -> guild_alt_view_cmd:main(Opts, []);
+    case proplists:get_bool(v2, Opts) of
+        true -> guild_view_v2_cmd:main(Opts, []);
         false -> default_view(Opts)
     end.
 
