@@ -16,6 +16,9 @@ priv/bin/multimarkdown:
 components:
 	bower install
 
+lint-components:
+	polylint --root priv/components --input `(cd priv/components && find -name guild-*.html)`
+
 clean: clean-local-deps clean-bin-deps clean-components
 	rm -rf build; rm -f rebar.lock
 	rm -f compile_commands.json

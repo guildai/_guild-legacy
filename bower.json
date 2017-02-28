@@ -5,7 +5,15 @@
     ],
     "license": "Apache-2.0",
     "dependencies": {
-        "polymer": "Polymer/polymer#^1.6.0"
+        "polymer": "Polymer/polymer",
+        "app-layout": "PolymerElements/app-layout",
+        "iron-icons": "PolymerElements/iron-icons",
+        "iron-media-query": "PolymerElements/iron-media-query",
+        "iron-selector": "PolymerElements/iron-selector",
+        "paper-icon-button": "PolymerElements/paper-icon-button",
+        "paper-item": "PolymerElements/paper-item",
+        "paper-menu": "PolymerElements/paper-menu",
+        "paper-tabs": "PolymerElements/paper-tabs"
     },
     "private": true
 }

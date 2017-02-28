@@ -1,18 +1,79 @@
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../app-layout/app-drawer-layout/app-drawer-layout.html">
+<link rel="import" href="../app-layout/app-drawer/app-drawer.html">
+<link rel="import" href="../app-layout/app-header-layout/app-header-layout.html">
+<link rel="import" href="../app-layout/app-header/app-header.html">
+<link rel="import" href="../app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../paper-tabs/paper-tabs.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-menu/paper-menu.html">
+
+<!-- DELME -->
+<link rel="import" href="../app-layout/demo/sample-content.html">
 
 <dom-module id="guild-view">
   <template>
     <style>
-     :root {
-         font-size: 2rem;
+     app-toolbar {
+         background-color: #f8f8f8;
+         color: #5e5e5e;
+         border-bottom: 0.8px solid #e7e7e7;
+     }
+     paper-tabs {
+         color: #5e5e5e;
+         margin-left: 20px;
+         font-size: 14px;
+         --paper-tabs-selection-bar-color: #5e5e5e;
+     }
+     paper-tab {
+         --paper-tab-ink: #ccc;
      }
     </style>
-    <span>Hello world!</span>
+
+    <app-drawer-layout narrow="{{narrow}}">
+
+      <app-drawer hidden="[[!narrow]]">
+        <paper-menu selected="1">
+          <template is="dom-repeat" items="[[pages]]">
+            <paper-item>[[item]]</paper-item>
+          </template>
+        </paper-menu>
+      </app-drawer>
+
+      <app-header-layout>
+        <app-header reveals>
+          <app-toolbar>
+            <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
+            <div>Guild View</div>
+            <paper-tabs hidden="[[narrow]]" selected="1">
+              <template is="dom-repeat" items="[[pages]]">
+                <paper-tab>[[item]]</paper-tab>
+              </template>
+            </paper-tabs>
+          </app-toolbar>
+        </app-header>
+      </app-header-layout>
+
+      <sample-content size="10"></sample-content>
+
+    </app-drawer-layout>
+
   </template>
 
   <script>
     Polymer({
-      is: 'guild-view'
+        is: 'guild-view',
+        properties: {
+            pages: {
+                type: Array,
+                value: [
+                    "Page 1",
+                    "Page 2",
+                    "Page 3"
+                ]
+            }
+        }
     });
   </script>
 </dom-module>
