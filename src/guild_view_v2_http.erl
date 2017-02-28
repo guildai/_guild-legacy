@@ -49,8 +49,7 @@ routes(_View) ->
       [{{starts_with, "/assets/"},     static_handler()},
        {{starts_with, "/components/"}, components_handler()},
        {"/bye",                        bye_handler()},
-       {"/",                           index_handler()}]).
-
+       {'_',                           app_page_handler()}]).
 static_handler() ->
     psycho_static:create_app(guild_app:priv_dir()).
 
@@ -65,10 +64,10 @@ handle_bye() ->
     Page = guild_dtl:render(guild_bye_page, []),
     guild_http:ok_html(Page).
 
-index_handler() ->
-    fun(_Env) -> handle_index() end.
+app_page_handler() ->
+    fun(_Env) -> handle_app_page() end.
 
-handle_index() ->
+handle_app_page() ->
     Page = guild_dtl:render(guild_view_v2_index_page, []),
     guild_http:ok_html(Page).
 

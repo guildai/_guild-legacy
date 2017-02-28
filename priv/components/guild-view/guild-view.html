@@ -8,6 +8,10 @@
 <link rel="import" href="../paper-tabs/paper-tabs.html">
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-menu/paper-menu.html">
+<link rel="import" href="../app-route/app-location.html">
+<link rel="import" href="../app-route/app-route.html">
+<link rel="import" href="../iron-pages/iron-pages.html">
+<link rel="import" href="../paper-material/paper-material.html">
 
 <!-- DELME -->
 <link rel="import" href="../app-layout/demo/sample-content.html">
@@ -29,14 +33,30 @@
      paper-tab {
          --paper-tab-ink: #ccc;
      }
+     .placeholder {
+         margin: 24px;
+         padding: 16px;
+         background-color: #fff;
+         box-shadow:
+         0 2px 2px 0 rgba(0, 0, 0, 0.14),
+         0 1px 5px 0 rgba(0, 0, 0, 0.12),
+         0 3px 1px -2px rgba(0, 0, 0, 0.2);
+         border-radius: 5px;
+     }
     </style>
 
-    <app-drawer-layout narrow="{{narrow}}">
+    <app-location route="{{route}}"></app-location>
+    <app-route
+        route="{{route}}"
+        pattern="/:id"
+        data="{{page}}"
+        tail="{{routeTail}}"></app-route>
 
-      <app-drawer hidden="[[!narrow]]">
-        <paper-menu selected="1">
+    <app-drawer-layout narrow="{{narrow}}">
+      <app-drawer id="drawer" hidden$="[[!narrow]]">
+        <paper-menu selected="{{page.id}}" attr-for-selected="page">
           <template is="dom-repeat" items="[[pages]]">
-            <paper-item>[[item]]</paper-item>
+            <paper-item page="[[item.id]]" on-tap="closeDrawer">[[item.label]]</paper-item>
           </template>
         </paper-menu>
       </app-drawer>
@@ -46,14 +66,29 @@
           <app-toolbar>
             <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
             <div>Guild View</div>
-            <paper-tabs hidden="[[narrow]]" selected="1">
+            <paper-tabs hidden$="[[narrow]]" selected="{{page.id}}" attr-for-selected="page">
               <template is="dom-repeat" items="[[pages]]">
-                <paper-tab>[[item]]</paper-tab>
+                <paper-tab page="[[item.id]]">[[item.label]]</paper-tab>
               </template>
             </paper-tabs>
           </app-toolbar>
         </app-header>
       </app-header-layout>
+
+        <div class="placeholder">
+          page.id: [[page.id]]<br>
+          routeTail.path: [[routeTail.path]]
+        </div>
+
+        <iron-pages
+            selected="[[page.id]][[routeTail.path]]"
+            attr-for-selected="page"
+            fallback-selection="404"
+            role="main">
+          <div page="foo" class="placeholder">This is foo!</div>
+          <div page="bar" class="placeholder">This is bar!</div>
+          <div page="404" class="placeholder">Whoops - can't find that one yo</div>
+        </iron-pages>
 
       <sample-content size="10"></sample-content>
 
@@ -64,15 +99,53 @@
   <script>
     Polymer({
         is: 'guild-view',
+
         properties: {
+            route: String,
+            page: Object,
+            narrow: Boolean,
+            routeTail: Object,
             pages: {
                 type: Array,
                 value: [
-                    "Page 1",
-                    "Page 2",
-                    "Page 3"
+                    {
+                        id: "foo",
+                        label: "Foo Page"
+                    },
+                    {
+                        id: "bar",
+                        label: "Bar Page"
+                    }
                 ]
             }
+        },
+
+        observers: [
+            'pageChanged(page.id)'
+        ],
+
+        pageChanged: function(id, old) {
+            console.log("page.id changed to '" + id + "' from '" + id + "'");
+            /*
+            if (id == "") {
+                this.redirectToDefaultPage();
+            } else {
+                this.resetPage();
+            }
+            */
+        },
+
+        redirectToDefaultPage: function() {
+            console.log("Redirecting to " + this.pages[0].id);
+            window.location = "/" + this.pages[0].id;
+        },
+
+        resetPage: function() {
+            document.body.scrollTop = document.documentElement.scrollTop = 0;
+        },
+
+        closeDrawer: function() {
+            this.$.drawer.close();
         }
     });
   </script>

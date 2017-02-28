@@ -13,7 +13,7 @@ priv/bin/multimarkdown:
 	cd build/default/lib/mmd && git submodule init && git submodule update && make
 	cp build/default/lib/mmd/multimarkdown priv/bin/multimarkdown
 
-components:
+component-deps:
 	bower install
 
 lint-components:
