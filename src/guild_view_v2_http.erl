@@ -46,16 +46,16 @@ create_app(View, Opts) ->
 
 routes(_View) ->
     psycho_route:create_app(
-      [{{starts_with, "/assets/"},    static_handler()},
-       {{starts_with, "/components"}, components_handler()},
-       {"/bye",                       bye_handler()},
-       {"/",                          index_handler()}]).
+      [{{starts_with, "/assets/"},     static_handler()},
+       {{starts_with, "/components/"}, components_handler()},
+       {"/bye",                        bye_handler()},
+       {"/",                           index_handler()}]).
 
 static_handler() ->
     psycho_static:create_app(guild_app:priv_dir()).
 
 components_handler() ->
-    psycho_static:create_app(guild_app:priv_dir("apps/view")).
+    psycho_static:create_app(guild_app:priv_dir()).
 
 bye_handler() ->
     fun(_Env) -> handle_bye() end.

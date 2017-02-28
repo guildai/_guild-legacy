@@ -13,7 +13,10 @@ priv/bin/multimarkdown:
 	cd build/default/lib/mmd && git submodule init && git submodule update && make
 	cp build/default/lib/mmd/multimarkdown priv/bin/multimarkdown
 
-clean: clean-local-deps clean-bin-deps
+components:
+	bower install
+
+clean: clean-local-deps clean-bin-deps clean-components
 	rm -rf build; rm -f rebar.lock
 	rm -f compile_commands.json
 
@@ -24,6 +27,9 @@ local-deps/%.clean:
 
 clean-bin-deps:
 	rm -f priv/bin/multimarkdown
+
+clean-components:
+	cd priv/components && ls | grep -v guild- | xargs rm -rf
 
 upgrade:
 	./rebar3 upgrade
