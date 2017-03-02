@@ -13,22 +13,25 @@
 <link rel="import" href="../iron-pages/iron-pages.html">
 <link rel="import" href="../paper-material/paper-material.html">
 
-<!-- DELME -->
-<link rel="import" href="../app-layout/demo/sample-content.html">
+<link rel="import" href="../guild-view/train-page.html">
+<link rel="import" href="../guild-view/compare-page.html">
 
 <dom-module id="guild-view">
   <template>
     <style>
+     :root {
+         --text-color: #5e5e5e;
+     }
      app-toolbar {
          background-color: #f8f8f8;
-         color: #5e5e5e;
+         color: var(--text-color);
          border-bottom: 0.8px solid #e7e7e7;
      }
      paper-tabs {
-         color: #5e5e5e;
+         color: var(--text-color);
          margin-left: 20px;
          font-size: 14px;
-         --paper-tabs-selection-bar-color: #5e5e5e;
+         --paper-tabs-selection-bar-color: var(--text-color);
      }
      paper-tab {
          --paper-tab-ink: #ccc;
@@ -38,10 +41,14 @@
          padding: 16px;
          background-color: #fff;
          box-shadow:
-         0 2px 2px 0 rgba(0, 0, 0, 0.14),
-         0 1px 5px 0 rgba(0, 0, 0, 0.12),
-         0 3px 1px -2px rgba(0, 0, 0, 0.2);
-         border-radius: 5px;
+           0 2px 2px 0 rgba(0, 0, 0, 0.14),
+           0 1px 5px 0 rgba(0, 0, 0, 0.12),
+           0 3px 1px -2px rgba(0, 0, 0, 0.2);
+        border-radius: 5px;
+     }
+     app-toolbar a {
+         text-decoration: none;
+         color: var(--text-color);
      }
     </style>
 
@@ -65,7 +72,7 @@
         <app-header reveals>
           <app-toolbar>
             <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
-            <div>Guild View</div>
+            <div><a href="/">Guild View</a></div>
             <paper-tabs hidden$="[[narrow]]" selected="{{page.id}}" attr-for-selected="page">
               <template is="dom-repeat" items="[[pages]]">
                 <paper-tab page="[[item.id]]">[[item.label]]</paper-tab>
@@ -85,12 +92,11 @@
             attr-for-selected="page"
             fallback-selection="404"
             role="main">
-          <div page="foo" class="placeholder">This is foo!</div>
-          <div page="bar" class="placeholder">This is bar!</div>
+          <div page="" class="placeholder">Redirecting</div>
+          <train-page page="train"></train-page>
+          <compare-page page="compare"></compare-page>
           <div page="404" class="placeholder">Whoops - can't find that one yo</div>
         </iron-pages>
-
-      <sample-content size="10"></sample-content>
 
     </app-drawer-layout>
 
@@ -109,12 +115,12 @@
                 type: Array,
                 value: [
                     {
-                        id: "foo",
-                        label: "Foo Page"
+                        id: "train",
+                        label: "Train"
                     },
                     {
-                        id: "bar",
-                        label: "Bar Page"
+                        id: "compare",
+                        label: "Compare"
                     }
                 ]
             }
@@ -125,18 +131,29 @@
         ],
 
         pageChanged: function(id, old) {
-            console.log("page.id changed to '" + id + "' from '" + id + "'");
-            /*
+            this.TEMP_log_double_dispatch_bug(id, old);
             if (id == "") {
                 this.redirectToDefaultPage();
             } else {
                 this.resetPage();
             }
-            */
+        },
+
+        TEMP_log_double_dispatch_bug: function(id, old) {
+            // BUG: This function is called twice, see:
+            // https://github.com/PolymerElements/app-route/issues/129
+            // This isn't a critical problem but leaving debug output below
+            // to track this and resolve it at some point.
+            console.debug(
+                "TODO: resolve double-dispatch - see "
+                + "https://github.com/PolymerElements/app-route/issues/129");
+            console.debug(
+                "page.id changed to " + JSON.stringify(id)
+                + " from " + JSON.stringify(old));
+
         },
 
         redirectToDefaultPage: function() {
-            console.log("Redirecting to " + this.pages[0].id);
             window.location = "/" + this.pages[0].id;
         },
 
