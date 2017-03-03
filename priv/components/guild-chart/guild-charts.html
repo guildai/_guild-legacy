@@ -1,0 +1,34 @@
+<dom-module id="guild-charts">
+  <template>
+    <style>
+     :root {
+         background-color: white;
+     }
+    </style>
+    <div>
+      Hello - these are [[level]] charts!
+    </div>
+  </template>
+  <script>
+   Polymer({
+       is: "guild-charts",
+       properties: {
+           secondary: {
+               type: Boolean,
+               value: false
+           },
+           level: {
+               type: String,
+               computed: 'computeLevel(secondary)'
+           }
+       },
+       computeLevel: function(secondary) {
+           if (secondary) {
+               return "secondary";
+           } else {
+               return "primary";
+           }
+       }
+   });
+  </script>
+</dom-module>

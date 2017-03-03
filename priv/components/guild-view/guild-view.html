@@ -15,40 +15,31 @@
 
 <link rel="import" href="../guild-view/train-page.html">
 <link rel="import" href="../guild-view/compare-page.html">
+<link rel="import" href="../guild-view/page-info.html">
 
 <dom-module id="guild-view">
   <template>
     <style>
      :root {
-         --text-color: #5e5e5e;
+         --toolbar-text-color: #5e5e5e;
      }
      app-toolbar {
          background-color: #f8f8f8;
-         color: var(--text-color);
+         color: var(--toolbar-text-color);
          border-bottom: 0.8px solid #e7e7e7;
      }
      paper-tabs {
-         color: var(--text-color);
+         color: var(--toolbar-text-color);
          margin-left: 20px;
          font-size: 14px;
-         --paper-tabs-selection-bar-color: var(--text-color);
+         --paper-tabs-selection-bar-color: var(--toolbar-text-color);
      }
      paper-tab {
          --paper-tab-ink: #ccc;
      }
-     .placeholder {
-         margin: 24px;
-         padding: 16px;
-         background-color: #fff;
-         box-shadow:
-           0 2px 2px 0 rgba(0, 0, 0, 0.14),
-           0 1px 5px 0 rgba(0, 0, 0, 0.12),
-           0 3px 1px -2px rgba(0, 0, 0, 0.2);
-        border-radius: 5px;
-     }
      app-toolbar a {
          text-decoration: none;
-         color: var(--text-color);
+         color: var(--toolbar-text-color);
      }
     </style>
 
@@ -82,21 +73,20 @@
         </app-header>
       </app-header-layout>
 
-        <div class="placeholder">
-          page.id: [[page.id]]<br>
-          routeTail.path: [[routeTail.path]]
-        </div>
+      <iron-pages
+         selected="[[page.id]][[routeTail.path]]"
+         attr-for-selected="page"
+         fallback-selection="404"
+         role="main">
+        <div page="" class="placeholder">Redirecting</div>
+        <guild-view-train-page page="train"></guild-view-train-page>
+        <guild-view-compare-page page="compare"></guild-view-compare-page>
+        <div page="404" class="placeholder">Whoops - can't find that one yo</div>
+      </iron-pages>
 
-        <iron-pages
-            selected="[[page.id]][[routeTail.path]]"
-            attr-for-selected="page"
-            fallback-selection="404"
-            role="main">
-          <div page="" class="placeholder">Redirecting</div>
-          <train-page page="train"></train-page>
-          <compare-page page="compare"></compare-page>
-          <div page="404" class="placeholder">Whoops - can't find that one yo</div>
-        </iron-pages>
+      <!--
+      <guild-view-page-info info="[[pageInfo]]"></guild-view-page-info>
+      -->
 
     </app-drawer-layout>
 
@@ -105,8 +95,11 @@
   <script>
     Polymer({
         is: 'guild-view',
-
         properties: {
+            view: {
+                type: Object,
+                value: this
+            },
             route: String,
             page: Object,
             narrow: Boolean,
@@ -123,6 +116,18 @@
                         label: "Compare"
                     }
                 ]
+            },
+            pageInfo: {
+                type: Object,
+                computed: 'computePageInfo(page, routeTail, route)'
+            }
+        },
+
+        computePageInfo: function(page, routeTail, route) {
+            return {
+                page: page,
+                routeTail: routeTail,
+                route: route
             }
         },
 

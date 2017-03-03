@@ -1,0 +1,76 @@
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu-light.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+
+<dom-module id="guild-page-header">
+  <template>
+    <style>
+     :root {
+         @apply(--layout-horizontal);
+         @apply(--layout-wrap);
+         @apply(--layout-center);
+         border-bottom: 1px solid #eee;
+         margin-bottom: 20px;
+         padding: 2px 0 2px;
+     }
+     h1 {
+         margin: 0;
+         padding: 0;
+     }
+     paper-dropdown-menu-light {
+         margin-left: 20px;
+         width: auto;
+         --paper-dropdown-menu-input: {
+             border-bottom: none;
+         }
+     }
+     paper-item {
+         --paper-item: {
+             cursor: pointer;
+         }
+     }
+    </style>
+    <div>
+      <h1>[[projectTitle]]</h1>
+      <paper-dropdown-menu-light label="Active run">
+        <paper-listbox class="dropdown-content" selected="1">
+          <template is="dom-repeat" items="[[runs]]">
+            <paper-item>[[item.label]]</paper-item>
+          </template>
+        </paper-listbox>
+      </paper-dropdown-menu-light>
+    </div>
+  </template>
+  <script>
+   Polymer({
+       is: "guild-page-header",
+       properties: {
+           projectTitle: {
+               type: String,
+               value: "MNIST"
+           },
+           runs: {
+               type: Array,
+               value: [
+                   {
+                       label: "Tue Feb 14 2017, 12:46:04 AM - expert",
+                   },
+                   {
+                       label: "Tue Feb 14 2017, 12:46:03 AM - expert",
+                   },
+                   {
+                       label: "Tue Feb 14 2017, 12:46:02 AM - expert",
+                   },
+                   {
+                       label: "Tue Feb 14 2017, 12:46:01 AM - expert",
+                   },
+                   {
+                       label: "Tue Feb 14 2017, 12:46:00 AM - expert",
+                   }
+               ]
+           }
+       }
+   });
+  </script>
+</dom-module>

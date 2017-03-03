@@ -5,16 +5,21 @@
     ],
     "license": "Apache-2.0",
     "dependencies": {
-        "app-layout":        "PolymerElements/app-layout",
-        "app-route":         "PolymerElements/app-route",
-        "iron-icons":        "PolymerElements/iron-icons",
-        "iron-pages":        "PolymerElements/iron-pages",
-        "paper-icon-button": "PolymerElements/paper-icon-button",
-        "paper-item":        "PolymerElements/paper-item",
-        "paper-material":    "PolymerElements/paper-material",
-        "paper-menu":        "PolymerElements/paper-menu",
-        "paper-tabs":        "PolymerElements/paper-tabs",
-        "polymer":           "Polymer/polymer"
+        "app-layout":          "PolymerElements/app-layout",
+        "app-route":           "PolymerElements/app-route",
+        "iron-flex-layout":    "PolymerElements/iron-flex-layout",
+        "iron-icons":          "PolymerElements/iron-icons",
+        "iron-pages":          "PolymerElements/iron-pages",
+        "paper-card":          "PolymerElements/paper-card",
+        "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu",
+        "paper-header-panel":  "PolymerElements/paper-header-panel",
+        "paper-icon-button":   "PolymerElements/paper-icon-button",
+        "paper-item":          "PolymerElements/paper-item",
+        "paper-listbox":       "PolymerElements/paper-listbox",
+        "paper-material":      "PolymerElements/paper-material",
+        "paper-menu":          "PolymerElements/paper-menu",
+        "paper-tabs":          "PolymerElements/paper-tabs",
+        "polymer":             "Polymer/polymer"
     },
     "private": true
 }

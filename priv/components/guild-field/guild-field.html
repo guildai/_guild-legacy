@@ -1,0 +1,65 @@
+<link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../paper-styles/color.html">
+<link rel="import" href="../iron-icons/image-icons.html">
+
+<dom-module id="guild-field">
+  <template>
+    <style>
+     :host {
+         --field-color: var(--paper-blue-500);
+     }
+     :root {
+         @apply(--layout-horizontal);
+         @apply(--layout-center);
+         background-color: var(--field-color);
+         color: #fff;
+         padding: 15px 15px 15px 10px;
+         height: 100%;
+     }
+     #main {
+         flex-grow: 1;
+         padding-left: 5px;
+     }
+     #value {
+         font-size: 36px;
+         text-align: right;
+         line-height: 0.9;
+         margin-bottom: 5px;
+     }
+     #label {
+         font-size: 18px;
+         text-align: right;
+         line-height: 1.2;
+     }
+     iron-icon {
+         --iron-icon-width: 64px;
+         --iron-icon-height: auto;
+     }
+    </style>
+
+    <paper-card>
+      <div id="icon">
+        <iron-icon icon="image:center-focus-strong"></iron-icon>
+      </div>
+      <div id="main">
+        <div id="value">[[field.value]]</div>
+        <div id="label">[[field.label]]</div>
+      </div>
+    </paper-card>
+  </template>
+  <script>
+   Polymer({
+       is: "guild-field",
+       properties: {
+           field: Object
+       },
+       ready: function() {
+           if (this.field.color) {
+               this.customStyle['--field-color'] =
+                   "var(--paper-" + this.field.color + ")";
+           }
+       }
+   });
+  </script>
+</dom-module>

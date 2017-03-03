@@ -1,0 +1,55 @@
+<link rel="import" href="guild-field.html">
+
+<dom-module id="guild-fields">
+  <template>
+    <style>
+     .field-cell {
+         padding-bottom: 20px;
+     }
+    </style>
+    <div class="row">
+      <template is="dom-repeat" items="{{fakeFields}}">
+        <div class="field-cell col-12 col-sm-6 col-xl-4">
+          <guild-field field="{{item}}"></guild-field>
+        </div>
+      </template>
+    </fdiv>
+  </template>
+  <script>
+   Polymer({
+       is: "guild-fields",
+       properties: {
+           fakeFields: {
+               type: Array,
+               value: [
+                   {
+                       label: "Validation Accuracy",
+                       value: "98.80%",
+                       color: "blue-700"
+                   },
+                   {
+                       label: "Training Accuracy",
+                       value: "100.00%",
+                       color: "green-700"
+                   },
+                   {
+                       label: "Something Else with big label",
+                       value: "Foo bar baz",
+                       color: "yellow-700",
+                   },
+                   {
+                       label: "And another",
+                       value: "100.00%",
+                       color: "red-700"
+                   },
+                   {
+                       label: "And another",
+                       value: "Yo yo yo",
+                       color: "orange-700"
+                   }
+               ]
+           }
+       }
+   });
+  </script>
+</dom-module>

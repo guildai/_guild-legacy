@@ -15,9 +15,16 @@ priv/bin/multimarkdown:
 
 component-deps:
 	bower install
+	./scripts/patch-components
 
-lint-components:
+lint-components: polylint
 	polylint --root priv/components --input `(cd priv/components && find -name guild-*.html)`
+
+polylint:
+	@if ! which polylint >/dev/null; then \
+	  echo "polylint is not installed - use 'npm install -g polylint' to install"; \
+	  exit 1; \
+	fi
 
 clean: clean-local-deps clean-bin-deps clean-components
 	rm -rf build; rm -f rebar.lock
