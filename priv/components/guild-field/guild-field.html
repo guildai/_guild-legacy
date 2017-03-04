@@ -1,7 +1,10 @@
 <link rel="import" href="../paper-card/paper-card.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../paper-styles/color.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-icons/image-icons.html">
+<link rel="import" href="../iron-icons/device-icons.html">
+<link rel="import" href="../iron-icons/av-icons.html">
 
 <dom-module id="guild-field">
   <template>
@@ -40,7 +43,7 @@
 
     <paper-card>
       <div id="icon">
-        <iron-icon icon="image:center-focus-strong"></iron-icon>
+        <iron-icon icon="[[field.icon]]"></iron-icon>
       </div>
       <div id="main">
         <div id="value">[[field.value]]</div>
