@@ -13,7 +13,7 @@
              @apply(--layout-wrap);
              @apply(--layout-center);
              border-bottom: 1px solid #eee;
-             padding: 2px 0 2px;
+             padding: 5px 0 5px 0;
          }
      }
      h1 {
@@ -37,13 +37,15 @@
     </style>
     <guild-component>
       <h1>[[projectTitle]]</h1>
-      <paper-dropdown-menu-light label="Active run">
-        <paper-listbox class="dropdown-content" selected="1">
-          <template is="dom-repeat" items="[[runs]]">
-            <paper-item>[[item.label]]</paper-item>
-          </template>
-        </paper-listbox>
-      </paper-dropdown-menu-light>
+      <template is="dom-if" if="[[!noRunSelect]]">
+        <paper-dropdown-menu-light label="Active run">
+          <paper-listbox class="dropdown-content" selected="1">
+            <template is="dom-repeat" items="[[runs]]">
+              <paper-item>[[item.label]]</paper-item>
+            </template>
+          </paper-listbox>
+        </paper-dropdown-menu-light>
+      </template>
     </guild-component>
   </template>
   <script>
@@ -53,6 +55,10 @@
            projectTitle: {
                type: String,
                value: "MNIST"
+           },
+           noRunSelect: {
+               type: Boolean,
+               value: false
            },
            runs: {
                type: Array,

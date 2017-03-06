@@ -10,18 +10,16 @@
       }
     </style>
     <guild-component-panel heading="[[heading]]">
-      <div class="table-responsive">
-        <table class="table table-bordered table-hover">
-          <tbody>
-            <template is="dom-repeat" items="[[keyvals]]">
-              <tr>
-                <th>[[item.key]]</th>
-                <td>[[item.value]]</td>
-              </tr>
-            </template>
-          </tbody>
-        </table>
-      </div>
+      <table class="table table-responsive table-bordered table-hover">
+        <tbody>
+          <template is="dom-repeat" items="[[keyvals]]">
+            <tr>
+              <th>[[item.key]]</th>
+              <td>[[item.value]]</td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
     </guild-component-panel>
   </template>
   <script>

@@ -6,16 +6,19 @@
 <dom-module id="guild-expansion-panel">
   <template>
     <style>
-     .header {
-         min-height: 48px;
+     .header,
+     .fixed-header {
          color: var(--primary-text-color);
          @apply(--layout-horizontal);
          @apply(--layout-justified);
          @apply(--layout-center);
-         margin: 0 20px;
+         padding: 10px 20px;
+     }
+     .header {
          cursor: pointer;
      }
      h2 {
+         margin: 0;
          font-size: 20px;
          font-weight: normal;
      }
@@ -30,18 +33,22 @@
      paper-icon-button:hover {
          color: #666;
      }
-     .content {
-         @apply --paper-font-body1;
-         @apply --paper-expansion-panel-content;
-     }
     </style>
-    <div class="header" on-click="toggle">
-      <h2>[[heading]]</h2>
-      <paper-icon-button icon="[[toggleIcon]]"></paper-icon-button>
-    </div>
-    <iron-collapse class="content" opened="{{opened}}">
-      <slot></slot>
-    </iron-collapse>
+    <template is="dom-if" if="[[!fixed]]">
+      <div class="header" on-click="toggle">
+        <h2>[[heading]]</h2>
+        <paper-icon-button icon="[[toggleIcon]]"></paper-icon-button>
+      </div>
+      <iron-collapse opened="{{opened}}">
+        <slot></slot>
+      </iron-collapse>
+    </template>
+    <template is="dom-if" if="[[fixed]]">
+      <div class="fixed-header">
+        <h2>[[heading]]</h2>
+      </div>
+      <content></content>
+    </template>
   </template>
   <script>
    Polymer({
@@ -49,6 +56,10 @@
 
        properties: {
            heading: String,
+           fixed: {
+               type: Boolean,
+               value: false
+           },
            opened: {
                type: Boolean,
                reflectToAttribute: true,

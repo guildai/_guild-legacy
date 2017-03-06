@@ -4,7 +4,7 @@
   <template>
     <div class="row">
       <template is="dom-repeat" items="[[charts]]">
-        <div class="col-6">
+        <div class$="[[colClass]]">
           <guild-chart chart="[[item]]"></guild-chart>
         </div>
       </template>
@@ -40,16 +40,16 @@
                            title: "Process CPU %"
                        },
                        {
-                           title: "Process Memory"
+                           title: "Process memory"
                        },
                        {
                            title: "GPU %"
                        },
                        {
-                           title: "GPU Memory"
+                           title: "GPU memory"
                        },
                        {
-                           title: "GPU Power Draw"
+                           title: "GPU power draw"
                        }
                    ]
                }
@@ -57,6 +57,10 @@
            charts: {
                type: Array,
                computed: 'computeCharts(secondary, chartsData)'
+           },
+           colClass: {
+               type: String,
+               computed: 'computeColClass(secondary)'
            }
        },
        computeCharts: function(secondary, chartsData) {
@@ -64,6 +68,13 @@
                return chartsData.secondary;
            } else {
                return chartsData.primary;
+           }
+       },
+       computeColClass: function(secondary) {
+           if (secondary) {
+               return "col-12 col-xl-6";
+           } else {
+               return "col-12";
            }
        }
    });
