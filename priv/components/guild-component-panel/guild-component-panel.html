@@ -1,0 +1,35 @@
+<link rel="import" href="../guild-component/guild-component.html">
+<link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../guild-expansion-panel/guild-expansion-panel.html">
+
+<dom-module id="guild-component-panel">
+  <style>
+   guild-component {
+       --guild-component: {
+           background-color: #f3f3f3;
+       }
+   }
+   #content {
+       padding: 0 20px 20px;
+   }
+  </style>
+  <template>
+    <guild-component>
+      <paper-material>
+        <guild-expansion-panel heading="[[heading]]" opened>
+          <div id="content">
+            <content></content>
+          </div>
+        </guild-expansion-panel>
+      </paper-material>
+    </guild-component>
+  </template>
+  <script>
+   Polymer({
+       is: "guild-component-panel",
+       properties: {
+           heading: String
+       }
+   });
+  </script>
+</dom-module>

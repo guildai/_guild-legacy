@@ -1,15 +1,67 @@
+<link rel="import" href="../guild-component-panel/guild-component-panel.html">
+
 <dom-module id="guild-status">
   <template>
     <style>
-     :root {
-         border: 1px solid #333;
+     #status {
+         @apply(--layout-horizontal);
+         @apply(--layout-justified);
+         @apply(--layout-center);
+     }
+     iron-icon {
+         --iron-icon-width: 36px;
+         --iron-icon-height: auto;
+     }
+     iron-icon.status-completed {
+         --iron-icon-fill-color: var(--paper-green-700);
+     }
+     #label {
+         font-size: 28px;
      }
     </style>
-    <div>Hello - status goes here!</div>
+    <guild-component-panel heading="Status">
+      <div id="status">
+        <div id="icon">
+          <iron-icon icon="[[icon]]" class$="status-[[status]]"></iron-icon>
+        </div>
+        <div id="label">[[label]]</div>
+      </div>
+    </guild-component-panel>
   </template>
   <script>
    Polymer({
-       is: "guild-status"
+       is: "guild-status",
+       properties: {
+           status: {
+               type: String,
+               value: "completed"
+           },
+           icon: {
+               type: String,
+               computed: 'computeIcon(status)'
+           },
+           label: {
+               type: String,
+               computed: 'computeLabel(status)'
+           }
+       },
+       created: function() {
+           foo = this;
+       },
+       computeIcon: function(status) {
+           if (status == "completed") {
+               return "check-circle";
+           } else {
+               return "";
+           }
+       },
+       computeLabel: function(status) {
+           if (status == "completed") {
+               return "Completed";
+           } else {
+               return status;
+           }
+       }
    });
   </script>
 </dom-module>

@@ -1,12 +1,13 @@
+<link rel="import" href="guild-chart.html">
+
 <dom-module id="guild-charts">
   <template>
-    <style>
-     :root {
-         background-color: white;
-     }
-    </style>
-    <div>
-      Hello - these are [[level]] charts!
+    <div class="row">
+      <template is="dom-repeat" items="[[charts]]">
+        <div class="col-6">
+          <guild-chart chart="[[item]]"></guild-chart>
+        </div>
+      </template>
     </div>
   </template>
   <script>
@@ -17,16 +18,52 @@
                type: Boolean,
                value: false
            },
-           level: {
-               type: String,
-               computed: 'computeLevel(secondary)'
+           chartsData: {
+               type: Object,
+               value: {
+                   primary: [
+                       {
+                           title: "Some primary chart"
+                       },
+                       {
+                           title: "Another primary chart"
+                       }
+                   ],
+                   secondary: [
+                       {
+                           title: "Loss"
+                       },
+                       {
+                           title: "Accuracy"
+                       },
+                       {
+                           title: "Process CPU %"
+                       },
+                       {
+                           title: "Process Memory"
+                       },
+                       {
+                           title: "GPU %"
+                       },
+                       {
+                           title: "GPU Memory"
+                       },
+                       {
+                           title: "GPU Power Draw"
+                       }
+                   ]
+               }
+           },
+           charts: {
+               type: Array,
+               computed: 'computeCharts(secondary, chartsData)'
            }
        },
-       computeLevel: function(secondary) {
+       computeCharts: function(secondary, chartsData) {
            if (secondary) {
-               return "secondary";
+               return chartsData.secondary;
            } else {
-               return "primary";
+               return chartsData.primary;
            }
        }
    });

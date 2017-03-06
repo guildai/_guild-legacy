@@ -1,0 +1,17 @@
+<link rel="import" href="../guild-component-panel/guild-component-panel.html">
+
+<dom-module id="guild-chart">
+  <template>
+    <guild-component-panel heading="[[chart.title]]">
+      <div>Put a cool chart here yo</div>
+    </guild-component-panel>
+  </template>
+  <script>
+   Polymer({
+       is: "guild-chart",
+       properties: {
+           chart: Object
+       }
+   });
+  </script>
+</dom-module>

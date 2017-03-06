@@ -1,3 +1,4 @@
 #!/bin/bash -eu
 
 sed -i /roboto.html/d priv/components/paper-styles/typography.html
+sed -i /iron-flex-layout\\/classes\\/iron-flex-layout.html/d priv/components/paper-styles/paper-styles.html

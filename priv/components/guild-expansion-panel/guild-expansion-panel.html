@@ -1,0 +1,73 @@
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-collapse/iron-collapse.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+
+<dom-module id="guild-expansion-panel">
+  <template>
+    <style>
+     .header {
+         min-height: 48px;
+         color: var(--primary-text-color);
+         @apply(--layout-horizontal);
+         @apply(--layout-justified);
+         @apply(--layout-center);
+         margin: 0 20px;
+         cursor: pointer;
+     }
+     h2 {
+         font-size: 20px;
+         font-weight: normal;
+     }
+     paper-icon-button {
+         color: var(--disabled-text-color);
+         --paper-icon-button-hover: {
+             background-color: #e3e3e3;
+             transition: background-color 0.1s ease-out;
+             border-radius: 50%;
+         }
+     }
+     paper-icon-button:hover {
+         color: #666;
+     }
+     .content {
+         @apply --paper-font-body1;
+         @apply --paper-expansion-panel-content;
+     }
+    </style>
+    <div class="header" on-click="toggle">
+      <h2>[[heading]]</h2>
+      <paper-icon-button icon="[[toggleIcon]]"></paper-icon-button>
+    </div>
+    <iron-collapse class="content" opened="{{opened}}">
+      <slot></slot>
+    </iron-collapse>
+  </template>
+  <script>
+   Polymer({
+       is: 'guild-expansion-panel',
+
+       properties: {
+           heading: String,
+           opened: {
+               type: Boolean,
+               reflectToAttribute: true,
+               notify: true
+           },
+           toggleIcon: {
+               type: String,
+               computed: 'computeToggleIcon(opened)'
+           }
+       },
+
+       toggle: function() {
+           this.opened = !this.opened;
+           this.fire('toggle', this);
+       },
+
+       computeToggleIcon: function(opened) {
+           return opened ? 'icons:expand-less' : 'icons:expand-more';
+       }
+   });
+  </script>
+</dom-module>

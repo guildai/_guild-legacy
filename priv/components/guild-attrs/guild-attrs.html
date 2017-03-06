@@ -1,15 +1,27 @@
+<link rel="import" href="../guild-keyval-table/guild-keyval-table.html">
+
 <dom-module id="guild-attrs">
   <template>
-    <style>
-     :root {
-         border: 1px solid #333;
-     }
-    </style>
-    <div>Hello - attrs goes here!</div>
+    <guild-keyval-table heading="Attributes" object="[[attrs]]"></guild-keyval-table>
   </template>
   <script>
    Polymer({
-       is: "guild-attrs"
+       is: "guild-attrs",
+       properties: {
+           attrs: {
+               type: Object,
+               value: {
+                   "cpu_cores": "12",
+                   "cpu_model": "Intel(R) Core(TM) i7-5820K CPU @ 3.30GHz",
+                   "gpu0_memory": "8112 MB",
+                   "gpu0_name": "GeForce GTX 1080",
+                   "gpu1_memory": "6077 MB",
+                   "gpu1_name": "GeForce GTX 980 Ti",
+                   "mem_total": "32085 MB",
+                   "tensorflow_version": "1.0.0-alpha"
+               }
+           }
+       }
    });
   </script>
 </dom-module>

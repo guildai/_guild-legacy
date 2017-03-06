@@ -1,15 +1,23 @@
+<link rel="import" href="../guild-keyval-table/guild-keyval-table.html">
+
 <dom-module id="guild-flags">
   <template>
-    <style>
-     :root {
-         border: 1px solid #333;
-     }
-    </style>
-    <div>Hello - flags goes here!</div>
+    <guild-keyval-table heading="Flags" object="[[flags]]"></guild-keyval-table>
   </template>
   <script>
    Polymer({
-       is: "guild-flags"
+       is: "guild-flags",
+       properties: {
+           flags: {
+               type: Object,
+               value: {
+                   "batch_size": 100,
+                   "datadir": "./data",
+                   "epochs": 10,
+                   "rundir": "$RUNDIR"
+               }
+           }
+       }
    });
   </script>
 </dom-module>
