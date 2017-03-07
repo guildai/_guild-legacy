@@ -1,16 +1,96 @@
 <link rel="import" href="../guild-component-panel/guild-component-panel.html">
+<link rel="import" href="../iron-data-table/iron-data-table.html">
+<link rel="import" href="../iron-data-table/default-styles.html">
+<link rel="import" href="../guild-d3/guild-d3.html">
 
 <dom-module id="guild-output">
   <template>
     <style>
+     :root {
+         --default-header: var(--iron-data-table-header);
+     }
+     iron-data-table {
+         background-color: #fff;
+         font-size: 14px;
+         line-height: 1.4;
+         --iron-data-table-header: {
+             @apply(--default-header);
+             font-size: 14px;
+         }
+     }
+     .date {
+         white-space: nowrap;
+     }
     </style>
     <guild-component-panel heading="Output">
-      <div>Output goes here</div>
+      <iron-data-table items="[[output]]">
+        <data-table-column name="Time" flex="1" sort-by="index">
+          <template><span class="date">[[item.time]]</span></template>
+        </data-table-column>
+        <data-table-column name="Message" flex="10" filter-by="message">
+          <template>[[item.message]]</template>
+        </data-table-column>
+      </iron-data-table>
     </guild-component-panel>
   </template>
   <script>
    Polymer({
-       is: "guild-output"
+       is: "guild-output",
+       properties: {
+           outputRaw: {
+               type: Array,
+               value: [
+                   [1487774555639, 1, "I tensorflow/stream_executor/dso_loader.cc:125] successfully opened CUDA library libcublas.so.8.0 locally"],
+                   [1487774555650, 1, "I tensorflow/stream_executor/dso_loader.cc:125] successfully opened CUDA library libcudnn.so.5 locally"],
+                   [1487774555676, 1, "I tensorflow/stream_executor/dso_loader.cc:125] successfully opened CUDA library libcufft.so.8.0 locally"],
+                   [1487774555705, 1, "I tensorflow/stream_executor/dso_loader.cc:125] successfully opened CUDA library libcuda.so.1 locally"],
+                   [1487774555729, 1, "I tensorflow/stream_executor/dso_loader.cc:125] successfully opened CUDA library libcurand.so.8.0 locally"],
+                   [1487774556621, 0, "Extracting ./data/train-images-idx3-ubyte.gz"],
+                   [1487774556815, 0, "Extracting ./data/train-labels-idx1-ubyte.gz"],
+                   [1487774556824, 0, "Extracting ./data/t10k-images-idx3-ubyte.gz"],
+                   [1487774556848, 0, "Extracting ./data/t10k-labels-idx1-ubyte.gz"],
+                   [1487774557183, 1, "W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.2 instructions, but these are available on your machine and could speed up CPU computations."],
+                   [1487774557183, 1, "W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use AVX instructions, but these are available on your machine and could speed up CPU computations."],
+                   [1487774557183, 1, "W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use AVX2 instructions, but these are available on your machine and could speed up CPU computations."],
+                   [1487774557183, 1, "W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use FMA instructions, but these are available on your machine and could speed up CPU computations."],
+                   [1487774557430, 1, "I tensorflow/core/common_runtime/gpu/gpu_device.cc:885] Found device 0 with properties: "],
+                   [1487774557430, 1, "name: GeForce GTX 1080"],
+                   [1487774557430, 1, "major: 6 minor: 1 memoryClockRate (GHz) 1.8475"],
+                   [1487774557430, 1, "pciBusID 0000:01:00.0"],
+                   [1487774557430, 1, "Total memory: 7.92GiB"],
+                   [1487774557430, 1, "Free memory: 7.26GiB"],
+                   [1487774557497, 1, "W tensorflow/stream_executor/cuda/cuda_driver.cc:590] creating context when one is currently active; existing: 0x4c5f7b0"],
+                   [1487774557653, 1, "I tensorflow/core/common_runtime/gpu/gpu_device.cc:885] Found device 1 with properties: "],
+                   [1487774557653, 1, "name: GeForce GTX 980 Ti"],
+                   [1487774557653, 1, "major: 5 minor: 2 memoryClockRate (GHz) 1.19"],
+                   [1487774557653, 1, "pciBusID 0000:02:00.0"],
+                   [1487774557653, 1, "Total memory: 5.93GiB"],
+                   [1487774557653, 1, "Free memory: 5.83GiB"],
+                   [1487774557653, 1, "I tensorflow/core/common_runtime/gpu/gpu_device.cc:777] Peer access not supported between device ordinals 0 and 1"],
+                   [1487774557653, 1, "I tensorflow/core/common_runtime/gpu/gpu_device.cc:777] Peer access not supported between device ordinals 1 and 0"],
+                   [1487774557653, 1, "I tensorflow/core/common_runtime/gpu/gpu_device.cc:906] DMA: 0 1 "],
+                   [1487774557653, 1, "I tensorflow/core/common_runtime/gpu/gpu_device.cc:916] 0:   Y N "],
+                   [1487774557653, 1, "I tensorflow/core/common_runtime/gpu/gpu_device.cc:916] 1:   N Y "],
+                   [1487774557653, 1, "I tensorflow/core/common_runtime/gpu/gpu_device.cc:975] Creating TensorFlow device (/gpu:0) -> (device: 0, name: GeForce GTX 1080, pci bus id: 0000:01:00.0)"],
+                   [1487774557653, 1, "I tensorflow/core/common_runtime/gpu/gpu_device.cc:975] Creating TensorFlow device (/gpu:1) -> (device: 1, name: GeForce GTX 980 Ti, pci bus id: 0000:02:00.0)"]
+               ]
+           },
+           output: {
+               type: Array,
+               computed: 'computeOutput(outputRaw)'
+           }
+       },
+       computeOutput: function(raw) {
+           var formatTime = d3.time.format("%b %d %H:%M:%S.%L");
+           return raw.map(function(item, index) {
+               return {
+                   index: index,
+                   time: formatTime(new Date(item[0])),
+                   stream: item[1],
+                   message: item[2]
+               }
+           });
+       }
    });
   </script>
 </dom-module>
