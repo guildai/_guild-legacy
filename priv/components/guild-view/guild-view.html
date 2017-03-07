@@ -18,6 +18,7 @@
 <link rel="import" href="../guild-view/train-page.html">
 <link rel="import" href="../guild-view/compare-page.html">
 <link rel="import" href="../guild-view/page-info.html">
+<link rel="import" href="../guild-modal-message/guild-modal-message.html">
 
 <dom-module id="guild-view">
   <template>
@@ -91,7 +92,7 @@
             attr-for-selected="page"
             fallback-selection="404"
             role="main">
-          <div page="" class="placeholder">Redirecting</div>
+          <div page=""></div>
           <guild-view-train-page page="train"></guild-view-train-page>
           <guild-view-compare-page page="compare"></guild-view-compare-page>
           <div page="404" class="placeholder">Whoops - can't find that one yo</div>
@@ -100,6 +101,7 @@
       </app-header-layout>
     </app-drawer-layout>
 
+    <guild-modal-message id="redirecting">Redirecting to [[page1]]</guild-modal-message>
   </template>
 
   <script>
@@ -132,6 +134,10 @@
             pageInfo: {
                 type: Object,
                 computed: 'computePageInfo(page, routeTail, route)'
+            },
+            page1: {
+                type: String,
+                computed: 'computePage1(pages)'
             }
         },
 
@@ -141,6 +147,10 @@
                 routeTail: routeTail,
                 route: route
             }
+        },
+
+        computePage1: function(pages) {
+            return this.pages[0].label;
         },
 
         observers: [
@@ -171,6 +181,7 @@
         },
 
         redirectToDefaultPage: function() {
+            this.$.redirecting.open();
             window.location = "/" + this.pages[0].id;
         },
 
