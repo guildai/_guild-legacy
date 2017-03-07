@@ -5,6 +5,7 @@
     ],
     "license": "Apache-2.0",
     "dependencies": {
+        "d3":                    "3.5.17",
         "app-layout":            "PolymerElements/app-layout",
         "app-route":             "PolymerElements/app-route",
         "iron-collapse":         "PolymerElements/iron-collapse",
