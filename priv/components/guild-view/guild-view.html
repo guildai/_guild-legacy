@@ -17,8 +17,10 @@
 <link rel="import" href="../paper-material/paper-material.html">
 <link rel="import" href="../guild-view/train-page.html">
 <link rel="import" href="../guild-view/compare-page.html">
+<link rel="import" href="../guild-view/explore-page.html">
 <link rel="import" href="../guild-view/page-info.html">
 <link rel="import" href="../guild-modal-message/guild-modal-message.html">
+<link rel="import" href="../guild-view/404-page.html">
 
 <dom-module id="guild-view">
   <template>
@@ -42,7 +44,7 @@
      }
      .tab-icon,
      .menu-icon {
-         --iron-icon-width: 18px;
+         --iron-icon-width: 24px;
          --iron-icon-height: auto;
          margin-right: 5px;
      }
@@ -93,9 +95,10 @@
             fallback-selection="404"
             role="main">
           <div page=""></div>
-          <guild-view-train-page page="train"></guild-view-train-page>
+          <guild-view-train-page page="overview"></guild-view-train-page>
           <guild-view-compare-page page="compare"></guild-view-compare-page>
-          <div page="404" class="placeholder">Whoops - can't find that one yo</div>
+          <guild-view-explore-page page="explore"></guild-view-explore-page>
+          <guild-view-404-page page="404" path="[[route.path]]"></guild-view-404-page>
         </iron-pages>
 
       </app-header-layout>
@@ -120,14 +123,19 @@
                 type: Array,
                 value: [
                     {
-                        id: "train",
-                        label: "Train",
-                        icon: "av:repeat"
+                        id: "overview",
+                        label: "Overview",
+                        icon: "icons:dashboard"
                     },
                     {
                         id: "compare",
                         label: "Compare",
-                        icon: "image:filter-none"
+                        icon: "icons:view-list"
+                    },
+                    {
+                        id: "explore",
+                        label: "Explore",
+                        icon: "icons:pageview"
                     }
                 ]
             },
