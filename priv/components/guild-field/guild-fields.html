@@ -8,9 +8,9 @@
      }
     </style>
     <div class="row">
-      <template is="dom-repeat" items="{{fakeFields}}">
+      <template is="dom-repeat" items="[[fields]]" as="field">
         <div class="field-cell col-12 col-sm-6 col-xl-4">
-          <guild-field field="{{item}}"></guild-field>
+          <guild-field field="[[field]]"></guild-field>
         </div>
       </template>
     </fdiv>
@@ -19,7 +19,7 @@
    Polymer({
        is: "guild-fields",
        properties: {
-           fakeFields: {
+           fields: {
                type: Array,
                value: [
                    {

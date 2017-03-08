@@ -41,8 +41,8 @@
       <template is="dom-if" if="[[!noRunSelect]]">
         <paper-dropdown-menu-light label="Active run" no-animations>
           <paper-listbox class="dropdown-content" selected="1">
-            <template is="dom-repeat" items="[[runs]]">
-              <paper-item>[[item.label]]</paper-item>
+            <template is="dom-repeat" items="[[runs]]" as="run">
+              <paper-item>[[run.label]]</paper-item>
             </template>
           </paper-listbox>
         </paper-dropdown-menu-light>

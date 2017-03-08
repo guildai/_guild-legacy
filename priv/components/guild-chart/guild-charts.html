@@ -3,9 +3,9 @@
 <dom-module id="guild-charts">
   <template>
     <div class="row">
-      <template is="dom-repeat" items="[[charts]]">
+      <template is="dom-repeat" items="[[charts]]" as="chart">
         <div class$="[[colClass]]">
-          <guild-chart chart="[[item]]"></guild-chart>
+          <guild-chart chart="[[chart]]"></guild-chart>
         </div>
       </template>
     </div>

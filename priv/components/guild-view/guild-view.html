@@ -19,7 +19,6 @@
 <link rel="import" href="../guild-view/train-page.html">
 <link rel="import" href="../guild-view/compare-page.html">
 <link rel="import" href="../guild-view/explore-page.html">
-<link rel="import" href="../guild-view/page-info.html">
 <link rel="import" href="../guild-modal-message/guild-modal-message.html">
 <link rel="import" href="../guild-view/404-page.html">
 
@@ -59,16 +58,16 @@
     <app-route
         route="{{route}}"
         pattern="/:id"
-        data="{{page}}"
+        data="{{currentPage}}"
         tail="{{routeTail}}"></app-route>
 
     <app-drawer-layout narrow="{{narrow}}">
       <app-drawer id="drawer" hidden$="[[!narrow]]">
-        <paper-menu selected="{{page.id}}" attr-for-selected="page">
-          <template is="dom-repeat" items="[[pages]]">
-            <paper-item page="[[item.id]]" on-tap="closeDrawer">
-              <iron-icon class="menu-icon" icon="[[item.icon]]"></iron-icon>
-              [[item.label]]
+        <paper-menu selected="{{currentPage.id}}" attr-for-selected="page">
+          <template is="dom-repeat" items="[[pages]]" as="page">
+            <paper-item page="[[page.id]]" on-tap="closeDrawer">
+              <iron-icon class="menu-icon" icon="[[page.icon]]"></iron-icon>
+              [[page.label]]
             </paper-item>
           </template>
         </paper-menu>
@@ -79,11 +78,11 @@
           <app-toolbar>
             <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
             <div><a href="/">Guild View</a></div>
-            <paper-tabs hidden$="[[narrow]]" selected="{{page.id}}" attr-for-selected="page">
-              <template is="dom-repeat" items="[[pages]]">
-                <paper-tab page="[[item.id]]">
-                  <iron-icon class="tab-icon" icon="[[item.icon]]"></iron-icon>
-                  [[item.label]]
+            <paper-tabs hidden$="[[narrow]]" selected="{{currentPage.id}}" attr-for-selected="page">
+              <template is="dom-repeat" items="[[pages]]" as="page">
+                <paper-tab page="[[page.id]]">
+                  <iron-icon class="tab-icon" icon="[[page.icon]]"></iron-icon>
+                  [[page.label]]
                 </paper-tab>
               </template>
             </paper-tabs>
@@ -91,7 +90,7 @@
         </app-header>
 
         <iron-pages
-            selected="[[page.id]][[routeTail.path]]"
+            selected="[[currentPage.id]][[routeTail.path]]"
             attr-for-selected="page"
             fallback-selection="404"
             role="main">
@@ -113,7 +112,7 @@
         is: 'guild-view',
         properties: {
             route: String,
-            page: Object,
+            currentPage: Object,
             narrow: Boolean,
             routeTail: Object,
             pages: {
