@@ -37,7 +37,7 @@
     <guild-component>
       <h1>[[projectTitle]]</h1>
       <template is="dom-if" if="[[!noRunSelect]]">
-        <paper-dropdown-menu-light label="Active run">
+        <paper-dropdown-menu-light label="Active run" no-animations>
           <paper-listbox class="dropdown-content" selected="1">
             <template is="dom-repeat" items="[[runs]]">
               <paper-item>[[item.label]]</paper-item>
