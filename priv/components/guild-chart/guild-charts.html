@@ -21,28 +21,36 @@
            chartsData: {
                type: Object,
                value: {
-                   primary: [],
+                   primary: [
+                       {
+                           title: "Loss",
+                           sampleData: "loss"
+                       },
+                       {
+                           title: "Accuracy",
+                           sampleData: "accuracy"
+                       }
+                   ],
                    secondary: [
                        {
-                           title: "Loss"
+                           title: "Process CPU %",
+                           sampleData: "cpu_util"
                        },
                        {
-                           title: "Accuracy"
+                           title: "Process memory",
+                           sampleData: "op_mem"
                        },
                        {
-                           title: "Process CPU %"
+                           title: "GPU %",
+                           sampleData: "gpu_util"
                        },
                        {
-                           title: "Process memory"
+                           title: "GPU memory",
+                           sampleData: "gpu_mem"
                        },
                        {
-                           title: "GPU %"
-                       },
-                       {
-                           title: "GPU memory"
-                       },
-                       {
-                           title: "GPU power draw"
+                           title: "GPU power draw",
+                           sampleData: "gpu_power"
                        }
                    ]
                }
