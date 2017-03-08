@@ -1,0 +1,20 @@
+#!/bin/bash
+
+TF_HOME=${TF_HOME:-../tensorflow}
+
+components=(
+    tf_imports
+    vz_line_chart
+)
+
+function component-src() {
+    echo $TF_HOME/tensorflow/tensorboard/components/$c
+}
+
+function component-dest() {
+    echo priv/components/${c//_/-}
+}
+
+for c in ${components[@]}; do
+    rsync -a --info=name $(component-src $c)/ $(component-dest $c)/
+done

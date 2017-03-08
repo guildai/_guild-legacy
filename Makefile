@@ -13,9 +13,12 @@ priv/bin/multimarkdown:
 	cd build/default/lib/mmd && git submodule init && git submodule update && make
 	cp build/default/lib/mmd/multimarkdown priv/bin/multimarkdown
 
-component-deps:
+component-deps: tf-component-deps
 	bower install
 	./scripts/patch-components
+
+tf-component-deps:
+	scripts/sync-tf-components
 
 lint-components: polylint
 	polylint --root priv/components --input `(cd priv/components && find -name guild-*.html)`
@@ -39,7 +42,7 @@ clean-bin-deps:
 	rm -f priv/bin/multimarkdown
 
 clean-components:
-	cd priv/components && ls | grep -v guild- | xargs rm -rf
+	cd priv/components && ls | grep -v 'guild-' | xargs rm -rf
 
 upgrade:
 	./rebar3 upgrade
