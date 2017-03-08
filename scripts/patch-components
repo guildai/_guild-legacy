@@ -1,4 +1,16 @@
 #!/bin/bash -eu
 
+# Remove imports of roboto.html which incur a dependency on Google's CDN
+# See https://github.com/PolymerElements/paper-styles/pull/128
 sed -i /roboto.html/d priv/components/paper-styles/typography.html
+
+# Remove import of iron-flex-layout/classes
+# See https://github.com/PolymerElements/paper-styles/issues/49
 sed -i /iron-flex-layout\\/classes\\/iron-flex-layout.html/d priv/components/paper-styles/paper-styles.html
+
+# Add mixin hooks to TF components
+
+line_chart_html=priv/components/vz-line-chart/vz-line-chart.html
+if ! grep -q -- '--vz-chart-tooltip' $line_chart_html; then
+    sed -i -e '/\#tooltip {/{:a;n;/}$/!ba;i\        @apply(--vz-chart-tooltip);' -e '}' $line_chart_html
+fi
