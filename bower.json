@@ -5,14 +5,15 @@
     ],
     "license": "Apache-2.0",
     "dependencies": {
-        "d3":                    "3.5.17",
         "app-layout":            "PolymerElements/app-layout",
         "app-route":             "PolymerElements/app-route",
+        "d3":                    "3.5.17",
         "iron-collapse":         "PolymerElements/iron-collapse",
         "iron-data-table":       "Saulis/iron-data-table",
         "iron-flex-layout":      "PolymerElements/iron-flex-layout",
         "iron-icons":            "PolymerElements/iron-icons",
         "iron-pages":            "PolymerElements/iron-pages",
+        "lodash":                "3.8.0",
         "paper-card":            "PolymerElements/paper-card",
         "paper-dialog":          "PolymerElements/paper-dialog",
         "paper-dropdown-menu":   "PolymerElements/paper-dropdown-menu",
@@ -24,7 +25,11 @@
         "paper-menu":            "PolymerElements/paper-menu",
         "paper-spinner":         "PolymerElements/paper-spinner",
         "paper-tabs":            "PolymerElements/paper-tabs",
+        "plottable":             "1.16.2",
         "polymer":               "Polymer/polymer"
+    },
+    "resolutions": {
+        "d3":                    "3.5.17"
     },
     "private": true
 }
