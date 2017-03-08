@@ -18,6 +18,8 @@
 
 -export([init/1, handle_msg/3]).
 
+-define(GLOBALS_JS_PATH, "/components/guild-globals/globals.js").
+
 %% ===================================================================
 %% Start / stop server
 %% ===================================================================
@@ -44,12 +46,25 @@ handle_msg(stop, _From, _App) ->
 create_app(View, Opts) ->
     psycho_util:chain_apps(routes(View), middleware(Opts)).
 
-routes(_View) ->
+routes(View) ->
     psycho_route:create_app(
-      [{{starts_with, "/assets/"},     static_handler()},
+      [{?GLOBALS_JS_PATH,              globals_handler(View)},
+       {{starts_with, "/assets/"},     static_handler()},
        {{starts_with, "/components/"}, components_handler()},
        {"/bye",                        bye_handler()},
        {'_',                           app_page_handler()}]).
+
+globals_handler(View) ->
+    fun(_) -> handle_globals(View) end.
+
+handle_globals(View) ->
+    JS = guild_view_v2_globals:render(View),
+    Len = iolist_size(JS),
+    Headers =
+        [{"Content-Type", "application/javascript"},
+         {"Content-Length", Len}],
+    {{200, "OK"}, Headers, JS}.
+
 static_handler() ->
     psycho_static:create_app(guild_app:priv_dir()).
 

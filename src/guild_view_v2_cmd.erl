@@ -5,11 +5,16 @@
 -define(default_port, 6334).
 
 main(Opts, []) ->
-    View = 'XXX_not_used',
+    View = init_project_view(Opts),
     Port = guild_cmd_support:port_opt(Opts, ?default_port),
     Server = start_http_server(View, Port, Opts),
     guild_cli:out("Guild View running on port ~b~n", [Port]),
     wait_for_server_and_terminate(Server, Opts).
+
+init_project_view(Opts) ->
+    Project = guild_cmd_support:project_from_opts(Opts),
+    {ok, View} = guild_project_view_v2:start_link(Project),
+    View.
 
 start_http_server(View, Port, Opts) ->
     case guild_view_v2_http:start_server(View, Port, Opts) of

@@ -2,6 +2,7 @@
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu-light.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-tooltip/paper-tooltip.html">
 
 <dom-module id="guild-page-header">
   <template>
@@ -35,7 +36,8 @@
      }
     </style>
     <guild-component>
-      <h1>[[projectTitle]]</h1>
+      <h1 id="title">[[project.title]]</h1>
+      <paper-tooltip for="title" offset="-10" animation-delay="200">[[project.description]]</paper-tooltip>
       <template is="dom-if" if="[[!noRunSelect]]">
         <paper-dropdown-menu-light label="Active run" no-animations>
           <paper-listbox class="dropdown-content" selected="1">
@@ -51,9 +53,9 @@
    Polymer({
        is: "guild-page-header",
        properties: {
-           projectTitle: {
-               type: String,
-               value: "MNIST"
+           project: {
+               type: Object,
+               value: GUILD.project
            },
            noRunSelect: {
                type: Boolean,

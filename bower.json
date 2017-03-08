@@ -24,6 +24,7 @@
         "paper-menu":            "PolymerElements/paper-menu",
         "paper-spinner":         "PolymerElements/paper-spinner",
         "paper-tabs":            "PolymerElements/paper-tabs",
+        "paper-tooltip":         "PolymerElements/paper-tooltip",
         "plottable":             "1.16.2",
         "polymer":               "Polymer/polymer"
     },

@@ -15,6 +15,7 @@
 <link rel="import" href="../app-route/app-route.html">
 <link rel="import" href="../iron-pages/iron-pages.html">
 <link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../guild-globals/guild-globals.html">
 <link rel="import" href="../guild-view/train-page.html">
 <link rel="import" href="../guild-view/compare-page.html">
 <link rel="import" href="../guild-view/explore-page.html">
@@ -111,33 +112,13 @@
     Polymer({
         is: 'guild-view',
         properties: {
-            view: {
-                type: Object,
-                value: this
-            },
             route: String,
             page: Object,
             narrow: Boolean,
             routeTail: Object,
             pages: {
                 type: Array,
-                value: [
-                    {
-                        id: "overview",
-                        label: "Overview",
-                        icon: "icons:dashboard"
-                    },
-                    {
-                        id: "compare",
-                        label: "Compare",
-                        icon: "icons:view-list"
-                    },
-                    {
-                        id: "explore",
-                        label: "Explore",
-                        icon: "icons:pageview"
-                    }
-                ]
+                value: GUILD.viewdef.pages
             },
             pageInfo: {
                 type: Object,
@@ -158,7 +139,7 @@
         },
 
         computePage1: function(pages) {
-            return this.pages[0].label;
+            return this.pages.length > 0 ? this.pages[0].label : undefined;
         },
 
         observers: [
@@ -166,31 +147,22 @@
         ],
 
         pageChanged: function(id, old) {
-            this.TEMP_log_double_dispatch_bug(id, old);
-            if (id == "") {
-                this.redirectToDefaultPage();
-            } else {
-                this.resetPage();
-            }
-        },
-
-        TEMP_log_double_dispatch_bug: function(id, old) {
-            // BUG: This function is called twice, see:
+            // Debouncing to avoid dispatching twice - see Polymer issue
             // https://github.com/PolymerElements/app-route/issues/129
-            // This isn't a critical problem but leaving debug output below
-            // to track this and resolve it at some point.
-            console.debug(
-                "TODO: resolve double-dispatch - see "
-                + "https://github.com/PolymerElements/app-route/issues/129");
-            console.debug(
-                "page.id changed to " + JSON.stringify(id)
-                + " from " + JSON.stringify(old));
-
+            this.debounce(id, function() {
+                if (id == "") {
+                    this.redirectToDefaultPage();
+                } else {
+                    this.resetPage();
+                }
+            });
         },
 
         redirectToDefaultPage: function() {
-            this.$.redirecting.open();
-            window.location = "/" + this.pages[0].id;
+            if (this.pages.length > 0) {
+                this.$.redirecting.open();
+                window.location = "/" + this.pages[0].id;
+            }
         },
 
         resetPage: function() {
