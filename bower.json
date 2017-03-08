@@ -10,7 +10,6 @@
         "d3":                    "3.5.17",
         "iron-collapse":         "PolymerElements/iron-collapse",
         "iron-data-table":       "Saulis/iron-data-table",
-        "iron-flex-layout":      "PolymerElements/iron-flex-layout",
         "iron-icons":            "PolymerElements/iron-icons",
         "iron-pages":            "PolymerElements/iron-pages",
         "lodash":                "3.8.0",
