@@ -48,7 +48,7 @@
         <iron-icon icon="[[icon]]"></iron-icon>
       </div>
       <div id="main">
-        <div id="value">[[value]]</div>
+        <div id="value">[[displayValue]]</div>
         <div id="label">[[label]]</div>
       </div>
     </paper-card>
@@ -56,17 +56,40 @@
   <script>
    Polymer({
        is: "guild-field",
+
        properties: {
            label: String,
-           value: String,
+           value: {
+               type: String,
+               value: null
+           },
+           format: {
+               type: String,
+               value: null
+           },
+           rawValue: String,
+           displayValue: {
+               type: String,
+               computed: 'computeDisplayValue(rawValue, format)'
+           },
            color: String,
            icon: String
        },
+
        ready: function() {
            if (this.color) {
                this.customStyle['--field-color'] =
                    "var(--paper-" + this.color + ")";
            }
+           if (this.value != null) {
+               this.rawValue = this.value;
+           } else {
+               this.rawValue = "--";
+           }
+       },
+
+       computeDisplayValue: function(raw, format) {
+           return format ? guild.util.tryFormat(raw, format) : raw;
        }
    });
   </script>

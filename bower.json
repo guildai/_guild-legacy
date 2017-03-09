@@ -13,6 +13,7 @@
         "iron-icons":            "PolymerElements/iron-icons",
         "iron-pages":            "PolymerElements/iron-pages",
         "lodash":                "3.8.0",
+        "numeral":               "2.0.4",
         "paper-card":            "PolymerElements/paper-card",
         "paper-dialog":          "PolymerElements/paper-dialog",
         "paper-dropdown-menu":   "PolymerElements/paper-dropdown-menu",
