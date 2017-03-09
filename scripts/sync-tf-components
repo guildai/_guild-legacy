@@ -16,5 +16,5 @@ function component-dest() {
 }
 
 for c in ${components[@]}; do
-    rsync -a --info=name $(component-src $c)/ $(component-dest $c)/
+    rsync -a --delete --info=name $(component-src $c)/ $(component-dest $c)/
 done
