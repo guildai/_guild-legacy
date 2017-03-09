@@ -5,6 +5,7 @@
 <link rel="import" href="../iron-icons/device-icons.html">
 <link rel="import" href="../iron-icons/av-icons.html">
 <link rel="import" href="../iron-icons/maps-icons.html">
+<link rel="import" href="../guild-util/guild-util.html">
 
 <dom-module id="guild-field">
   <template>
@@ -89,7 +90,7 @@
        },
 
        computeDisplayValue: function(raw, format) {
-           return format ? guild.util.tryFormat(raw, format) : raw;
+           return format ? Guild.Util.tryFormat(raw, format) : raw;
        }
    });
   </script>

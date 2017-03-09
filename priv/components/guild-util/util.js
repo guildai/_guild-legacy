@@ -13,13 +13,9 @@
  * limitations under the License.
  */
 
-var guild = guild || {};
+var Guild = Guild || {};
 
-/********************************************************************
- * Utils
- ********************************************************************/
-
-guild.util = new function() {
+Guild.Util = new function() {
 
     var tryFormat = function(value, format) {
         if (value != null && value != undefined && value == value) {
