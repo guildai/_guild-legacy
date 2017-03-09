@@ -13,15 +13,10 @@
 
        properties: {
            page: Object,
-           data: Object,
            generated: {
                type: Boolean,
                value: false
            }
-       },
-
-       ready: function() {
-           this.listen(this.data, 'test', 'onTest');
        },
 
        ensureGenerated: function() {

@@ -16,7 +16,6 @@
 <link rel="import" href="../iron-pages/iron-pages.html">
 <link rel="import" href="../paper-material/paper-material.html">
 <link rel="import" href="../guild-globals/guild-globals.html">
-<link rel="import" href="../guild-data/guild-data.html">
 <link rel="import" href="../guild-view/guild-view-page.html">
 <link rel="import" href="../guild-modal-message/guild-modal-message.html">
 <link rel="import" href="../guild-view/404-page.html">
@@ -60,8 +59,6 @@
         data="{{currentPage}}"
         tail="{{routeTail}}"></app-route>
 
-    <guild-data id="data"></guild-data>
-
     <guild-modal-message id="redirecting">Redirecting to [[page1]]</guild-modal-message>
 
     <app-drawer-layout narrow="{{narrow}}">
@@ -100,10 +97,7 @@
             role="main">
           <div page-id=""></div>
           <template is="dom-repeat" items="[[pages]]" as="page">
-            <guild-view-page
-                page-id$="[[page.id]]"
-                page="[[page]]"
-                data="[[data]]"></guild-view-page>
+            <guild-view-page page-id$="[[page.id]]" page="[[page]]"></guild-view-page>
           </template>
           <guild-view-404-page page-id="404" path="[[route.path]]"></guild-view-404-page>
         </iron-pages>
@@ -127,22 +121,12 @@
             page1: {
                 type: String,
                 computed: 'computePage1(pages)'
-            },
-            data: {
-                type: Object,
-                value: function() {
-                    return this.$.data;
-                }
             }
         },
 
         observers: [
             'pageChanged(currentPage.id)'
         ],
-
-        ready: function() {
-            this.data.start();
-        },
 
         computePage1: function(pages) {
             return this.pages.length > 0 ? this.pages[0].label : undefined;
