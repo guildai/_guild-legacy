@@ -1,0 +1,18 @@
+<dom-module id="guild-data">
+  <template>
+  </template>
+  <script>
+   Polymer({
+       is: "guild-data",
+
+       start: function() {
+           window.setTimeout(this.test.bind(this), 0);
+       },
+
+       test: function() {
+           console.log("Firing test yo");
+           this.fire('test', {msg: "Yo mama"});
+       }
+   });
+  </script>
+</dom-module>

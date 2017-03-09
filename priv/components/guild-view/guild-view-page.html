@@ -1,5 +1,7 @@
 <link rel="import" href="../guild-styles/guild-styles.html">
 
+<script src="generate.js"></script>
+
 <dom-module id="guild-view-page">
   <template>
     <style include="guild-spacing"></style>
@@ -11,84 +13,28 @@
 
        properties: {
            page: Object,
+           data: Object,
            generated: {
                type: Boolean,
                value: false
            }
        },
 
+       ready: function() {
+           this.listen(this.data, 'test', 'onTest');
+       },
+
        ensureGenerated: function() {
            if (!this.generated) {
                if (this.page.layout) {
-                   this.generate(this.root, this.page.layout);
+                   Guild.Generate.generate(this.root, this.page.layout, this);
                }
                this.generated = true;
            }
        },
 
-       generate: function(parent, item) {
-           var type = item.type;
-           if (type == "container") {
-               this.generateContainer(parent, item);
-           } else if (type == "row") {
-               this.generateRow(parent, item);
-           } else if (type == "col") {
-               this.generateCol(parent, item);
-           } else if (type == "component") {
-               this.generateComponent(parent, item);
-           } else {
-               throw ["Unknown page item", item]
-           }
-       },
-
-       generateChildren: function(parent, children) {
-           children.forEach(function(item) {
-               this.generate(parent, item);
-           }.bind(this));
-       },
-
-       generateContainer: function(parent, containerDef) {
-           var container = document.createElement("div");
-           container.setAttribute("class", "container-fluid");
-           Polymer.dom(parent).appendChild(container);
-           this.generateChildren(container, containerDef.items);
-       },
-
-       generateRow: function(parent, rowDef) {
-           var row = document.createElement("div");
-           row.setAttribute("class", "row");
-           Polymer.dom(parent).appendChild(row);
-           this.generateChildren(row, rowDef.items);
-       },
-
-       generateCol: function(parent, colDef) {
-           var col = document.createElement("div");
-           col.setAttribute("class", colDef.classes);
-           Polymer.dom(parent).appendChild(col);
-           this.generateChildren(col, colDef.items);
-       },
-
-       generateComponent: function(parent, componentDef) {
-           var source = this.componentSource(componentDef);
-           var link = this.importHref(source);
-           var component = document.createElement(componentDef.name);
-           var attrs = componentDef.attrs || {};
-           Object.keys(attrs).forEach(function(key) {
-               component.setAttribute(key, attrs[key]);
-           });
-           Polymer.dom(parent).appendChild(component);
-       },
-
-       componentSource: function(componentDef) {
-           if (componentDef.source) {
-               return this.resolveUrl(componentDef.source);
-           } else {
-               return this.defaultComponentSource(componentDef.name);
-           }
-       },
-
-       defaultComponentSource: function(name) {
-           return this.resolveUrl("../" + name + "/" + name + ".html");
+       onTest: function(e, data) {
+           console.log("I got " + JSON.stringify(data));
        }
    });
   </script>

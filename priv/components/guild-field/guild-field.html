@@ -68,7 +68,10 @@
                type: String,
                value: null
            },
-           rawValue: String,
+           rawValue: {
+               type: Object,
+               value: "--"
+           },
            displayValue: {
                type: String,
                computed: 'computeDisplayValue(rawValue, format)'
@@ -84,8 +87,6 @@
            }
            if (this.value != null) {
                this.rawValue = this.value;
-           } else {
-               this.rawValue = "--";
            }
        },
 
