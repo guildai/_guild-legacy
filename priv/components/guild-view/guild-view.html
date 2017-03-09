@@ -16,9 +16,7 @@
 <link rel="import" href="../iron-pages/iron-pages.html">
 <link rel="import" href="../paper-material/paper-material.html">
 <link rel="import" href="../guild-globals/guild-globals.html">
-<link rel="import" href="../guild-view/train-page.html">
-<link rel="import" href="../guild-view/compare-page.html">
-<link rel="import" href="../guild-view/explore-page.html">
+<link rel="import" href="../guild-view/guild-view-page.html">
 <link rel="import" href="../guild-modal-message/guild-modal-message.html">
 <link rel="import" href="../guild-view/404-page.html">
 
@@ -78,9 +76,9 @@
           <app-toolbar>
             <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
             <div><a href="/">Guild View</a></div>
-            <paper-tabs hidden$="[[narrow]]" selected="{{currentPage.id}}" attr-for-selected="page">
+            <paper-tabs hidden$="[[narrow]]" selected="{{currentPage.id}}" attr-for-selected="page-id">
               <template is="dom-repeat" items="[[pages]]" as="page">
-                <paper-tab page="[[page.id]]">
+                <paper-tab page-id="[[page.id]]">
                   <iron-icon class="tab-icon" icon="[[page.icon]]"></iron-icon>
                   [[page.label]]
                 </paper-tab>
@@ -90,15 +88,16 @@
         </app-header>
 
         <iron-pages
+            id="pages"
             selected="[[currentPage.id]][[routeTail.path]]"
-            attr-for-selected="page"
+            attr-for-selected="page-id"
             fallback-selection="404"
             role="main">
-          <div page=""></div>
-          <guild-view-train-page page="overview"></guild-view-train-page>
-          <guild-view-compare-page page="compare"></guild-view-compare-page>
-          <guild-view-explore-page page="explore"></guild-view-explore-page>
-          <guild-view-404-page page="404" path="[[route.path]]"></guild-view-404-page>
+          <div page-id=""></div>
+          <template is="dom-repeat" items="[[pages]]" as="page">
+            <guild-view-page page-id$="[[page.id]]" page="[[page]]"></guild-view-page>
+          </template>
+          <guild-view-404-page page-id="404" path="[[route.path]]"></guild-view-404-page>
         </iron-pages>
 
       </app-header-layout>
@@ -119,31 +118,23 @@
                 type: Array,
                 value: GUILD.viewdef.pages
             },
-            pageInfo: {
-                type: Object,
-                computed: 'computePageInfo(page, routeTail, route)'
-            },
             page1: {
                 type: String,
                 computed: 'computePage1(pages)'
             }
         },
 
-        computePageInfo: function(page, routeTail, route) {
-            return {
-                page: page,
-                routeTail: routeTail,
-                route: route
-            }
+        observers: [
+            'pageChanged(currentPage.id)'
+        ],
+
+        ready: function() {
+            var pages = document.querySelector('iron-pages');
         },
 
         computePage1: function(pages) {
             return this.pages.length > 0 ? this.pages[0].label : undefined;
         },
-
-        observers: [
-            'pageChanged(page.id)'
-        ],
 
         pageChanged: function(id, old) {
             // Debouncing to avoid dispatching twice - see Polymer issue
@@ -152,7 +143,7 @@
                 if (id == "") {
                     this.redirectToDefaultPage();
                 } else {
-                    this.resetPage();
+                    this.resetPage(id);
                 }
             });
         },
@@ -164,7 +155,11 @@
             }
         },
 
-        resetPage: function() {
+        resetPage: function(pageId) {
+            var page = this.$$("guild-view-page[page-id=" + pageId + "]");
+            if (page) {
+                page.ensureGenerated();
+            }
             document.body.scrollTop = document.documentElement.scrollTop = 0;
         },
 
