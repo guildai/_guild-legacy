@@ -106,8 +106,8 @@ fieldCol(Label, Value, Color, Icon) ->
            icon => Icon})]).
 
 sample_charts() ->
-    [chart(<<"Loss">>, <<"loss">>, primary),
-     chart(<<"Accuracy">>, <<"accuracy">>, primary),
+    [chart(<<"Loss">>, <<"loss">>),
+     chart(<<"Accuracy">>, <<"accuracy">>),
      chart(<<"Process CPU %">>, <<"cpu_util">>),
      chart(<<"Process memory">>, <<"op_mem">>),
      chart(<<"GPU %">>, <<"gpu_util">>),
