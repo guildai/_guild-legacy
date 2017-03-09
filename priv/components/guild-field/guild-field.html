@@ -20,6 +20,7 @@
          color: #fff;
          padding: 14px 15px 11px 10px;
          height: 100%;
+         @apply(--guild-field);
      }
      #main {
          flex-grow: 1;
@@ -44,11 +45,11 @@
 
     <paper-card>
       <div id="icon">
-        <iron-icon icon="[[field.icon]]"></iron-icon>
+        <iron-icon icon="[[icon]]"></iron-icon>
       </div>
       <div id="main">
-        <div id="value">[[field.value]]</div>
-        <div id="label">[[field.label]]</div>
+        <div id="value">[[value]]</div>
+        <div id="label">[[label]]</div>
       </div>
     </paper-card>
   </template>
@@ -56,12 +57,15 @@
    Polymer({
        is: "guild-field",
        properties: {
-           field: Object
+           label: String,
+           value: String,
+           color: String,
+           icon: String
        },
        ready: function() {
-           if (this.field.color) {
+           if (this.color) {
                this.customStyle['--field-color'] =
-                   "var(--paper-" + this.field.color + ")";
+                   "var(--paper-" + this.color + ")";
            }
        }
    });

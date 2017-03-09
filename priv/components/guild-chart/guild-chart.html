@@ -18,7 +18,7 @@
          }
      }
     </style>
-    <guild-component-panel heading="[[chart.title]]">
+    <guild-component-panel heading="[[title]]">
       <div id="container">
         <vz-line-chart id="chart"></vz-line-chart>
       </div>
@@ -28,7 +28,11 @@
    Polymer({
        is: "guild-chart",
        properties: {
-           chart: Object,
+           title: String,
+           sampleType: {
+               type: String,
+               value: "cpu_util"
+           },
            sampleData: {
                type: Object,
                value: {
@@ -95,10 +99,6 @@
                        }
                    ]
                }
-           },
-           sampleType: {
-               type: String,
-               computed: 'computeSampleType(chart)'
            }
        },
        ready: function() {
