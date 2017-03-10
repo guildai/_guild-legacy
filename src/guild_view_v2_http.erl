@@ -44,21 +44,22 @@ handle_msg(stop, _From, _App) ->
 %% ===================================================================
 
 create_app(View, Opts) ->
-    psycho_util:chain_apps(routes(View), middleware(Opts)).
+    psycho_util:chain_apps(routes(View, Opts), middleware(Opts)).
 
-routes(View) ->
+routes(View, Opts) ->
     psycho_route:create_app(
-      [{?GLOBALS_JS_PATH,              globals_handler(View)},
+      [{?GLOBALS_JS_PATH,              globals_handler(View, Opts)},
        {{starts_with, "/assets/"},     static_handler()},
        {{starts_with, "/components/"}, components_handler()},
+       {{starts_with, "/data/"},       data_handler(View)},
        {"/bye",                        bye_handler()},
        {'_',                           app_page_handler()}]).
 
-globals_handler(View) ->
-    fun(_) -> handle_globals(View) end.
+globals_handler(View, Opts) ->
+    fun(_) -> handle_globals(View, Opts) end.
 
-handle_globals(View) ->
-    JS = guild_view_v2_globals:render(View),
+handle_globals(View, Opts) ->
+    JS = guild_view_v2_globals:render(View, Opts),
     Len = iolist_size(JS),
     Headers =
         [{"Content-Type", "application/javascript"},
@@ -70,6 +71,11 @@ static_handler() ->
 
 components_handler() ->
     psycho_static:create_app(guild_app:priv_dir()).
+
+data_handler(View) ->
+    psycho_util:dispatch_app(
+      {guild_view_v2_data_http, app},
+      [method, parsed_path, View]).
 
 bye_handler() ->
     fun(_Env) -> handle_bye() end.

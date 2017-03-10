@@ -1,12 +1,12 @@
--module(guild_project_view_v2).
+-module(guild_view_v2).
 
--export([start_link/1, project/1]).
+-export([start_link/1, project_summary/1, run_roots/1]).
 
 -export([handle_msg/3]).
 
 -behavior(e2_service).
 
--record(state, {pdir}).
+-record(state, {pdir, run_roots}).
 
 -define(bin(X), iolist_to_binary(X)).
 
@@ -19,15 +19,19 @@ start_link(Project) ->
 
 init_state(Project) ->
     #state{
-       pdir=guild_project:project_dir(Project)
+       pdir=guild_project:project_dir(Project),
+       run_roots=guild_project_util:all_runroots(Project)
       }.
 
 %% ===================================================================
 %% API
 %% ===================================================================
 
-project(View) ->
-    e2_service:call(View, {fun project_/1, []}).
+project_summary(View) ->
+    e2_service:call(View, {fun project_summary_/1, []}).
+
+run_roots(View) ->
+    e2_service:call(View, {fun run_roots_/1, []}).
 
 %% ===================================================================
 %% Dispatch
@@ -37,10 +41,10 @@ handle_msg({F, A}, _From, State) ->
     {reply, apply(F, A ++ [State]), State}.
 
 %% ===================================================================
-%% Project
+%% Project summary
 %% ===================================================================
 
-project_(#state{pdir=Dir}) ->
+project_summary_(#state{pdir=Dir}) ->
     {ok, Project} = guild_project:from_dir(Dir),
     #{
        title => ?bin(project_title(Project)),
@@ -68,3 +72,9 @@ project_description(P) ->
         {ok, Desc} -> Desc;
         error -> ""
     end.
+
+%% ===================================================================
+%% Static attrs (i.e. not reloaded on each call)
+%% ===================================================================
+
+run_roots_(#state{run_roots=RunRoots}) -> RunRoots.

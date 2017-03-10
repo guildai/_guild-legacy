@@ -1,48 +1,88 @@
+<link rel="import" href="../paper-spinner/paper-spinner.html">
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu-light.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
-<link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../guild-event/guild-event.html">
+<link rel="import" href="../guild-data/guild-data.html">
+
+<link rel="import" href="guild-run-select-item.html">
 
 <dom-module id="guild-run-select">
   <template>
+    <style include="guild-run"></style>
     <style>
      paper-dropdown-menu-light {
          width: auto;
          --paper-dropdown-menu-input: {
              border-bottom: none;
-         }
+         };
+         --paper-dropdown-menu-icon: {
+             right: -3px;
+         };
      }
-     paper-item {
-         --paper-item: {
-             cursor: pointer;
-             min-height: 36px;
-         }
+     paper-spinner {
+         height: 18px;
+         width: 18px;
+         margin-right: 0.5rem;
+         --paper-spinner-stroke-width: 2px;
+     }
+     #loading {
+         display: flex;
+         flex-direction: horizontal;
+         align-items: center;
+         color: var(--paper-grey-800);
      }
     </style>
-    <paper-dropdown-menu-light label="Active run" no-animations>
-      <paper-listbox class="dropdown-content" selected="{{selected}}">
-        <template is="dom-repeat" items="[[runs]]" as="run">
-          <paper-item>[[run.label]]</paper-item>
-        </template>
-      </paper-listbox>
-    </paper-dropdown-menu-light>
-    <div>Select is [[selected]] yo</div>
+    <div>
+      <div id="loading"><paper-spinner active></paper-spinner> Getting runs</div>
+      <paper-dropdown-menu-light id="dropdown" label="Active run" no-animations hidden>
+        <paper-listbox class="dropdown-content" selected="{{selected}}">
+          <template is="dom-repeat" items="[[runs]]" as="run">
+            <guild-run-select-item run="[[run]]"></guild-run-select-item>
+          </template>
+        </paper-listbox>
+      </paper-dropdown-menu-light>
+    </div>
   </template>
   <script>
    Polymer({
        is: "guild-run-select",
 
        properties: {
-           runs: Array,
+           runs: {
+               type: Array,
+               value: []
+           },
            selected: {
                type: Number,
-               value: 3,
-               observer: 'selectChanged'
+               value: 0
            }
        },
 
-       selectChanged: function(index) {
-           Guild.Event.notify("run-changed", this.runs[index]);
+       observers: [
+           'selectChanged(selected, runs)'
+       ],
+
+       ready: function() {
+           var handleRunQuery = this.handleRunQuery.bind(this);
+           Guild.Event.register("query-selected-run", handleRunQuery);
+           Guild.Data.fetch("/data/runs", function(runs) {
+               this.runs = runs;
+               this.$.loading.hidden = true;
+               this.$.dropdown.hidden = false;
+           }.bind(this));
+       },
+
+       handleRunQuery: function(callback) {
+           if (this.runs) {
+               callback(this.runs[this.selected]);
+           }
+       },
+
+       selectChanged: function(index, runs) {
+           var run = runs[index];
+           if (run != undefined) {
+               Guild.Event.notify("run-changed", run);
+           }
        }
    });
   </script>

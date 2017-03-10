@@ -33,7 +33,8 @@ Guild.Data = new function() {
         xhr.open('GET', url);
         xhr.onload = function() {
             if (xhr.status === 200) {
-                callback(xhr);
+                var json = JSON.parse(xhr.responseText);
+                callback(json);
             } else {
                 console.error(xhr);
             }

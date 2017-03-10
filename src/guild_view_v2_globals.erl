@@ -1,15 +1,17 @@
 -module(guild_view_v2_globals).
 
--export([render/1]).
+-export([render/2]).
 
-render(View) ->
-    Globals = globals(View),
-    [<<"var GUILD=">>, guild_json:encode(Globals), <<";">>].
+render(View, Opts) ->
+    Globals = globals(View, Opts),
+    [<<"var Guild=Guild||{};">>,
+     <<"Guild.Globals=">>, guild_json:encode(Globals), <<";">>].
 
-globals(View) ->
+globals(View, Opts) ->
     #{
        viewdef => viewdef(View),
-       project => project(View)
+       project => project(View),
+       options => options(Opts)
      }.
 
 viewdef(View) ->
@@ -23,34 +25,36 @@ default_viewdef(_View) ->
 default_pages() ->
     [#{id => <<"overview">>,
        label => <<"Overview">>,
-       icon => <<"icons:dashboard">>,
-       layout =>
-           container(
-             [row(
-                [col(
-                   <<"col-12">>,
-                   [component(<<"guild-page-header">>)])]),
-              row(
-                [col(
-                   <<"col-md-9">>,
-                   [row(sample_fields()),
-                    row(sample_charts()),
-                    component(<<"guild-output">>)]),
-                 col(
-                   <<"col-md-3">>,
-                   [component(<<"guild-status">>),
-                    component(<<"guild-flags">>),
-                    component(<<"guild-attrs">>)])])])
+       icon => <<"dashboard">>,
+       layout => overview_layout()
       },
      #{id    => <<"compare">>,
        label => <<"Compare">>,
-       icon  => <<"icons:view-list">>
+       icon  => <<"view-list">>
      },
      #{id    => <<"explore">>,
        label => <<"Explore">>,
-       icon  => <<"icons:pageview">>
+       icon  => <<"pageview">>
       }
     ].
+
+overview_layout() ->
+    container(
+      [row(
+         [col(
+            <<"col-12">>,
+            [component(<<"guild-page-header">>)])]),
+       row(
+         [col(
+            <<"col-md-9">>,
+            [row(sample_fields()),
+             row(sample_charts()),
+             component(<<"guild-output">>)]),
+          col(
+            <<"col-md-3">>,
+            [component(<<"guild-status">>),
+             component(<<"guild-flags">>),
+             component(<<"guild-attrs">>)])])]).
 
 container(Items) ->
     #{type => container, items => Items}.
@@ -129,4 +133,9 @@ classes_for_chart_display(primary) -> <<"col-12">>;
 classes_for_chart_display(secondary) -> <<"col-12 col-xl-6">>.
 
 project(View) ->
-    guild_project_view_v2:project(View).
+    guild_view_v2:project_summary(View).
+
+options(Opts) ->
+    #{
+       debug => proplists:get_bool(debug, Opts)
+     }.
