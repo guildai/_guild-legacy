@@ -1,8 +1,6 @@
 <link rel="import" href="../guild-component/guild-component.html">
-<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu-light.html">
-<link rel="import" href="../paper-listbox/paper-listbox.html">
-<link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../guild-run-select/guild-run-select.html">
 
 <dom-module id="guild-page-header">
   <template>
@@ -23,30 +21,12 @@
          margin: 2px 20px 0 0;
          padding: 0;
      }
-     paper-dropdown-menu-light {
-         width: auto;
-         --paper-dropdown-menu-input: {
-             border-bottom: none;
-         }
-     }
-     paper-item {
-         --paper-item: {
-             cursor: pointer;
-             min-height: 36px;
-         }
-     }
     </style>
     <guild-component>
       <h1 id="title">[[project.title]]</h1>
       <paper-tooltip for="title" offset="-10" animation-delay="200">[[project.description]]</paper-tooltip>
       <template is="dom-if" if="[[!noRunSelect]]">
-        <paper-dropdown-menu-light label="Active run" no-animations>
-          <paper-listbox class="dropdown-content" selected="1">
-            <template is="dom-repeat" items="[[runs]]" as="run">
-              <paper-item>[[run.label]]</paper-item>
-            </template>
-          </paper-listbox>
-        </paper-dropdown-menu-light>
+        <guild-run-select runs="[[runs]]"></guild-run-select>
       </template>
     </guild-component>
   </template>

@@ -1,0 +1,49 @@
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu-light.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../guild-event/guild-event.html">
+
+<dom-module id="guild-run-select">
+  <template>
+    <style>
+     paper-dropdown-menu-light {
+         width: auto;
+         --paper-dropdown-menu-input: {
+             border-bottom: none;
+         }
+     }
+     paper-item {
+         --paper-item: {
+             cursor: pointer;
+             min-height: 36px;
+         }
+     }
+    </style>
+    <paper-dropdown-menu-light label="Active run" no-animations>
+      <paper-listbox class="dropdown-content" selected="{{selected}}">
+        <template is="dom-repeat" items="[[runs]]" as="run">
+          <paper-item>[[run.label]]</paper-item>
+        </template>
+      </paper-listbox>
+    </paper-dropdown-menu-light>
+    <div>Select is [[selected]] yo</div>
+  </template>
+  <script>
+   Polymer({
+       is: "guild-run-select",
+
+       properties: {
+           runs: Array,
+           selected: {
+               type: Number,
+               value: 3,
+               observer: 'selectChanged'
+           }
+       },
+
+       selectChanged: function(index) {
+           Guild.Event.notify("run-changed", this.runs[index]);
+       }
+   });
+  </script>
+</dom-module>
