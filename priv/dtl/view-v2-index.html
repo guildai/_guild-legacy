@@ -23,16 +23,14 @@
         <guild-view env="[[env]]"></guild-view>
       </template>
       <script>
-       HTMLImports.whenReady(function () {
-           Polymer({
-               is: "guild-view-app",
-               properties: {
-                   env: {
-                       type: Object,
-                       value: {% autoescape off %}{{env}}{% endautoescape %}
-                   }
+       Polymer({
+           is: "guild-view-app",
+           properties: {
+               env: {
+                   type: Object,
+                   value: {% autoescape off %}{{env}}{% endautoescape %}
                }
-           });
+           }
        });
       </script>
     </dom-module>
