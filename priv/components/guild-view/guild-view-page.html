@@ -4,7 +4,7 @@
 
 <dom-module id="guild-view-page">
   <template>
-    <style include="guild-spacing"></style>
+    <style include="guild-spacing-styles"></style>
   </template>
 
   <script>
@@ -13,6 +13,7 @@
 
        properties: {
            page: Object,
+           env: Object,
            generated: {
                type: Boolean,
                value: false
@@ -22,14 +23,14 @@
        ensureGenerated: function() {
            if (!this.generated) {
                if (this.page.layout) {
-                   Guild.Generate.generate(this.root, this.page.layout, this);
+                   var state = {
+                       env: this.env,
+                       page: this
+                   };
+                   Guild.Generate.generate(this.root, this.page.layout, state);
                }
                this.generated = true;
            }
-       },
-
-       onTest: function(e, data) {
-           console.log("I got " + JSON.stringify(data));
        }
    });
   </script>

@@ -18,7 +18,6 @@ var Guild = Guild || {};
 Guild.Event = new function() {
 
     var registered = {};
-    var debug = Guild.Globals.options.debug;
 
     var register = function(event, callback) {
         console.debug(["Guild.Register", event, callback]);

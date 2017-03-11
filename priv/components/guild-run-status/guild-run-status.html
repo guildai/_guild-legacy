@@ -1,0 +1,53 @@
+<link rel="import" href="../guild-styles/guild-styles.html">
+
+<dom-module id="guild-run-status">
+  <template>
+    <style include="guild-run-status-styles"></style>
+    <style>
+     :root {
+         display: flex;
+         flex-direction: row;
+         align-items: center;
+
+     }
+     iron-icon {
+         --iron-icon-width: 36px;
+         --iron-icon-height: auto;
+         margin-right: 10px;
+     }
+     #label {
+         font-size: 28px;
+     }
+    </style>
+    <div>
+      <div id="icon">
+        <iron-icon icon="[[status.icon]]" class$="[[status.iconClass]]"></iron-icon>
+      </div>
+      <div id="label">[[status.label]]</div>
+    </div>
+  </template>
+  <script>
+   Polymer({
+       is: "guild-run-status",
+
+       properties: {
+           env: {
+               type: Object,
+               value: {}
+           },
+           status: {
+               type: Object,
+               computed: 'computeStatus(env)'
+           }
+       },
+
+       computeStatus: function(env) {
+           return {
+               icon: "check-circle",
+               iconClass: "icon completed",
+               label: "Completed"
+           }
+       }
+   });
+  </script>
+</dom-module>

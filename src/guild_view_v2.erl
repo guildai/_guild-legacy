@@ -1,6 +1,6 @@
 -module(guild_view_v2).
 
--export([start_link/1, project_summary/1, run_roots/1]).
+-export([start_link/1, app_page_env/1, runs/1]).
 
 -export([handle_msg/3]).
 
@@ -27,11 +27,11 @@ init_state(Project) ->
 %% API
 %% ===================================================================
 
-project_summary(View) ->
-    e2_service:call(View, {fun project_summary_/1, []}).
+app_page_env(View) ->
+    e2_service:call(View, {fun app_page_env_/1, []}).
 
-run_roots(View) ->
-    e2_service:call(View, {fun run_roots_/1, []}).
+runs(View) ->
+    e2_service:call(View, {fun runs_/1, []}).
 
 %% ===================================================================
 %% Dispatch
@@ -41,11 +41,17 @@ handle_msg({F, A}, _From, State) ->
     {reply, apply(F, A ++ [State]), State}.
 
 %% ===================================================================
-%% Project summary
+%% App page env
 %% ===================================================================
 
-project_summary_(#state{pdir=Dir}) ->
-    {ok, Project} = guild_project:from_dir(Dir),
+app_page_env_(State) ->
+    Project = load_project(State),
+    #{
+       viewdef => guild_view_v2_viewdef:viewdef(Project),
+       project => project_summary(Project)
+     }.
+
+project_summary(Project) ->
     #{
        title => ?bin(project_title(Project)),
        description => ?bin(project_description(Project))
@@ -74,7 +80,49 @@ project_description(P) ->
     end.
 
 %% ===================================================================
-%% Static attrs (i.e. not reloaded on each call)
+%% Runs
 %% ===================================================================
 
-run_roots_(#state{run_roots=RunRoots}) -> RunRoots.
+runs_(#state{run_roots=RunRoots}) ->
+    Runs = guild_run:runs_for_runroots(RunRoots),
+    format_runs(Runs).
+
+format_runs(Runs) ->
+    sort_formatted_runs([format_run(Run) || Run <- Runs]).
+
+format_run(Run) ->
+    {[
+      {id, guild_run:id(Run)},
+      {dir, list_to_binary(guild_run:dir(Run))},
+      {status, guild_run_util:run_status(Run)}
+      |format_run_attrs(guild_run:attrs(Run))
+     ]}.
+
+format_run_attrs(Attrs) ->
+    [format_run_attr(Attr) || Attr <- Attrs].
+
+format_run_attr({Name, Val}) ->
+    {list_to_binary(Name), format_attr_val(Name, Val)}.
+
+format_attr_val("started",     Bin) -> binary_to_integer(Bin);
+format_attr_val("stopped",     Bin) -> binary_to_integer(Bin);
+format_attr_val("exit_status", Bin) -> binary_to_integer(Bin);
+format_attr_val(_Name,         Bin) -> Bin.
+
+sort_formatted_runs(Runs) ->
+    Cmp = fun(A, B) -> run_start_time(A) > run_start_time(B) end,
+    lists:sort(Cmp, Runs).
+
+run_start_time({Attrs}) ->
+    case lists:keyfind(<<"started">>, 1, Attrs) of
+        {_, Val} -> Val;
+        false -> 0
+    end.
+
+%% ===================================================================
+%% Helpers
+%% ===================================================================
+
+load_project(#state{pdir=Dir}) ->
+    {ok, Project} = guild_project:from_dir(Dir),
+    Project.

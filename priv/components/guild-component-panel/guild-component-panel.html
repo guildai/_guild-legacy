@@ -1,28 +1,24 @@
-<link rel="import" href="../guild-component/guild-component.html">
 <link rel="import" href="../paper-material/paper-material.html">
 <link rel="import" href="../guild-expansion-panel/guild-expansion-panel.html">
 
 <dom-module id="guild-component-panel">
   <style>
-   guild-component {
-       --guild-component: {
-           background-color: #f6f6f6;
-       }
+   :root {
+       margin-bottom: 20px;
+       background-color: #f6f6f6;
    }
-   #content {
+   #container {
        padding: 0 20px 20px;
    }
   </style>
   <template>
-    <guild-component>
-      <paper-material>
-        <guild-expansion-panel heading="[[heading]]" opened fixed="[[fixed]]">
-          <div id="content">
-            <content></content>
-          </div>
-        </guild-expansion-panel>
-      </paper-material>
-    </guild-component>
+    <paper-material>
+      <guild-expansion-panel heading="[[heading]]" opened fixed="[[fixed]]">
+        <div id="container">
+          <content></content>
+        </div>
+      </guild-expansion-panel>
+    </paper-material>
   </template>
   <script>
    Polymer({

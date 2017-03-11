@@ -1,48 +1,42 @@
-<link rel="import" href="../guild-component/guild-component.html">
 <link rel="import" href="../paper-tooltip/paper-tooltip.html">
-<link rel="import" href="../guild-run-select/guild-run-select.html">
-<link rel="import" href="../guild-globals/guild-globals.html">
 
 <dom-module id="guild-page-header">
   <template>
     <style>
-     guild-component {
-         --guild-component: {
-             display: flex;
-             flex-direction: row;
-             flex-wrap: wrap;
-             align-items: center;
-             border-bottom: 1px solid #eee;
-             padding: 5px 0 5px 0;
-         }
+     :root {
+         display: flex;
+         flex-direction: row;
+         flex-wrap: wrap;
+         align-items: center;
+         border-bottom: 1px solid #eee;
+         padding: 5px 0 5px 0;
+         margin-bottom: 20px;
      }
      h1 {
          font-size: 40px;
          font-weight: normal;
          margin: 2px 20px 0 0;
          padding: 0;
+         flex-grow: 0;
+     }
+     #content {
+         flex-grow: 1;
      }
     </style>
-    <guild-component>
-      <h1 id="title">[[project.title]]</h1>
-      <paper-tooltip for="title" offset="-10" animation-delay="200">[[project.description]]</paper-tooltip>
-      <template is="dom-if" if="[[!noRunSelect]]">
-        <guild-run-select></guild-run-select>
-      </template>
-    </guild-component>
+    <div>
+      <h1 id="title">[[title]]</h1>
+      <div id="content">
+        <content></content>
+      </div>
+    </div>
   </template>
   <script>
    Polymer({
        is: "guild-page-header",
+
        properties: {
-           project: {
-               type: Object,
-               value: Guild.Globals.project
-           },
-           noRunSelect: {
-               type: Boolean,
-               value: false
-           }
+           title: String,
+           titleTooltip: String
        }
    });
   </script>

@@ -18,8 +18,6 @@
 
 -export([init/1, handle_msg/3]).
 
--define(GLOBALS_JS_PATH, "/components/guild-globals/globals.js").
-
 %% ===================================================================
 %% Start / stop server
 %% ===================================================================
@@ -44,27 +42,15 @@ handle_msg(stop, _From, _App) ->
 %% ===================================================================
 
 create_app(View, Opts) ->
-    psycho_util:chain_apps(routes(View, Opts), middleware(Opts)).
+    psycho_util:chain_apps(routes(View), middleware(Opts)).
 
-routes(View, Opts) ->
+routes(View) ->
     psycho_route:create_app(
-      [{?GLOBALS_JS_PATH,              globals_handler(View, Opts)},
-       {{starts_with, "/assets/"},     static_handler()},
+      [{{starts_with, "/assets/"},     static_handler()},
        {{starts_with, "/components/"}, components_handler()},
        {{starts_with, "/data/"},       data_handler(View)},
        {"/bye",                        bye_handler()},
-       {'_',                           app_page_handler()}]).
-
-globals_handler(View, Opts) ->
-    fun(_) -> handle_globals(View, Opts) end.
-
-handle_globals(View, Opts) ->
-    JS = guild_view_v2_globals:render(View, Opts),
-    Len = iolist_size(JS),
-    Headers =
-        [{"Content-Type", "application/javascript"},
-         {"Content-Length", Len}],
-    {{200, "OK"}, Headers, JS}.
+       {'_',                           app_page_handler(View)}]).
 
 static_handler() ->
     psycho_static:create_app(guild_app:priv_dir()).
@@ -85,12 +71,17 @@ handle_bye() ->
     Page = guild_dtl:render(guild_bye_page, []),
     guild_http:ok_html(Page).
 
-app_page_handler() ->
-    fun(_Env) -> handle_app_page() end.
+app_page_handler(View) ->
+    fun(_Env) -> handle_app_page(View) end.
 
-handle_app_page() ->
-    Page = guild_dtl:render(guild_view_v2_index_page, []),
+handle_app_page(View) ->
+    Vars = app_page_vars(View),
+    Page = guild_dtl:render(guild_view_v2_index_page, Vars),
     guild_http:ok_html(Page).
+
+app_page_vars(View) ->
+    Env = guild_view_v2:app_page_env(View),
+    #{env => guild_json:encode(Env)}.
 
 middleware(Opts) ->
     maybe_apply_log_middleware(Opts, []).

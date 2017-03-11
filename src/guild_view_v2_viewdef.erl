@@ -1,26 +1,14 @@
--module(guild_view_v2_globals).
+-module(guild_view_v2_viewdef).
 
--export([render/2]).
+-export([viewdef/1]).
 
-render(View, Opts) ->
-    Globals = globals(View, Opts),
-    [<<"var Guild=Guild||{};">>,
-     <<"Guild.Globals=">>, guild_json:encode(Globals), <<";">>].
-
-globals(View, Opts) ->
+viewdef(Project) ->
     #{
-       viewdef => viewdef(View),
-       project => project(View),
-       options => options(Opts)
+       pages => pages(Project)
      }.
 
-viewdef(View) ->
-    default_viewdef(View).
-
-default_viewdef(_View) ->
-    #{
-       pages => default_pages()
-     }.
+pages(_Project) ->
+    default_pages().
 
 default_pages() ->
     [#{id => <<"overview">>,
@@ -43,7 +31,7 @@ overview_layout() ->
       [row(
          [col(
             <<"col-12">>,
-            [component(<<"guild-page-header">>)])]),
+            [component(<<"guild-run-select-page-header">>)])]),
        row(
          [col(
             <<"col-md-9">>,
@@ -52,8 +40,7 @@ overview_layout() ->
              component(<<"guild-output">>)]),
           col(
             <<"col-md-3">>,
-            [component(<<"guild-status">>),
-             component(<<"guild-flags">>),
+            [component(<<"guild-flags">>),
              component(<<"guild-attrs">>)])])]).
 
 container(Items) ->
@@ -131,11 +118,3 @@ chart(Title, SampleType, Display) ->
 
 classes_for_chart_display(primary) -> <<"col-12">>;
 classes_for_chart_display(secondary) -> <<"col-12 col-xl-6">>.
-
-project(View) ->
-    guild_view_v2:project_summary(View).
-
-options(Opts) ->
-    #{
-       debug => proplists:get_bool(debug, Opts)
-     }.
