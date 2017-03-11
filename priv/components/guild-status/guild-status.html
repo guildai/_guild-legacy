@@ -47,7 +47,7 @@
 
        ready: function() {
            var handleRun = this.handleRun.bind(this);
-           Guild.Event.notify("query-selected-run", handleRun);
+           Guild.Event.notify("selected-run-query", handleRun);
            Guild.Event.register("run-changed", handleRun);
        },
 

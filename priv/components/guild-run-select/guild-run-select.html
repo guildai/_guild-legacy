@@ -3,6 +3,9 @@
 <link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../guild-event/guild-event.html">
 <link rel="import" href="../guild-data/guild-data.html">
+<link rel="import" href="../guild-run/guild-run.html">
+<link rel="import" href="../app-route/app-location.html">
+<link rel="import" href="../app-route/app-route.html">
 
 <link rel="import" href="guild-run-select-item.html">
 
@@ -32,6 +35,10 @@
          color: var(--paper-grey-800);
      }
     </style>
+
+    <app-location route="{{route}}"></app-location>
+    <app-route route="[[route]]" pattern="/:" query-params="{{queryParams}}"></app-route>
+
     <div>
       <div id="loading"><paper-spinner active></paper-spinner> Getting runs</div>
       <paper-dropdown-menu-light id="dropdown" label="Active run" no-animations hidden>
@@ -48,13 +55,23 @@
        is: "guild-run-select",
 
        properties: {
+           route: Object,
+           queryParams: Object,
            runs: {
                type: Array,
                value: []
            },
+           runId: {
+               type: Number,
+               computed: 'computeRunId(queryParams)'
+           },
            selected: {
                type: Number,
-               value: 0
+               computed: 'computeSelected(runId, runs)'
+           },
+           selectedInitialized: {
+               type: Boolean,
+               value: false
            }
        },
 
@@ -62,9 +79,22 @@
            'selectChanged(selected, runs)'
        ],
 
+       computeRunId: function(params) {
+           var asInt = parseInt(params.run);
+           return asInt == asInt ? asInt : null;
+       },
+
+       computeSelected: function(runId, runs) {
+           if (runId == null) {
+               return runs.length > 0 ? 0 : -1;
+           } else {
+               return Guild.Run.indexForId(runId, runs);
+           }
+       },
+
        ready: function() {
            var handleRunQuery = this.handleRunQuery.bind(this);
-           Guild.Event.register("query-selected-run", handleRunQuery);
+           Guild.Event.register("selected-run-query", handleRunQuery);
            Guild.Data.fetch("/data/runs", function(runs) {
                this.runs = runs;
                this.$.loading.hidden = true;
@@ -78,9 +108,14 @@
            }
        },
 
-       selectChanged: function(index, runs) {
-           var run = runs[index];
-           if (run != undefined) {
+       selectChanged: function(selected, runs) {
+           console.log(["*************", selected, runs]);
+           var run = runs[selected];
+           if (this.selectedInitialized) {
+               console.log("Gonna change locations yo");
+               //window.location = "/overview?run=" + run.id;
+           } else {
+               this.selectedInitialized = true;
                Guild.Event.notify("run-changed", run);
            }
        }
