@@ -1,12 +1,6 @@
-<link rel="import" href="../paper-spinner/paper-spinner.html">
+<link rel="import" href="../guild-event/guild-event.html">
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu-light.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
-<link rel="import" href="../guild-event/guild-event.html">
-<link rel="import" href="../guild-data/guild-data.html">
-<link rel="import" href="../guild-run/guild-run.html">
-<link rel="import" href="../app-route/app-location.html">
-<link rel="import" href="../app-route/app-route.html">
-
 <link rel="import" href="guild-run-select-item.html">
 
 <dom-module id="guild-run-select">
@@ -21,28 +15,17 @@
              right: -3px;
          };
      }
-     paper-spinner {
-         height: 18px;
-         width: 18px;
-         margin-right: 0.5rem;
-         --paper-spinner-stroke-width: 2px;
-     }
-     #loading {
-         display: flex;
-         flex-direction: horizontal;
-         align-items: center;
-         color: var(--paper-grey-800);
-     }
     </style>
 
-    <app-location route="{{route}}"></app-location>
-    <app-route route="[[route]]" pattern="/:" query-params="{{queryParams}}"></app-route>
-
     <div>
-      <div id="loading"><paper-spinner active></paper-spinner> Getting runs</div>
-      <paper-dropdown-menu-light id="dropdown" label="Active run" no-animations hidden>
+      <!-- Because we change window location on dropdown select, disabling
+           both animations and ink (ripple effect) as they are interrupted
+           in mid-stream. We could wait for the ripple to complete (transition
+           event) but it complicates an otherwise simple mechanism.
+         -->
+      <paper-dropdown-menu-light id="dropdown" label="Active run" no-animations noink>
         <paper-listbox class="dropdown-content" selected="{{selected}}">
-          <template is="dom-repeat" items="[[runs]]" as="run">
+          <template is="dom-repeat" items="[[env.runs]]" as="run">
             <guild-run-select-item run="[[run]]"></guild-run-select-item>
           </template>
         </paper-listbox>
@@ -54,68 +37,32 @@
        is: "guild-run-select",
 
        properties: {
-           route: Object,
-           queryParams: Object,
-           runs: {
-               type: Array,
-               value: []
-           },
-           runId: {
-               type: Number,
-               computed: 'computeRunId(queryParams)'
-           },
+           env: Object,
            selected: {
                type: Number,
-               computed: 'computeSelected(runId, runs)'
-           },
-           selectedInitialized: {
-               type: Boolean,
-               value: false
-           }
-       },
-
-       observers: [
-           'selectChanged(selected, runs)'
-       ],
-
-       computeRunId: function(params) {
-           var asInt = parseInt(params.run);
-           return asInt == asInt ? asInt : null;
-       },
-
-       computeSelected: function(runId, runs) {
-           if (runId == null) {
-               return runs.length > 0 ? 0 : -1;
-           } else {
-               return Guild.Run.indexForId(runId, runs);
+               observer: 'selectedChanged'
            }
        },
 
        ready: function() {
-           var handleRunQuery = this.handleRunQuery.bind(this);
-           Guild.Event.register("selected-run-query", handleRunQuery);
-           Guild.Data.fetch("/data/runs", function(runs) {
-               this.runs = runs;
-               this.$.loading.hidden = true;
-               this.$.dropdown.hidden = false;
-           }.bind(this));
+           this.selected = this.selectedRunIndex();
        },
 
-       handleRunQuery: function(callback) {
-           if (this.runs) {
-               callback(this.runs[this.selected]);
+       selectedRunIndex: function() {
+           var run = this.env.selectedRun;
+           var runs = this.env.runs;
+           for (var i = 0; i < runs.length; i++) {
+               if (runs[i] == run) {
+                   return i;
+               }
            }
+           return -1;
        },
 
-       selectChanged: function(selected, runs) {
-           console.log(["*************", selected, runs]);
-           var run = runs[selected];
-           if (this.selectedInitialized) {
-               console.log("Gonna change locations yo");
-               //window.location = "/overview?run=" + run.id;
-           } else {
-               this.selectedInitialized = true;
-               Guild.Event.notify("run-changed", run);
+       selectedChanged: function(index, previous) {
+           if (previous != undefined) {
+               var run = this.env.runs[index];
+               Guild.Event.notify("run-selected", run);
            }
        }
    });

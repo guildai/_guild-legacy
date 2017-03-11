@@ -42,10 +42,15 @@
        },
 
        computeStatus: function(env) {
-           return {
-               icon: "check-circle",
-               iconClass: "icon completed",
-               label: "Completed"
+           var run = env.selectedRun;
+           if (run != null) {
+               return Guild.Run.runStatus(run);
+           } else {
+               return {
+                   icon: "",
+                   iconClass: "",
+                   label: ""
+               }
            }
        }
    });

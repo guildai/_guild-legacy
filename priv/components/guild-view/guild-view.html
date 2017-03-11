@@ -5,9 +5,9 @@
 <link rel="import" href="../app-layout/app-toolbar/app-toolbar.html">
 <link rel="import" href="../app-route/app-location.html">
 <link rel="import" href="../app-route/app-route.html">
+<link rel="import" href="../guild-event/guild-event.html">
 <link rel="import" href="../guild-modal-message/guild-modal-message.html">
-<link rel="import" href="../guild-view/404-page.html">
-<link rel="import" href="../guild-view/guild-view-page.html">
+<link rel="import" href="../guild-run/guild-run.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../iron-icons/av-icons.html">
 <link rel="import" href="../iron-icons/image-icons.html">
@@ -18,6 +18,9 @@
 <link rel="import" href="../paper-material/paper-material.html">
 <link rel="import" href="../paper-menu/paper-menu.html">
 <link rel="import" href="../paper-tabs/paper-tabs.html">
+
+<link rel="import" href="404-page.html">
+<link rel="import" href="guild-view-page.html">
 
 <dom-module id="guild-view">
   <template>
@@ -56,6 +59,7 @@
         route="{{route}}"
         pattern="/:id"
         data="{{currentPage}}"
+        query-params="{{queryParams}}"
         tail="{{routeTail}}"></app-route>
 
     <guild-modal-message id="redirecting"></guild-modal-message>
@@ -116,11 +120,32 @@
             env: Object,
             route: String,
             currentPage: Object,
+            queryParams: Object,
             narrow: Boolean,
             routeTail: Object,
             page1: {
                 type: String,
                 computed: 'computePage1(env)'
+            }
+        },
+
+        ready: function() {
+            Guild.Event.register("run-selected", this.handleRunSelected.bind(this));
+            this.env.selectedRun = this.runForQueryParams();
+        },
+
+        handleRunSelected: function(run) {
+            window.location = this.route.path + "?run=" + run.id;
+        },
+
+        runForQueryParams: function() {
+            var runIdParam = this.queryParams.run;
+            var runs = this.env.runs;
+            if (runIdParam == undefined) {
+                return runs.length > 0 ? runs[0] : null;
+            } else {
+                var runId = parseInt(runIdParam);
+                return runId == runId ? Guild.Run.selectedRun(runId, runs) : null;
             }
         },
 

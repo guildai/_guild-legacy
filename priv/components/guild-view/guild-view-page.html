@@ -23,14 +23,20 @@
        ensureGenerated: function() {
            if (!this.generated) {
                if (this.page.layout) {
-                   var state = {
-                       env: this.env,
-                       page: this
-                   };
-                   Guild.Generate.generate(this.root, this.page.layout, state);
+                   Guild.Generate.generate(
+                       this.root,
+                       this.page.layout,
+                       this.initGenerateState());
                }
                this.generated = true;
            }
+       },
+
+       initGenerateState: function() {
+           return {
+               env: this.env,
+               page: this
+           };
        }
    });
   </script>

@@ -48,7 +48,8 @@ app_page_env_(State) ->
     Project = load_project(State),
     #{
        viewdef => guild_view_v2_viewdef:viewdef(Project),
-       project => project_summary(Project)
+       project => project_summary(Project),
+       runs => runs_(State)
      }.
 
 project_summary(Project) ->
