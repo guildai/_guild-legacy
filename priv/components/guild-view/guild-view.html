@@ -130,8 +130,13 @@
         },
 
         ready: function() {
-            Guild.Event.register("run-selected", this.handleRunSelected.bind(this));
+            this.registerForRunSelected();
             this.env.selectedRun = this.runForQueryParams();
+        },
+
+        registerForRunSelected: function() {
+            var handler = this.handleRunSelected.bind(this);
+            Guild.Event.register("run-selected", handler, this.env);
         },
 
         handleRunSelected: function(run) {

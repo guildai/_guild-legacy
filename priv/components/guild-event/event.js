@@ -17,33 +17,34 @@ var Guild = Guild || {};
 
 Guild.Event = new function() {
 
-    var registered = {};
-
-    var register = function(event, callback) {
-        console.debug(["Guild.Register", event, callback]);
+    var register = function(event, callback, env) {
+        var registered = env.__signals || {};
         var signal = registered[event];
         if (signal == undefined) {
             registered[event] = signal = new signals.Signal();
+            env.__signals = registered;
         }
         signal.add(callback);
     };
 
-    var notify = function(event, arg) {
-        console.debug(["Guild.Notify", event, arg]);
+    var notify = function(event, arg, env) {
+        var registered = env.__signals || {};
         var signal = registered[event];
         if (signal != undefined) {
             signal.dispatch(arg);
         }
     };
 
-    var unregister = function(event, callback) {
+    var unregister = function(event, callback, env) {
+        var registered = env.__signals || {};
         var signal = registered[event];
         if (signal != undefined) {
             signal.remove(callback);
         }
     };
 
-    var unregisterAll = function(event) {
+    var unregisterAll = function(event, env) {
+        var registered = env.__signals || {};
         var signal = registered[event];
         if (signal) {
             signal.removeAll();

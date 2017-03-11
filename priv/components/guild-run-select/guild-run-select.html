@@ -62,7 +62,7 @@
        selectedChanged: function(index, previous) {
            if (previous != undefined) {
                var run = this.env.runs[index];
-               Guild.Event.notify("run-selected", run);
+               Guild.Event.notify("run-selected", run, this.env);
            }
        }
    });
