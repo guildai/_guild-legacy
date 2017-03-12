@@ -1,97 +1,45 @@
-<link rel="import" href="../paper-card/paper-card.html">
-<link rel="import" href="../paper-styles/color.html">
-<link rel="import" href="../iron-icons/iron-icons.html">
-<link rel="import" href="../iron-icons/image-icons.html">
-<link rel="import" href="../iron-icons/device-icons.html">
-<link rel="import" href="../iron-icons/av-icons.html">
-<link rel="import" href="../iron-icons/maps-icons.html">
+<link rel="import" href="../vz-field/vz-field.html">
+
+<link rel="import" href="../guild-data/guild-data.html">
 <link rel="import" href="../guild-util/guild-util.html">
+
 
 <dom-module id="guild-field">
   <template>
-    <style>
-     :host {
-         --field-color: var(--paper-blue-500);
-     }
-     :root {
-         display: flex;
-         flex-direction: row;
-         align-items: center;
-         background-color: var(--field-color);
-         color: #fff;
-         padding: 14px 15px 11px 10px;
-         height: 100%;
-         @apply(--guild-field);
-     }
-     #main {
-         flex-grow: 1;
-         padding-left: 5px;
-     }
-     #value {
-         font-size: 36px;
-         text-align: right;
-         line-height: 0.9;
-         margin-bottom: 5px;
-     }
-     #label {
-         font-size: 18px;
-         text-align: right;
-         line-height: 1.2;
-     }
-     iron-icon {
-         --iron-icon-width: 64px;
-         --iron-icon-height: auto;
-     }
-    </style>
-
-    <paper-card>
-      <div id="icon">
-        <iron-icon icon="[[icon]]"></iron-icon>
-      </div>
-      <div id="main">
-        <div id="value">[[displayValue]]</div>
-        <div id="label">[[label]]</div>
-      </div>
-    </paper-card>
+    <vz-field label="[[label]]" value="[[value]]" color="[[color]]" icon="[[icon]]"></vz-field>
   </template>
   <script>
    Polymer({
        is: "guild-field",
 
+       behaviors_: ['Guild.Data_XXX_Behavior'],
+
        properties: {
+           env: Object,
+           dataSource: String,
+           dataAttribute: String,
+           dataReduce: String,
+           dataFormat: String,
            label: String,
+           color: String,
+           icon: String,
            value: {
                type: String,
-               value: null
-           },
-           format: {
-               type: String,
-               value: null
-           },
-           rawValue: {
-               type: Object,
+               readOnly: true,
                value: "--"
-           },
-           displayValue: {
-               type: String,
-               computed: 'computeDisplayValue(rawValue, format)'
-           },
-           color: String,
-           icon: String
+           }
        },
 
        ready: function() {
-           if (this.color) {
-               this.customStyle['--field-color'] =
-                   "var(--paper-" + this.color + ")";
-           }
-           if (this.value != null) {
-               this.rawValue = this.value;
-           }
-       },
-
-       computeDisplayValue: function(raw, format) {
-           return format ? Guild.Util.tryFormat(raw, format) : raw;
+           var runId = this.env.selectedRun.id;
+           var url = "/data/" + this.dataSource + "?run=" + runId;
+           Guild.Data.fetch(url, function(data) {
+               var reduce = Guild.Reduce[this.dataReduce];
+               var reduced = reduce(data);
+               var raw = reduced[Object.keys(reduced)[0]];
+               var formatted = Guild.Util.tryFormat(raw, this.dataFormat);
+               this._setValue(formatted);
+           }.bind(this));
        }
    });
   </script>

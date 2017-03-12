@@ -61,38 +61,50 @@ component(Name, Attrs) ->
 sample_fields() ->
     [fieldCol(
        <<"Validation Accuracy">>,
-       <<"98.80%">>,
+       <<"series/tf/validation/accuracy">>,
+       <<"last">>,
+       <<"0.00%">>,
        <<"blue-700">>,
        <<"maps:my-location">>),
      fieldCol(
        <<"Training Accuracy">>,
-       <<"100.00%">>,
+       <<"series/tf/train/accuracy">>,
+       <<"last">>,
+       <<"0.00%">>,
        <<"green-700">>,
        <<"maps:my-location">>),
      fieldCol(
        <<"Steps">>,
-       <<"5,000,000">>,
+       <<"series/tf/validation/accuracy">>,
+       <<"steps">>,
+       <<"0,0">>,
        <<"yellow-700">>,
        <<"av:repeat">>),
      fieldCol(
        <<"Time">>,
-       <<"12:31:46">>,
+       <<"series/tf/validation/accuracy">>,
+       <<"duration">>,
+       <<"00:00:00">>,
        <<"red-700">>,
        <<"device:access-time">>),
      fieldCol(
        <<"Loss">>,
-       <<"1.231">>,
+       <<"series/tf/train/loss">>,
+       <<"last">>,
+       <<"0.000">>,
        <<"orange-700">>,
        <<"av:shuffle">>)
     ].
 
-fieldCol(Label, Value, Color, Icon) ->
+fieldCol(Label, Source, Reduce, Format, Color, Icon) ->
     col(
       <<"col-12 col-sm-6 col-xl-4 pb-3">>,
       [component(
          <<"guild-field">>,
          #{label => Label,
-           value => Value,
+           'data-source' => Source,
+           'data-reduce'=> Reduce,
+           'data-format'=> Format,
            color => Color,
            icon => Icon})]).
 
