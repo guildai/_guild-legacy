@@ -4,7 +4,7 @@
 <dom-module id="guild-attrs">
   <template>
     <guild-component-panel heading="Attributes">
-      <vz-keyval-table object="[[attrs]]"></vz-keyval-table>
+      <vz-keyval-table id="table"></vz-keyval-table>
     </guild-component-panel>
   </template>
   <script>
@@ -12,14 +12,14 @@
        is: "guild-attrs",
 
        properties: {
-           attrs: Object
+           env: Object
        },
 
        ready: function() {
            var runId = this.env.selectedRun.id;
            var url = "/data/attrs?run=" + runId;
            Guild.Data.fetch(url, function(data) {
-               this.attrs = data;
+               this.$.table.object = data;
            }.bind(this));
        }
    });
