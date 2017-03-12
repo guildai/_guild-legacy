@@ -7,6 +7,7 @@
     "dependencies": {
         "app-layout":            "PolymerElements/app-layout",
         "app-route":             "PolymerElements/app-route",
+        "bootstrap":             "4.0.0-alpha.6",
         "d3":                    "3.5.17",
         "iron-collapse":         "PolymerElements/iron-collapse",
         "iron-data-table":       "Saulis/iron-data-table",
