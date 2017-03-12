@@ -14,7 +14,7 @@
 
 -module(guild_view_v2_http).
 
--export([start_server/3, stop_server/0]).
+-export([start_server/3, stop_server/0, run_id_for_params/1]).
 
 -export([init/1, handle_msg/3]).
 
@@ -94,3 +94,14 @@ maybe_apply_log_middleware(Opts, Acc) ->
 
 log_middleware() ->
     fun(Upstream) -> guild_log_http:create_app(Upstream) end.
+
+%% ===================================================================
+%% Utils
+%% ===================================================================
+
+run_id_for_params(Params) ->
+    Schema = [{"run", [integer]}],
+    case guild_http:validate_params(Params, Schema) of
+        [{_, Run}] -> Run;
+        []         -> latest
+    end.

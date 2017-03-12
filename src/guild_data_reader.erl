@@ -20,6 +20,9 @@
 
 -export([handle_task/1]).
 
+%% Working exports for guild_view_v2 and related facilities
+-export([series_json/3]).
+
 -define(null_json, <<"null">>).
 
 %% ===================================================================

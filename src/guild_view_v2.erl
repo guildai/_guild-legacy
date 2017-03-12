@@ -1,6 +1,6 @@
 -module(guild_view_v2).
 
--export([start_link/1, app_page_env/1, runs/1]).
+-export([start_link/1, app_page_env/1, formatted_runs/1, resolve_run/2]).
 
 -export([handle_msg/3]).
 
@@ -30,8 +30,11 @@ init_state(Project) ->
 app_page_env(View) ->
     e2_service:call(View, {fun app_page_env_/1, []}).
 
-runs(View) ->
-    e2_service:call(View, {fun runs_/1, []}).
+formatted_runs(View) ->
+    e2_service:call(View, {fun formatted_runs_/1, []}).
+
+resolve_run(View, Id) ->
+    e2_service:call(View, {fun resolve_run_/2, [Id]}).
 
 %% ===================================================================
 %% Dispatch
@@ -49,7 +52,7 @@ app_page_env_(State) ->
     #{
        viewdef => guild_view_v2_viewdef:viewdef(Project),
        project => project_summary(Project),
-       runs => runs_(State)
+       runs => formatted_runs_(State)
      }.
 
 project_summary(Project) ->
@@ -81,12 +84,14 @@ project_description(P) ->
     end.
 
 %% ===================================================================
-%% Runs
+%% Formatted runs
 %% ===================================================================
 
-runs_(#state{run_roots=RunRoots}) ->
-    Runs = guild_run:runs_for_runroots(RunRoots),
-    format_runs(Runs).
+formatted_runs_(State) ->
+    format_runs(runs(State)).
+
+runs(#state{run_roots=RunRoots}) ->
+    guild_run:runs_for_runroots(RunRoots).
 
 format_runs(Runs) ->
     sort_formatted_runs([format_run(Run) || Run <- Runs]).
@@ -119,6 +124,24 @@ run_start_time({Attrs}) ->
         {_, Val} -> Val;
         false -> 0
     end.
+
+%% ===================================================================
+%% Resolve run
+%% ===================================================================
+
+resolve_run_(latest, State) -> first_run(runs(State));
+resolve_run_(Id,     State) -> run_for_id(Id, runs(State)).
+
+first_run([First|_]) -> First;
+first_run([])        -> undefined.
+
+run_for_id(Id, [Run|Rest]) ->
+    run_for_id(guild_run:id(Run), Id, Run, Rest);
+run_for_id(_Id, []) ->
+    undefined.
+
+run_for_id(Id, Id, Run, _)    -> Run;
+run_for_id(_,  Id, _,   Rest) -> run_for_id(Id, Rest).
 
 %% ===================================================================
 %% Helpers
