@@ -10,6 +10,7 @@
         "d3":                    "3.5.17",
         "iron-collapse":         "PolymerElements/iron-collapse",
         "iron-data-table":       "Saulis/iron-data-table",
+        "iron-demo-helpers":     "PolymerElements/iron-demo-helpers",
         "iron-icons":            "PolymerElements/iron-icons",
         "iron-pages":            "PolymerElements/iron-pages",
         "js-signals":            "1.0.0",

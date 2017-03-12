@@ -29,6 +29,9 @@ polylint:
 	  exit 1; \
 	fi
 
+component-demos:
+	cd priv/components; python -m SimpleHTTPServer 8082
+
 clean: clean-local-deps clean-bin-deps clean-components
 	rm -rf build; rm -f rebar.lock
 	rm -f compile_commands.json
