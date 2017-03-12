@@ -13,7 +13,7 @@ priv/bin/multimarkdown:
 	cd build/default/lib/mmd && git submodule init && git submodule update && make
 	cp build/default/lib/mmd/multimarkdown priv/bin/multimarkdown
 
-component-deps: tf-component-deps
+component-deps:
 	bower install
 	./scripts/patch-components
 
@@ -42,7 +42,11 @@ clean-bin-deps:
 	rm -f priv/bin/multimarkdown
 
 clean-components:
-	cd priv/components && ls | grep -v 'guild-' | xargs rm -rf
+	cd priv/components && ls \
+	  | grep -v '^guild-' \
+	  | grep -v '^tf-' \
+	  | grep -v '^vz-' \
+	  | xargs echo
 
 upgrade:
 	./rebar3 upgrade
