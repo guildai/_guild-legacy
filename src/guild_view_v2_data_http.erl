@@ -14,6 +14,8 @@ app("GET", {"/data/flags", _, Params}, View) ->
     handle_flags(View, Params);
 app("GET", {"/data/attrs", _, Params}, View) ->
     handle_attrs(View, Params);
+app("GET", {"/data/output", _, Params}, View) ->
+    handle_output(View, Params);
 app(_, _, _) ->
     guild_http:bad_request().
 
@@ -67,6 +69,15 @@ handle_flags(View, Params) ->
 handle_attrs(View, Params) ->
     Run = run_for_params(Params, View),
     JSON = guild_data_reader:attrs_json(Run),
+    guild_http:ok_json(JSON).
+
+%% ===================================================================
+%% Attrs
+%% ===================================================================
+
+handle_output(View, Params) ->
+    Run = run_for_params(Params, View),
+    JSON = guild_data_reader:output_json(Run),
     guild_http:ok_json(JSON).
 
 %% ===================================================================
