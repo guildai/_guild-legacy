@@ -73,7 +73,7 @@ sample_fields() ->
        <<"Steps">>,
        <<"5,000,000">>,
        <<"yellow-700">>,
-       <<"av_repeat">>),
+       <<"av:repeat">>),
      fieldCol(
        <<"Time">>,
        <<"12:31:46">>,
