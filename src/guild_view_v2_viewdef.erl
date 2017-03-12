@@ -34,12 +34,12 @@ overview_layout() ->
             [component(<<"guild-run-select-page-header">>)])]),
        row(
          [col(
-            <<"col-md-9">>,
+            <<"col-lg-8 col-xl-9">>,
             [row(sample_fields()),
              row(sample_charts()),
              component(<<"guild-output">>)]),
           col(
-            <<"col-md-3">>,
+            <<"col-lg-4 col-xl-3">>,
             [component(<<"guild-flags">>),
              component(<<"guild-attrs">>)])])]).
 
@@ -98,7 +98,7 @@ sample_fields() ->
 
 fieldCol(Label, Source, Reduce, Format, Color, Icon) ->
     col(
-      <<"col-12 col-sm-6 col-xl-4 pb-3">>,
+      <<"col-12 col-sm-6 col-xl-4 col-xxl-3 pb-3">>,
       [component(
          <<"guild-field">>,
          #{label => Label,
