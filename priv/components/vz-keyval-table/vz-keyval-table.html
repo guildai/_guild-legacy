@@ -1,0 +1,45 @@
+<link rel="import" href="../guild-styles/guild-styles.html">
+
+<dom-module id="vz-keyval-table">
+  <template>
+    <style include="guild-table-styles"></style>
+     <style>
+      table {
+          background-color: #fff;
+          font-size: 14px;
+      }
+    </style>
+    <table class="table table-responsive table-bordered table-hover">
+      <tbody>
+        <template is="dom-repeat" items="[[keyvals]]">
+          <tr>
+            <th>[[item.key]]</th>
+            <td>[[item.value]]</td>
+          </tr>
+        </template>
+      </tbody>
+    </table>
+  </template>
+  <script>
+   Polymer({
+       is: "vz-keyval-table",
+
+       properties: {
+           object: Object,
+           keyvals: {
+               type: Array,
+               computed: 'computeKeyvals(object)'
+           }
+       },
+
+       computeKeyvals: function(object) {
+           return Object.keys(object).map(function(key) {
+               return {
+                   "key": key,
+                   "value": object[key]
+               }
+           });
+       }
+   });
+  </script>
+</dom-module>
