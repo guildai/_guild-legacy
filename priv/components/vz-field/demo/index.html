@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>vz-field demo</title>
+    <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
+    <link rel="import" href="../vz-field.html">
+    <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+    <link rel="import" href="../../paper-styles/typography.html">
+    <style type="text/css" is="custom-style">
+     body {
+         font-family: 'Roboto', 'Noto', sans-serif;
+     }
+     vz-field {
+         --vz-field: {
+             width: 300px;
+         }
+         margin-right: 20px;
+     }
+     demo-snippet {
+         --demo-snippet-demo: {
+             display: flex;
+             flex_wrap: wrap;
+         }
+     }
+    </style>
+  </head>
+  <body>
+    <h3>Field</h3>
+    <demo-snippet>
+      <template>
+        <vz-field
+            label="Accuracy"
+            value="98.12%"
+            color="blue-700"
+            icon="maps:my-location"></vz-field>
+        <vz-field
+            label="Steps"
+            value="5,000,000"
+            color="orange-700"
+            icon="av:repeat"></vz-field>
+        <vz-field
+            label="Time"
+            value="12:31:04"
+            color="green-700"
+            icon="device:access-time"></vz-field>
+      </template>
+    </demo-snippet>
+  </body>
+</html>
