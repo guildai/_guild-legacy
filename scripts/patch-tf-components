@@ -1,0 +1,7 @@
+#!/bin/bash -eu
+
+# Mixin hook for styling chart tooltips
+line_chart_html=priv/components/vz-line-chart/vz-line-chart.html
+if ! grep -q -- '--vz-chart-tooltip' $line_chart_html; then
+    sed -i -e '/\#tooltip {/{:a;n;/}$/!ba;i\        @apply(--vz-chart-tooltip);' -e '}' $line_chart_html
+fi

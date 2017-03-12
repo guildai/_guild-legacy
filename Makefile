@@ -15,10 +15,11 @@ priv/bin/multimarkdown:
 
 component-deps:
 	bower install
-	./scripts/patch-components
+	scripts/patch-components
 
 tf-component-deps:
 	scripts/sync-tf-components
+	scripts/patch-tf-components
 
 lint-components: polylint
 	polylint --root priv/components --input `(cd priv/components && find -name guild-*.html)`
