@@ -21,7 +21,7 @@
 -export([handle_task/1]).
 
 %% Working exports for guild_view_v2 and related facilities
--export([series_json/3]).
+-export([series_json/3, flags_json/1, attrs_json/1]).
 
 -define(null_json, <<"null">>).
 
@@ -46,7 +46,7 @@ handle_request({attrs_json, Run}) ->
 handle_request({summary_json, Run}) ->
     summary_json(Run);
 handle_request({series_json, Pattern, Run, Max}) ->
-    series_json(Pattern, Run, Max);
+    series_json(Run, Pattern, Max);
 handle_request({output_json, Run}) ->
     output_json(Run);
 handle_request({compare_json, Sources, Runs, View}) ->
@@ -158,9 +158,9 @@ format_exit_status(Run) ->
 %% Series JSON
 %% ===================================================================
 
-series_json(_Pattern, undefined, _Max) ->
+series_json(undefined, _Pattern, _Max) ->
     ?null_json;
-series_json(Pattern, Run, Max) ->
+series_json(Run, Pattern, Max) ->
     try_run_db(Run, fun series_json_for_db/3, [Pattern, Max], ?null_json).
 
 series_json_for_db(Db, Pattern, Max) ->

@@ -1,22 +1,26 @@
-<link rel="import" href="../guild-keyval-table/guild-keyval-table.html">
+<link rel="import" href="../guild-component-panel/guild-component-panel.html">
+<link rel="import" href="../vz-keyval-table/vz-keyval-table.html">
 
 <dom-module id="guild-flags">
   <template>
-    <guild-keyval-table heading="Flags" object="[[flags]]"></guild-keyval-table>
+    <guild-component-panel heading="Flags">
+      <vz-keyval-table object="[[flags]]"></vz-keyval-table>
+    </guild-component-panel>
   </template>
   <script>
    Polymer({
        is: "guild-flags",
+
        properties: {
-           flags: {
-               type: Object,
-               value: {
-                   "batch_size": 100,
-                   "datadir": "./data",
-                   "epochs": 10,
-                   "rundir": "$RUNDIR"
-               }
-           }
+           flags: Object
+       },
+
+       ready: function() {
+           var runId = this.env.selectedRun.id;
+           var url = "/data/flags?run=" + runId;
+           Guild.Data.fetch(url, function(data) {
+               this.flags = data;
+           }.bind(this));
        }
    });
   </script>

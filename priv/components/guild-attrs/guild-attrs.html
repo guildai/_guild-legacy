@@ -1,26 +1,26 @@
-<link rel="import" href="../guild-keyval-table/guild-keyval-table.html">
+<link rel="import" href="../guild-component-panel/guild-component-panel.html">
+<link rel="import" href="../vz-keyval-table/vz-keyval-table.html">
 
 <dom-module id="guild-attrs">
   <template>
-    <guild-keyval-table heading="Attributes" object="[[attrs]]"></guild-keyval-table>
+    <guild-component-panel heading="Attributes">
+      <vz-keyval-table object="[[attrs]]"></vz-keyval-table>
+    </guild-component-panel>
   </template>
   <script>
    Polymer({
        is: "guild-attrs",
+
        properties: {
-           attrs: {
-               type: Object,
-               value: {
-                   "cpu_cores": "12",
-                   "cpu_model": "Intel(R) Core(TM) i7-5820K CPU @ 3.30GHz",
-                   "gpu0_memory": "8112 MB",
-                   "gpu0_name": "GeForce GTX 1080",
-                   "gpu1_memory": "6077 MB",
-                   "gpu1_name": "GeForce GTX 980 Ti",
-                   "mem_total": "32085 MB",
-                   "tensorflow_version": "1.0.0-alpha"
-               }
-           }
+           attrs: Object
+       },
+
+       ready: function() {
+           var runId = this.env.selectedRun.id;
+           var url = "/data/attrs?run=" + runId;
+           Guild.Data.fetch(url, function(data) {
+               this.attrs = data;
+           }.bind(this));
        }
    });
   </script>
