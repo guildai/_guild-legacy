@@ -109,24 +109,24 @@ fieldCol(Label, Source, Reduce, Format, Color, Icon) ->
            icon => Icon})]).
 
 sample_charts() ->
-    [chart(<<"Loss">>, <<"loss">>),
-     chart(<<"Accuracy">>, <<"accuracy">>),
-     chart(<<"Process CPU %">>, <<"cpu_util">>),
-     chart(<<"Process memory">>, <<"op_mem">>),
-     chart(<<"GPU %">>, <<"gpu_util">>),
-     chart(<<"GPU memory">>, <<"gpu_mem">>),
-     chart(<<"GPU power draw">>, <<"gpu_power">>)].
+    [chart(<<"Loss">>, <<"series/tf/.+/loss">>),
+     chart(<<"Accuracy">>, <<"series/tf/.+/accuracy">>),
+     chart(<<"Process CPU %">>, <<"series/op/cpu/util">>),
+     chart(<<"Process memory">>, <<"series/op/mem/rss">>),
+     chart(<<"GPU %">>, <<"series/sys/gpu.+/gpu/util">>),
+     chart(<<"GPU memory">>, <<"series/sys/gpu.+/mem/used">>),
+     chart(<<"GPU power draw">>, <<"series/sys/gpu.+/powerdraw">>)].
 
-chart(Title, SampleType) ->
-    chart(Title, SampleType, secondary).
+chart(Title, Source) ->
+    chart(Title, Source, secondary).
 
-chart(Title, SampleType, Display) ->
+chart(Title, Source, Display) ->
     col(
       classes_for_chart_display(Display),
       [component(
          <<"guild-chart">>,
          #{title => Title,
-           'sample-type' => SampleType})]).
+           'data-source' => Source})]).
 
 classes_for_chart_display(primary) -> <<"col-12">>;
 classes_for_chart_display(secondary) -> <<"col-12 col-xl-6">>.
