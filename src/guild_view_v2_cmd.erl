@@ -14,8 +14,12 @@ main(Opts, []) ->
 
 init_project_view(Opts) ->
     Project = guild_cmd_support:project_from_opts(Opts),
-    {ok, View} = guild_view_v2:start_link(Project),
+    Settings = view_settings(Opts),
+    {ok, View} = guild_view_v2:start_link(Project, Settings),
     View.
+
+view_settings(Opts) ->
+    #{refreshInterval => guild_view_cmd:interval_opt(Opts)}.
 
 start_http_server(View, Port, Opts) ->
     case guild_view_v2_http:start_server(View, Port, Opts) of

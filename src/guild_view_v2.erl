@@ -1,12 +1,13 @@
 -module(guild_view_v2).
 
--export([start_link/1, app_page_env/1, formatted_runs/1, resolve_run/2]).
+-export([start_link/2, app_page_env/1, formatted_runs/1,
+         resolve_run/2]).
 
 -export([handle_msg/3]).
 
 -behavior(e2_service).
 
--record(state, {pdir, run_roots}).
+-record(state, {pdir, run_roots, settings}).
 
 -define(bin(X), iolist_to_binary(X)).
 
@@ -14,13 +15,14 @@
 %% Start / init
 %% ===================================================================
 
-start_link(Project) ->
-    e2_service:start_link(?MODULE, init_state(Project)).
+start_link(Project, Settings) ->
+    e2_service:start_link(?MODULE, init_state(Project, Settings)).
 
-init_state(Project) ->
+init_state(Project, Settings) ->
     #state{
        pdir=guild_project:project_dir(Project),
-       run_roots=guild_project_util:all_runroots(Project)
+       run_roots=guild_project_util:all_runroots(Project),
+       settings=Settings
       }.
 
 %% ===================================================================
@@ -52,8 +54,13 @@ app_page_env_(State) ->
     #{
        viewdef => guild_view_v2_viewdef:viewdef(Project),
        project => project_summary(Project),
-       runs => formatted_runs_(State)
+       runs => formatted_runs_(State),
+       settings => settings(State)
      }.
+
+%% ===================================================================
+%% Project summary
+%% ===================================================================
 
 project_summary(Project) ->
     #{
@@ -150,3 +157,5 @@ run_for_id(_,  Id, _,   Rest) -> run_for_id(Id, Rest).
 load_project(#state{pdir=Dir}) ->
     {ok, Project} = guild_project:from_dir(Dir),
     Project.
+
+settings(#state{settings=S}) -> S.

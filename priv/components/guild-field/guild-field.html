@@ -1,4 +1,5 @@
 <link rel="import" href="../guild-data/guild-data-listener.html">
+<link rel="import" href="../guild-run/guild-run.html">
 <link rel="import" href="../vz-field/vz-field.html">
 
 <dom-module id="guild-field">
@@ -23,7 +24,12 @@
        },
 
        handleData: function(data) {
+           console.log(["field handling data", data]);
            this._setValue(this.formatDataValue(data, "--"));
+       },
+
+       repeatData: function() {
+           return Guild.Run.isRunning(this.env.selectedRun);
        }
    });
   </script>

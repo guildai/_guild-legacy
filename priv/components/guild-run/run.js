@@ -82,7 +82,12 @@ Guild.Run = new function() {
         return null;
     };
 
+    var isRunning = function(run) {
+        return run && run.status == "running";
+    };
+
     this.runLabel = runLabel;
     this.runStatus = runStatus;
     this.selectedRun = selectedRun;
+    this.isRunning = isRunning;
 };

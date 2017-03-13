@@ -11,26 +11,47 @@
          dataSource: Object,
          dataAttribute: String,
          dataReduce: String,
-         dataFormat: String
+         dataFormat: String,
+         dataFetchInterval: {
+             type: Number,
+             value: function() {
+                 return this.env.settings.refreshInterval || 0;
+             }
+         }
      },
 
      ready: function() {
-         var fetchData = this.fetchData.bind(this);
-         window.setTimeout(fetchData, 0);
+         if (this.dataSource) {
+             this.fetchData(0);
+         }
      },
 
-     fetchData: function() {
-         if (this.dataSource) {
-             var runId = this.env.selectedRun.id;
-             var url = "/data/" + this.dataSource + "?run=" + runId;
-             var handler = this.handleFetchResult.bind(this);
-             Guild.Data.fetch(url, handler);
-         }
+     fetchData: function(whenSeconds) {
+         var url = this.dataFetchUrl();
+         var handler = this.handleFetchResult.bind(this);
+         Guild.Data.scheduleFetch(url, handler, whenSeconds * 1000);
+     },
+
+     dataFetchUrl: function() {
+         var runId = this.env.selectedRun.id;
+         return "/data/" + this.dataSource + "?run=" + runId;
      },
 
      handleFetchResult: function(result) {
          var data = this.maybeReduce(result);
          this.handleData(data);
+         this.maybeScheduleNextFetch();
+     },
+
+     maybeScheduleNextFetch: function() {
+         var interval = this.dataFetchInterval;
+         if (interval > 0 && this.repeatData()) {
+             this.fetchData(interval);
+         }
+     },
+
+     repeatData: function() {
+         return false;
      },
 
      maybeReduce: function(data) {

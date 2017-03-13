@@ -16,6 +16,9 @@
 
 -export([parser/0, main/2]).
 
+%% Temp exports for v2
+-export([interval_opt/1]).
+
 -define(default_port, 6333).
 -define(default_refresh_interval, 5).
 
