@@ -1,27 +1,36 @@
+<link rel="import" href="../fa-awesome/fa-awesome.html">
 <link rel="import" href="../guild-styles/guild-styles.html">
 
 <dom-module id="guild-run-status">
   <template>
     <style include="guild-run-status-styles"></style>
     <style>
-     :root {
+     #status {
          display: flex;
          flex-direction: row;
          align-items: center;
 
      }
-     iron-icon {
-         --iron-icon-width: 36px;
-         --iron-icon-height: auto;
-         margin-right: 10px;
+     #icon {
+         display: flex;
+         align-items: center;
+     }
+     fa-awesome {
+         --fa-awesome-icon-width: 28px;
+         --fa-awesome-icon-height: auto;
+         margin-right: 0.6em;
      }
      #label {
          font-size: 28px;
      }
     </style>
-    <div>
+    <div id="status">
       <div id="icon">
-        <iron-icon icon="[[status.icon]]" class$="[[status.iconClass]]"></iron-icon>
+        <fa-awesome
+            class$="[[status.iconClass]]"
+            spin$="[[status.spin]]"
+            icon="[[status.icon]]">
+        </fa-awesome>
       </div>
       <div id="label">[[status.label]]</div>
     </div>

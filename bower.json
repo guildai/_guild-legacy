@@ -9,6 +9,7 @@
         "app-route":             "PolymerElements/app-route",
         "bootstrap":             "4.0.0-alpha.6",
         "d3":                    "3.5.17",
+        "fa-awesome":            "pkaske/fa-awesome",
         "iron-collapse":         "PolymerElements/iron-collapse",
         "iron-data-table":       "Saulis/iron-data-table",
         "iron-demo-helpers":     "PolymerElements/iron-demo-helpers",

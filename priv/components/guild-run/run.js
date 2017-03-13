@@ -36,7 +36,7 @@ Guild.Run = new function() {
         [["running"],
          {label: "Running",
           iconClass: "icon running",
-          icon:  "auto-renew",
+          icon:  "fa:circle-o-notch",
           spin: true}],
         [["stopped", 0],
          {label: "Completed",

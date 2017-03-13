@@ -1,4 +1,4 @@
-<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../fa-awesome/fa-awesome.html">
 <link rel="import" href="../guild-styles/guild-styles.html">
 <link rel="import" href="../guild-run/guild-run.html">
 <link rel="import" href="../paper-item/paper-item-behavior.html">
@@ -17,12 +17,17 @@
          min-height: 36px;
          font-size: 14px;
      }
-     iron-icon {
-         --iron-icon-width: 18px;
-         --iron-icon-height: 18px;
-         margin-right: 0.4rem;     }
+     fa-awesome {
+         --fa-awesome-icon-width: 18px;
+         --fa-awesome-icon-height: 18px;
+         margin-right: 0.4em;
+     }
     </style>
-    <iron-icon class$="[[status.iconClass]]" icon="[[status.icon]]"></iron-icon>
+    <fa-awesome
+        class$="[[status.iconClass]]"
+        spin$="[[status.spin]]"
+        icon="[[status.icon]]">
+    </fa-awesome>
     <div>[[label]]</div>
   </template>
   <script>
