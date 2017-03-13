@@ -114,8 +114,7 @@ sample_charts() ->
      chart(<<"Process CPU %">>, <<"series/op/cpu/util">>),
      chart(<<"Process memory">>, <<"series/op/mem/rss">>),
      chart(<<"GPU %">>, <<"series/sys/gpu.+/gpu/util">>),
-     chart(<<"GPU memory">>, <<"series/sys/gpu.+/mem/used">>),
-     chart(<<"GPU power draw">>, <<"series/sys/gpu.+/powerdraw">>)].
+     chart(<<"GPU memory">>, <<"series/sys/gpu.+/mem/used">>)].
 
 chart(Title, Source) ->
     chart(Title, Source, secondary).
