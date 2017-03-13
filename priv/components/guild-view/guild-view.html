@@ -10,6 +10,7 @@
 <link rel="import" href="../guild-imports/bootstrap-grid.html">
 <link rel="import" href="../guild-modal-message/guild-modal-message.html">
 <link rel="import" href="../guild-run/guild-run.html">
+<link rel="import" href="../guild-run/guild-runs-listener.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../iron-pages/iron-pages.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
@@ -115,6 +116,8 @@
     Polymer({
         is: 'guild-view',
 
+        behaviors: [Guild.RunsListener],
+
         properties: {
             env: Object,
             route: String,
@@ -129,17 +132,22 @@
         ],
 
         ready: function() {
-            this.registerForRunSelected();
+            Guild.Event.register(
+                "run-selected",
+                this.handleRunSelected.bind(this),
+                this.env);
         },
 
-        registerForRunSelected: function() {
-            var handler = this.handleRunChanged.bind(this);
-            Guild.Event.register("run-changed", handler, this.env);
+        handleRuns: function(runs) {
+            this.env.runs = runs;
+            this.env.run = Guild.Run.runForId(this.env.runId, runs);
+            Guild.Event.notify("env-runs-changed", this.env.runs, this.env)
+            Guild.Event.notify("env-run-changed", this.env.run, this.env)
         },
 
-        handleRunChanged: function(runId) {
-            if (runId != null) {
-                window.location = this.route.path + "?run=" + runId;
+        handleRunSelected: function(run) {
+            if (run != null) {
+                window.location = this.route.path + "?run=" + run.id;
             } else {
                 this.runDeletedDialog();
             }

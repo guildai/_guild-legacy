@@ -1,4 +1,5 @@
 <link rel="import" href="../fa-awesome/fa-awesome.html">
+<link rel="import" href="../guild-run/guild-run.html">
 <link rel="import" href="../guild-styles/guild-styles.html">
 
 <dom-module id="guild-run-status">
@@ -16,12 +17,12 @@
          align-items: center;
      }
      fa-awesome {
-         --fa-awesome-icon-width: 28px;
+         --fa-awesome-icon-width: 26px;
          --fa-awesome-icon-height: auto;
          margin-right: 0.6em;
      }
      #label {
-         font-size: 28px;
+         font-size: 24px;
      }
     </style>
     <div id="status">
@@ -40,26 +41,24 @@
        is: "guild-run-status",
 
        properties: {
-           env: {
-               type: Object,
-               value: {}
-           },
-           status: {
-               type: Object,
-               computed: 'computeStatus(env.selectedRun)'
-           }
+           env: Object,
+           status: Object
        },
 
-       computeStatus: function(run) {
-           if (run != null) {
-               return Guild.Run.runStatus(run);
-           } else {
-               return {
-                   icon: "",
-                   iconClass: "",
-                   label: ""
-               }
-           }
+       ready: function() {
+           Guild.Event.register(
+               "env-run-changed",
+               this.handleRun.bind(this),
+               this.env);
+           this.handleRun(this.env.run);
+       },
+
+       handleRun: function(run) {
+           this.status = Guild.Run.runStatus(run);
+       },
+
+       repeatRuns: function() {
+           return Guild.Run.isRunning(this.run);
        }
    });
   </script>

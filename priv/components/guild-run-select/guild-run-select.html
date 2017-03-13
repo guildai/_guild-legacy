@@ -1,5 +1,4 @@
 <link rel="import" href="../guild-event/guild-event.html">
-<link rel="import" href="../guild-run/guild-runs-listener.html">
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu-light.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
 
@@ -38,9 +37,8 @@
    Polymer({
        is: "guild-run-select",
 
-       behaviors: [Guild.RunsListener],
-
        properties: {
+           env: Object,
            runs: Array,
            selected: {
                type: Number,
@@ -48,8 +46,15 @@
            }
        },
 
+       ready: function() {
+           Guild.Event.register(
+               "env-runs-changed",
+               this.handleRuns.bind(this),
+               this.env);
+           this.handleRuns(this.env.runs);
+       },
+
        handleRuns: function(runs) {
-           console.log(["Setting runs yo", runs]);
            this.runs = runs;
            this.selected = this.selectedRunIndex();
            this.maybeNotifyRunChanged();
@@ -74,10 +79,10 @@
            if (this.runs && this.selected != -1) {
                var selected = this.runs[this.selected];
                if (selected.id != this.env.runId) {
-                   Guild.Event.notify("run-changed", selected.id, this.env);
+                   Guild.Event.notify("run-selected", selected, this.env);
                }
            } else {
-               Guild.Event.notify("run-changed", null, this.env);
+               Guild.Event.notify("run-selected", null, this.env);
            }
        }
    });

@@ -73,7 +73,7 @@ Guild.Run = new function() {
         throw "unreachable"; // rules must have catch-all
     };
 
-    var selectedRun = function(runId, runs) {
+    var runForId = function(runId, runs) {
         for (var i = 0; i < runs.length; i++) {
             if (runs[i].id == runId) {
                 return runs[i];
@@ -88,6 +88,6 @@ Guild.Run = new function() {
 
     this.runLabel = runLabel;
     this.runStatus = runStatus;
-    this.selectedRun = selectedRun;
+    this.runForId = runForId;
     this.isRunning = isRunning;
 };

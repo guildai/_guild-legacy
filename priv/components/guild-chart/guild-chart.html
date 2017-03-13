@@ -44,6 +44,10 @@
            }.bind(this));
        },
 
+       repeatData: function() {
+           return Guild.Run.isRunning(this.env.run);
+       },
+
        seriesData: function(name, data) {
            return data[name].map(function(item, index) {
                return {
