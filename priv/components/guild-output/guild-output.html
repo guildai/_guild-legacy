@@ -1,7 +1,8 @@
 <link rel="import" href="../guild-component-panel/guild-component-panel.html">
-<link rel="import" href="../iron-data-table/iron-data-table.html">
-<link rel="import" href="../iron-data-table/default-styles.html">
+<link rel="import" href="../guild-data/guild-data-listener.html">
 <link rel="import" href="../guild-imports/d3.html">
+<link rel="import" href="../iron-data-table/default-styles.html">
+<link rel="import" href="../iron-data-table/iron-data-table.html">
 
 <dom-module id="guild-output">
   <template>
@@ -39,17 +40,18 @@
    Polymer({
        is: "guild-output",
 
+       behaviors: [Guild.DataListener],
+
        properties: {
-           env: Object
+           dataSource: {
+               type: String,
+               value: "output",
+               readOnly: true
+           }
        },
 
-       ready: function() {
-           var runId = this.env.selectedRun.id;
-           var url = "/data/output?run=" + runId;
-           Guild.Data.fetch(url, function(data) {
-               this.$.table.items = this.formatItems(data);
-           }.bind(this));
-
+       handleData: function(data) {
+           this.$.table.items = this.formatItems(data);
        },
 
        formatItems: function(data) {
