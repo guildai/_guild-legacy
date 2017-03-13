@@ -1,9 +1,61 @@
+<link rel="import" href="../guild-util/guild-util.html">
+
+<link rel="import" href="guild-data.html">
+
 <script>
  var Guild = Guild || {};
  Guild.DataListener = {
 
      properties: {
-         dataSource: Object
-     }
+         env: Object,
+         dataSource: Object,
+         dataAttribute: String,
+         dataReduce: String,
+         dataFormat: String
+     },
+
+     ready: function() {
+         var fetchData = this.fetchData.bind(this);
+         window.setTimeout(fetchData, 0);
+     },
+
+     fetchData: function() {
+         var runId = this.env.selectedRun.id;
+         var url = "/data/" + this.dataSource + "?run=" + runId;
+         var handler = this.handleFetchResult.bind(this);
+         Guild.Data.fetch(url, handler);
+     },
+
+     handleFetchResult: function(result) {
+         var data = this.maybeReduce(result);
+         this.handleData(data);
+     },
+
+     maybeReduce: function(data) {
+         var reduce = Guild.Reduce[this.dataReduce];
+         return reduce ? reduce(data) : data;
+     },
+
+     handleData: function(data) {
+         // stub to be overridden by host
+     },
+
+     formatDataValue: function(data, defaultValue) {
+         var val = this.dataValue(data);
+         if (val != undefined) {
+             return Guild.Util.tryFormat(val, this.dataFormat);
+         } else {
+             return defaultValue;
+         }
+     },
+
+     dataValue: function(data) {
+         if (typeof data === "object" && data != null) {
+            return data[Object.keys(data)[0]];
+        } else {
+            return data;
+        }
+     },
+
  }
 </script>

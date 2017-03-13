@@ -1,6 +1,7 @@
 <link rel="import" href="../vz-field/vz-field.html">
 
 <link rel="import" href="../guild-data/guild-data.html">
+<link rel="import" href="../guild-data/guild-data-listener.html">
 <link rel="import" href="../guild-util/guild-util.html">
 
 
@@ -12,14 +13,9 @@
    Polymer({
        is: "guild-field",
 
-       behaviors_: ['Guild.Data_XXX_Behavior'],
+       behaviors: [Guild.DataListener],
 
        properties: {
-           env: Object,
-           dataSource: String,
-           dataAttribute: String,
-           dataReduce: String,
-           dataFormat: String,
            label: String,
            color: String,
            icon: String,
@@ -30,16 +26,8 @@
            }
        },
 
-       ready: function() {
-           var runId = this.env.selectedRun.id;
-           var url = "/data/" + this.dataSource + "?run=" + runId;
-           Guild.Data.fetch(url, function(data) {
-               var reduce = Guild.Reduce[this.dataReduce];
-               var reduced = reduce(data);
-               var raw = reduced[Object.keys(reduced)[0]];
-               var formatted = Guild.Util.tryFormat(raw, this.dataFormat);
-               this._setValue(formatted);
-           }.bind(this));
+       handleData: function(data) {
+           this._setValue(this.formatDataValue(data, "--"));
        }
    });
   </script>
