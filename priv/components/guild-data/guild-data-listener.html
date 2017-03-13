@@ -20,10 +20,12 @@
      },
 
      fetchData: function() {
-         var runId = this.env.selectedRun.id;
-         var url = "/data/" + this.dataSource + "?run=" + runId;
-         var handler = this.handleFetchResult.bind(this);
-         Guild.Data.fetch(url, handler);
+         if (this.dataSource) {
+             var runId = this.env.selectedRun.id;
+             var url = "/data/" + this.dataSource + "?run=" + runId;
+             var handler = this.handleFetchResult.bind(this);
+             Guild.Data.fetch(url, handler);
+         }
      },
 
      handleFetchResult: function(result) {

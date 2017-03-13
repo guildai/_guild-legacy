@@ -1,4 +1,5 @@
 <link rel="import" href="../guild-component-panel/guild-component-panel.html">
+<link rel="import" href="../guild-data/guild-data-listener.html">
 <link rel="import" href="../vz-keyval-table/vz-keyval-table.html">
 
 <dom-module id="guild-flags">
@@ -12,15 +13,17 @@
        is: "guild-flags",
 
        properties: {
-           env: Object
+           dataSource: {
+               type: String,
+               value: "flags",
+               readOnly: true
+           }
        },
 
-       ready: function() {
-           var runId = this.env.selectedRun.id;
-           var url = "/data/flags?run=" + runId;
-           Guild.Data.fetch(url, function(data) {
-               this.$.table.object = data;
-           }.bind(this));
+       behaviors: [Guild.DataListener],
+
+       handleData: function(data) {
+           this.$.table.object = data;
        }
    });
   </script>
