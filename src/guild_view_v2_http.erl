@@ -14,7 +14,9 @@
 
 -module(guild_view_v2_http).
 
--export([start_server/3, stop_server/0, run_id_for_params/1]).
+-export([start_server/3, stop_server/0, run_for_params/2]).
+
+-export([handle_app_page/2]).
 
 -export([init/1, handle_msg/3]).
 
@@ -71,18 +73,6 @@ handle_bye() ->
     Page = guild_dtl:render(guild_bye_page, []),
     guild_http:ok_html(Page).
 
-app_page_handler(View) ->
-    fun(_Env) -> handle_app_page(View) end.
-
-handle_app_page(View) ->
-    Vars = app_page_vars(View),
-    Page = guild_dtl:render(guild_view_v2_index_page, Vars),
-    guild_http:ok_html(Page).
-
-app_page_vars(View) ->
-    Env = guild_view_v2:app_page_env(View),
-    #{env => guild_json:encode(Env)}.
-
 middleware(Opts) ->
     maybe_apply_log_middleware(Opts, []).
 
@@ -96,8 +86,44 @@ log_middleware() ->
     fun(Upstream) -> guild_log_http:create_app(Upstream) end.
 
 %% ===================================================================
-%% Utils
+%% Page handler
 %% ===================================================================
+
+app_page_handler(View) ->
+    psycho_util:dispatch_app(
+      {?MODULE, handle_app_page},
+      [View, parsed_query_string]).
+
+handle_app_page(View, Params) ->
+    Run = run_for_params(Params, View),
+    Vars = app_page_vars(View, Run),
+    Page = guild_dtl:render(guild_view_v2_index_page, Vars),
+    guild_http:ok_html(Page).
+
+app_page_vars(View, Run) ->
+    Env =
+        apply_run_id(
+          guild_view_v2:app_page_env(View),
+          Run),
+    #{env => guild_json:encode(Env),
+      page_title => page_title(Env)}.
+
+apply_run_id(Env, Run) ->
+    maps:put('runId', guild_run:id(Run), Env).
+
+page_title(#{project:=#{title:=ProjectTitle}}) ->
+    [ProjectTitle, " - Guild View"].
+
+%% ===================================================================
+%% Helpers
+%% ===================================================================
+
+run_for_params(Params, View) ->
+    Id = run_id_for_params(Params),
+    case guild_view_v2:resolve_run(View, Id) of
+        undefined -> throw(guild_http:not_found());
+        Run -> Run
+    end.
 
 run_id_for_params(Params) ->
     Schema = [{"run", [integer]}],

@@ -61,7 +61,7 @@
         query-params="{{queryParams}}"
         tail="{{routeTail}}"></app-route>
 
-    <guild-modal-message id="redirecting"></guild-modal-message>
+    <guild-modal-message id="dialog"></guild-modal-message>
 
     <app-drawer-layout narrow="{{narrow}}">
       <app-drawer id="drawer" hidden$="[[!narrow]]">
@@ -121,45 +121,45 @@
             currentPage: Object,
             queryParams: Object,
             narrow: Boolean,
-            routeTail: Object,
-            page1: {
-                type: String,
-                computed: 'computePage1(env)'
-            }
-        },
-
-        ready: function() {
-            this.registerForRunSelected();
-            this.env.selectedRun = this.runForQueryParams();
-        },
-
-        registerForRunSelected: function() {
-            var handler = this.handleRunSelected.bind(this);
-            Guild.Event.register("run-selected", handler, this.env);
-        },
-
-        handleRunSelected: function(run) {
-            window.location = this.route.path + "?run=" + run.id;
-        },
-
-        runForQueryParams: function() {
-            var runIdParam = this.queryParams.run;
-            var runs = this.env.runs;
-            if (runIdParam == undefined) {
-                return runs.length > 0 ? runs[0] : null;
-            } else {
-                var runId = parseInt(runIdParam);
-                return runId == runId ? Guild.Run.selectedRun(runId, runs) : null;
-            }
+            routeTail: Object
         },
 
         observers: [
             'pageChanged(currentPage.id)'
         ],
 
-        computePage1: function(env) {
-            var pages = env.viewdef.pages;
-            return pages.length > 0 ? pages[0].label : undefined;
+        ready: function() {
+            this.registerForRunSelected();
+        },
+
+        registerForRunSelected: function() {
+            var handler = this.handleRunChanged.bind(this);
+            Guild.Event.register("run-changed", handler, this.env);
+        },
+
+        handleRunChanged: function(runId) {
+            if (runId != null) {
+                window.location = this.route.path + "?run=" + runId;
+            } else {
+                this.runDeletedDialog();
+            }
+        },
+
+        runDeletedDialog: function() {
+            var dialog = this.$.dialog;
+            var page = this.defaultPage();
+            var nextUrl = page ? "/" + page.id : "/";
+            dialog.contentHTML =
+                "<div>The current run was deleted.</div>"
+                + "<div><a href=\"javascript:window.location='"
+                + nextUrl + "'\">Click here</a> to"
+                +" refresh the view</div";
+            dialog.open();
+        },
+
+        defaultPage: function() {
+            var pages = this.env.viewdef.pages;
+            return pages.length > 0 ? pages[0] : null;
         },
 
         pageChanged: function(id, old) {
@@ -175,12 +175,12 @@
         },
 
         redirectToDefaultPage: function() {
-            var pages = this.env.viewdef.pages;
-            if (pages.length > 0) {
-                var dialog = this.$.redirecting;
-                dialog.innerHTML = "Redirecting to " + pages[0].label;
+            var page = this.defaultPage();
+            if (page) {
+                var dialog = this.$.dialog;
+                dialog.contentHTML = "Redirecting to " + page.label;
                 dialog.open();
-                window.location = "/" + pages[0].id;
+                window.location = "/" + page.id;
             }
         },
 

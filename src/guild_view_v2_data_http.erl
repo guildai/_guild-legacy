@@ -85,8 +85,4 @@ handle_output(View, Params) ->
 %% ===================================================================
 
 run_for_params(Params, View) ->
-    Id = guild_view_v2_http:run_id_for_params(Params),
-    case guild_view_v2:resolve_run(View, Id) of
-        undefined -> throw(guild_http:not_found());
-        Run -> Run
-    end.
+    guild_view_v2_http:run_for_params(Params, View).

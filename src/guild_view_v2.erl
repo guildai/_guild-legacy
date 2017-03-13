@@ -54,7 +54,6 @@ app_page_env_(State) ->
     #{
        viewdef => guild_view_v2_viewdef:viewdef(Project),
        project => project_summary(Project),
-       runs => formatted_runs_(State),
        settings => settings(State)
      }.
 

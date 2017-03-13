@@ -46,12 +46,11 @@
            },
            status: {
                type: Object,
-               computed: 'computeStatus(env)'
+               computed: 'computeStatus(env.selectedRun)'
            }
        },
 
-       computeStatus: function(env) {
-           var run = env.selectedRun;
+       computeStatus: function(run) {
            if (run != null) {
                return Guild.Run.runStatus(run);
            } else {

@@ -12,15 +12,13 @@
          dataAttribute: String,
          dataReduce: String,
          dataFormat: String,
-         dataFetchInterval: {
-             type: Number,
-             value: function() {
-                 return this.env.settings.refreshInterval || 0;
-             }
-         }
+         dataFetchInterval: Number
      },
 
      ready: function() {
+         if (this.dataFetchInterval == undefined) {
+             this.dataFetchInterval = this.env.settings.refreshInterval || 0;
+         }
          if (this.dataSource) {
              this.fetchData(0);
          }
@@ -33,8 +31,7 @@
      },
 
      dataFetchUrl: function() {
-         var runId = this.env.selectedRun.id;
-         return "/data/" + this.dataSource + "?run=" + runId;
+         return "/data/" + this.dataSource + "?run=" + this.env.runId;
      },
 
      handleFetchResult: function(result) {
@@ -78,7 +75,6 @@
         } else {
             return data;
         }
-     },
-
+     }
  }
 </script>

@@ -1,6 +1,8 @@
 <link rel="import" href="../guild-event/guild-event.html">
+<link rel="import" href="../guild-run/guild-runs-listener.html">
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu-light.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
+
 <link rel="import" href="guild-run-select-item.html">
 
 <dom-module id="guild-run-select">
@@ -25,7 +27,7 @@
          -->
       <paper-dropdown-menu-light id="dropdown" label="Active run" no-animations noink>
         <paper-listbox class="dropdown-content" selected="{{selected}}">
-          <template is="dom-repeat" items="[[env.runs]]" as="run">
+          <template is="dom-repeat" items="[[runs]]" as="run">
             <guild-run-select-item run="[[run]]"></guild-run-select-item>
           </template>
         </paper-listbox>
@@ -36,33 +38,46 @@
    Polymer({
        is: "guild-run-select",
 
+       behaviors: [Guild.RunsListener],
+
        properties: {
-           env: Object,
+           runs: Array,
            selected: {
                type: Number,
-               observer: 'selectedChanged'
+               observer: 'handleRunSelected'
            }
        },
 
-       ready: function() {
+       handleRuns: function(runs) {
+           console.log(["Setting runs yo", runs]);
+           this.runs = runs;
            this.selected = this.selectedRunIndex();
+           this.maybeNotifyRunChanged();
        },
 
        selectedRunIndex: function() {
-           var run = this.env.selectedRun;
-           var runs = this.env.runs;
-           for (var i = 0; i < runs.length; i++) {
-               if (runs[i] == run) {
+           for (var i = 0; i < this.runs.length; i++) {
+               if (this.runs[i].id == this.env.runId) {
                    return i;
                }
            }
            return -1;
        },
 
-       selectedChanged: function(index, previous) {
+       handleRunSelected: function(index, previous) {
            if (previous != undefined) {
-               var run = this.env.runs[index];
-               Guild.Event.notify("run-selected", run, this.env);
+               this.maybeNotifyRunChanged();
+           }
+       },
+
+       maybeNotifyRunChanged: function() {
+           if (this.runs && this.selected != -1) {
+               var selected = this.runs[this.selected];
+               if (selected.id != this.env.runId) {
+                   Guild.Event.notify("run-changed", selected.id, this.env);
+               }
+           } else {
+               Guild.Event.notify("run-changed", null, this.env);
            }
        }
    });

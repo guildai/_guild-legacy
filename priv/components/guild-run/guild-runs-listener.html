@@ -1,0 +1,44 @@
+<link rel="import" href="../guild-data/guild-data.html">
+
+<script>
+ var Guild = Guild || {};
+ Guild.RunsListener = {
+
+     properties: {
+         env: Object,
+         runsFetchInterval: Number
+     },
+
+     ready: function() {
+         if (this.runsFetchInterval == undefined) {
+             this.runsFetchInterval = this.env.settings.refreshInterval || 5;
+         }
+         this.fetchRuns(0);
+     },
+
+     fetchRuns: function(whenSeconds) {
+         var url = "/data/runs";
+         var handler = this.handleFetchResult.bind(this);
+         Guild.Data.scheduleFetch(url, handler, whenSeconds * 1000);
+     },
+
+     handleFetchResult: function(runs) {
+         this.handleRuns(runs);
+         this.maybeScheduleNextFetch();
+     },
+
+     maybeScheduleNextFetch: function() {
+         if (this.repeatRuns()) {
+             this.fetchRuns(this.runsFetchInterval);
+         }
+     },
+
+     repeatRuns: function() {
+         return true;
+     },
+
+     handleRuns: function(runs) {
+         // stub to be overridden by host
+     }
+ }
+</script>
