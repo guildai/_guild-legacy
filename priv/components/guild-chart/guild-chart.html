@@ -1,4 +1,5 @@
 <link rel="import" href="../guild-component-panel/guild-component-panel.html">
+<link rel="import" href="../guild-data/guild-data-listener.html">
 <link rel="import" href="../vz-line-chart/vz-line-chart.html">
 
 <dom-module id="guild-chart">
@@ -29,29 +30,28 @@
        is: "guild-chart",
 
        properties: {
-           title: String,
-           dataSource: String
+           title: String
        },
 
-       ready: function() {
-           var runId = this.env.selectedRun.id;
-           var url = "/data/" + this.dataSource + "?run=" + runId;
-           Guild.Data.fetch(url, function(data) {
-               var chart = this.$.chart;
-               var names = Object.keys(data);
-               chart.setVisibleSeries(names);
-               names.map(function(name) {
-                   var values = data[name];
-                   var seriesData = values.map(function(item, index) {
-                       return {
-                           wall_time: new Date(item[0]),
-                           step: item[1] || index,
-                           scalar: item[2]
-                       }
-                   });
-                   chart.setSeriesData(name, seriesData);
-               }.bind(this));
+       behaviors: [Guild.DataListener],
+
+       handleData: function(data) {
+           var names = Object.keys(data);
+           this.$.chart.setVisibleSeries(names);
+           names.forEach(function(name) {
+               var seriesData = this.seriesData(name, data);
+               this.$.chart.setSeriesData(name, seriesData);
            }.bind(this));
+       },
+
+       seriesData: function(name, data) {
+           return data[name].map(function(item, index) {
+               return {
+                   wall_time: new Date(item[0]),
+                   step: item[1] || index,
+                   scalar: item[2]
+               }
+           });
        }
    });
   </script>
