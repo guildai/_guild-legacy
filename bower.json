@@ -31,7 +31,7 @@
         "paper-tooltip":              "PolymerElements/paper-tooltip",
         "plottable":                  "1.16.2",
         "polymer":                    "Polymer/polymer",
-        "polymer-font-awesome-icons": "pkaske/font-awesome-polymer-icons",
+        "polymer-font-awesome-icons": "pkaske/font-awesome-polymer-icons"
     },
     "resolutions": {
         "d3":                         "3.5.17"
