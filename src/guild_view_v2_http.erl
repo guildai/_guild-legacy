@@ -101,12 +101,13 @@ handle_app_page(View, Params) ->
     guild_http:ok_html(Page).
 
 app_page_vars(View, Run) ->
-    Env =
-        apply_run_id(
-          guild_view_v2:app_page_env(View),
-          Run),
+    Env = app_page_env(View, Run),
     #{env => guild_json:encode(Env),
       page_title => page_title(Env)}.
+
+app_page_env(View, Run) ->
+    Env0 = guild_view_v2:app_page_env(View, Run),
+    apply_run_id(Env0, Run).
 
 apply_run_id(Env, Run) ->
     maps:put('runId', guild_run:id(Run), Env).

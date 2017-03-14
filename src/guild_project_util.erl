@@ -14,7 +14,7 @@
 
 -module(guild_project_util).
 
--export([runroot/1, runroot/2, all_runroots/1, flags/2]).
+-export([runroot/1, runroot/2, all_runroots/1, flags/2, run_model/2]).
 
 -define(default_runroot, "runs").
 
@@ -90,3 +90,20 @@ flags_path_for_section({[_, Name|_], _}) ->
     [["flags", cmdline], ["flags", profile], ["flags", Name], ["flags"]];
 flags_path_for_section({[_], _}) ->
     [["flags", cmdline], ["flags", profile], ["flags"]].
+
+%% ===================================================================
+%% Run model
+%% ===================================================================
+
+run_model(Run, Project) ->
+    case guild_run:attr(Run, "model") of
+        error      -> default_model(Project);
+        {ok, <<>>} -> default_model(Project);
+        {ok, Name} -> named_model(Project, binary_to_list(Name))
+    end.
+
+default_model(Project) ->
+    guild_project:section(Project, ["model"]).
+
+named_model(Project, Name) ->
+    guild_project:section(Project, ["model", Name]).
