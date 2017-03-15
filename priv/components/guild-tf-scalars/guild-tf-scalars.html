@@ -1,0 +1,19 @@
+<link rel="import" href="../tf-scalar-dashboard/tf-scalar-dashboard.html">
+
+<dom-module id="guild-tf-scalars">
+  <template>
+    <tf-scalar-dashboard
+        backend="[[env.tf.backend]]"
+        router="[[env.tf.router]]">
+    </tf-scalar-dashboard>
+  </template>
+  <script>
+   Polymer({
+       is: "guild-tf-scalars",
+
+       properties: {
+           env: Object
+       }
+   });
+  </script>
+</dom-module>

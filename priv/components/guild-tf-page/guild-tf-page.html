@@ -1,0 +1,44 @@
+<link rel="import" href="../guild-page-header/guild-page-header.html">
+<link rel="import" href="../guild-tf/guild-tf.html">
+<link rel="import" href="../guild-tf-scalars/guild-tf-scalars.html">
+<link rel="import" href="../guild-tf-tabs/guild-tf-tabs.html">
+<link rel="import" href="../iron-pages/iron-pages.html">
+
+<dom-module id="guild-tf-page">
+  <template>
+    <style>
+    </style>
+    <guild-page-header title="[[env.project.title]]">
+      <guild-tf-tabs selected="{{selectedTab}}"></guild-tf-tabs>
+    </guild-page-header>
+    <iron-pages selected="[[selectedTab]]" attr-for-selected="id">
+      <guild-tf-scalars id="scalars" env="[[env]]"></guild-tf-scalars>
+      <div id="images">Show images yo</div>
+      <div id="audio">Show audio yo</div>
+      <div id="graphs">Show graphs yo</div>
+      <div id="distributions">Show distributions yo</div>
+      <div id="histograms">Show histograms yo</div>
+      <div id="embeddings">Show embeddings yo</div>
+    </iron-pages>
+  </template>
+  <script>
+   Polymer({
+       is: "guild-tf-page",
+
+       properties: {
+           env: Object,
+           selectedTab: {
+               type: String,
+               value: "scalars"
+           }
+       },
+
+       created: function() {
+           if (this.env == undefined) {
+               throw("env not set - see guild-tf-page/NOTES.md");
+           }
+           Guild.TF.initEnv(this.env);
+       }
+   });
+  </script>
+</dom-module>

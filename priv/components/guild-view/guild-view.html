@@ -27,6 +27,7 @@
     <style>
      :root {
          --toolbar-text-color: #5e5e5e;
+         --toolbar-tab-ink: #ccc;
      }
      app-toolbar {
          background-color: #f6f6f6;
@@ -40,12 +41,12 @@
          --paper-tabs-selection-bar-color: var(--toolbar-text-color);
      }
      paper-tab {
-         --paper-tab-ink: #ccc;
+         --paper-tab-ink: var(--toolbar-tab-ink);
      }
      .tab-icon,
      .menu-icon {
          --iron-icon-width: 24px;
-         --iron-icon-height: auto;
+         --iron-icon-height: 24px;
          margin-right: 5px;
      }
      app-toolbar a {

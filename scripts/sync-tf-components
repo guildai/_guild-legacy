@@ -3,8 +3,15 @@
 TF_HOME=${TF_HOME:-../tensorflow}
 
 components=(
+    tf_backend
+    tf_color_scale
+    tf_dashboard_common
+    tf_globals
     tf_imports
+    tf_scalar_dashboard
+    tf_storage
     vz_line_chart
+    vz_sorting
 )
 
 function component-src() {
