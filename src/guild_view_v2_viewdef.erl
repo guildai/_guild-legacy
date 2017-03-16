@@ -44,15 +44,7 @@ default_pages(ViewSection, Model, Project) ->
        icon   => <<"view-list">>,
        layout => compare_layout(ViewSection, Model, Project)
      },
-     %% #{id     => <<"summaries">>,
-     %%   label  => <<"Summaries">>,
-     %%   icon   => <<"timeline">>
-     %%  },
-     %% #{id     => <<"graphs">>,
-     %%   label  => <<"Graphs">>,
-     %%   icon   => <<"hardware:device-hub">>
-     %%  }
-     #{id     => <<"board">>,
+     #{id     => <<"tensorboard">>,
        label  => <<"TensorBoard">>,
        icon   => <<"timeline">>,
        layout => tensorboard_layout()
