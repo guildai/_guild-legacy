@@ -18,7 +18,7 @@ var Guild = Guild || {};
 Guild.TF = new function() {
 
     var initEnv = function(env) {
-        env.tf = env.tf ||{};
+        env.tf = env.tf || {};
         env.tf.router = TF.Backend.router("/data/tf");
         env.tf.backend = new TF.Backend.Backend(env.tf.router);
     };
