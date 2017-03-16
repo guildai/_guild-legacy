@@ -1,15 +1,19 @@
-<link rel="import" href="../tf-scalar-dashboard/tf-scalar-dashboard.html">
+<link rel="import" href="../tf-histogram-dashboard/tf-histogram-dashboard.html">
 
 <dom-module id="guild-tf-histograms">
   <template>
+    <style>
+     #container {
+         position: relative;
+         top: -5px;
+         padding: 0 2px 0 5px;
+     }
+    </style>
     <div id="container">
-      TODO: histograms
-      <!--
-      <tf-scalar-dashboard
+      <tf-histogram-dashboard
           backend="[[env.tf.backend]]"
           router="[[env.tf.router]]">
-      </tf-scalar-dashboard>
-      -->
+      </tf-histogram-dashboard>
     </div>
   </template>
   <script>

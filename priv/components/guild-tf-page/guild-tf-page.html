@@ -10,7 +10,6 @@
 <link rel="import" href="guild-tf-graphs.html">
 <link rel="import" href="guild-tf-distributions.html">
 <link rel="import" href="guild-tf-histograms.html">
-<link rel="import" href="guild-tf-embeddings.html">
 
 <dom-module id="guild-tf-page">
   <template>
@@ -18,6 +17,7 @@
      :root {
          --tf-multi-checkbox-outer-container: {
              height: inherit;
+             margin-bottom: 20px;
          }
 
          --tf-sidebar-helper-sidebar-section: {
@@ -74,7 +74,6 @@
       <guild-tf-graphs id="graphs" env="[[env]]"></guild-tf-graphs>
       <guild-tf-distributions id="distributions" env="[[env]]"></guild-tf-distributions>
       <guild-tf-histograms id="histograms" env="[[env]]"></guild-tf-histograms>
-      <guild-tf-embeddings id="embeddings" env="[[env]]"></guild-tf-embeddings>
     </iron-pages>
   </template>
   <script>

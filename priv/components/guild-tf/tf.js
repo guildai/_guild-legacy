@@ -19,8 +19,16 @@ Guild.TF = new function() {
 
     var initEnv = function(env) {
         env.tf = env.tf || {};
-        env.tf.router = TF.Backend.router("/data/tf");
+        env.tf.router = router(env.settings);
         env.tf.backend = new TF.Backend.Backend(env.tf.router);
+    };
+
+    var router = function(settings) {
+        if (settings.tensorboard.demo) {
+            return TF.Backend.router("/assets/tf-demo", true);
+        } else {
+            return TF.Backend.router("/data/tf");
+        }
     };
 
     this.initEnv = initEnv;
