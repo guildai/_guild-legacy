@@ -59,3 +59,13 @@ block-insert \
     priv/components/tf-dashboard-common/tf-collapsable-pane.html \
     ':host:first-of-type {' '}' \
     '\        @apply(--tf-collapsable-pane-first);'
+
+block-insert \
+    priv/components/tf-dashboard-common/tf-categorizer.html \
+    ':host {' '}' \
+    '\        @apply(--tf-categorizer);'
+
+block-insert \
+    priv/components/tf-dashboard-common/tf-categorizer.html \
+    '#underscore-categorization {' '}' \
+    '\        @apply(--tf-categorizer-underscore-categorization);'
