@@ -1,9 +1,16 @@
 <link rel="import" href="../guild-page-header/guild-page-header.html">
 <link rel="import" href="../guild-tf/guild-tf.html">
-<link rel="import" href="../guild-tf-scalars/guild-tf-scalars.html">
-<link rel="import" href="../guild-tf-tabs/guild-tf-tabs.html">
 <link rel="import" href="../iron-pages/iron-pages.html">
 <link rel="import" href="../paper-styles/shadow.html">
+
+<link rel="import" href="guild-tf-tabs.html">
+<link rel="import" href="guild-tf-scalars.html">
+<link rel="import" href="guild-tf-images.html">
+<link rel="import" href="guild-tf-audio.html">
+<link rel="import" href="guild-tf-graphs.html">
+<link rel="import" href="guild-tf-distributions.html">
+<link rel="import" href="guild-tf-histograms.html">
+<link rel="import" href="guild-tf-embeddings.html">
 
 <dom-module id="guild-tf-page">
   <template>
@@ -62,12 +69,12 @@
     </guild-page-header>
     <iron-pages selected="[[selectedTab]]" attr-for-selected="id">
       <guild-tf-scalars id="scalars" env="[[env]]"></guild-tf-scalars>
-      <div id="images">Show images yo</div>
-      <div id="audio">Show audio yo</div>
-      <div id="graphs">Show graphs yo</div>
-      <div id="distributions">Show distributions yo</div>
-      <div id="histograms">Show histograms yo</div>
-      <div id="embeddings">Show embeddings yo</div>
+      <guild-tf-images id="images" env="[[env]]"></guild-tf-images>
+      <guild-tf-audio id="audio" env="[[env]]"></guild-tf-audio>
+      <guild-tf-graphs id="graphs" env="[[env]]"></guild-tf-graphs>
+      <guild-tf-distributions id="distributions" env="[[env]]"></guild-tf-distributions>
+      <guild-tf-histograms id="histograms" env="[[env]]"></guild-tf-histograms>
+      <guild-tf-embeddings id="embeddings" env="[[env]]"></guild-tf-embeddings>
     </iron-pages>
   </template>
   <script>
