@@ -21,7 +21,8 @@
          reduce_to/2, normalize_series/3, os_pid_exists/1,
          format_cmd_args/1, make_tmp_dir/0, random_name/0,
          delete_tmp_dir/1, resolve_args/2, resolve_keyvals/2,
-         consult_string/1, format_exec_error/1, latest_mtime/1]).
+         consult_string/1, format_exec_error/1, latest_mtime/1,
+         free_port/0]).
 
 -include_lib("kernel/include/file.hrl").
 
@@ -441,3 +442,36 @@ mtime_acc(File, Acc) ->
         {ok,  #file_info{mtime=Time}} -> [Time|Acc];
         {error, _} -> Acc
     end.
+
+%% ===================================================================
+%% Free port
+%% ===================================================================
+
+free_port() ->
+    %% See https://en.wikipedia.org/wiki/Ephemeral_port
+    Min = 49152,
+    Max = 65535,
+    RandSeed = rand:seed(exs64),
+    Attempts = 0,
+    rand_free_port(Min, Max, RandSeed, Attempts).
+
+rand_free_port(Min, Max, Seed, Attempts) ->
+    maybe_too_many_attempts(Attempts),
+    {RandX, NextSeed} = rand:uniform_s(Max - Min, Seed),
+    Port = Min + RandX,
+    case gen_tcp:connect("localhost", Port, [], 100) of
+        {ok, Sock} ->
+            gen_tcp:close(Sock),
+            rand_free_port(Min, Max, NextSeed, Attempts + 1);
+        {error, timeout} ->
+            rand_free_port(Min, Max, NextSeed, Attempts + 1);
+        {error, econnrefused} ->
+            Port
+    end.
+
+-define(max_free_port_attempts, 100).
+
+maybe_too_many_attempts(N) when N >= ?max_free_port_attempts ->
+    error(too_many_free_port_attempts);
+maybe_too_many_attempts(_) ->
+    ok.

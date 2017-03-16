@@ -5,21 +5,54 @@
 -define(default_port, 6334).
 
 main(Opts, []) ->
-    View = init_project_view(Opts),
-    Port = guild_cmd_support:port_opt(Opts, ?default_port),
+    Project = guild_cmd_support:project_from_opts(Opts),
     guild_app:init_support([exec]),
+    TBInfo = start_tensorboard(Project, Opts),
+    View = init_project_view(Project, Opts, TBInfo),
+    Port = guild_cmd_support:port_opt(Opts, ?default_port),
     Server = start_http_server(View, Port, Opts),
     guild_cli:out("Guild View running on port ~b~n", [Port]),
     wait_for_server_and_terminate(Server, Opts).
 
-init_project_view(Opts) ->
-    Project = guild_cmd_support:project_from_opts(Opts),
-    Settings = view_settings(Opts),
+start_tensorboard(Project, Opts) ->
+    LogDir = tensorboard_logdir(Project),
+    Port = guild_util:free_port(),
+    TBChild = {guild_tf_tensorboard, start_link, [LogDir, Port]},
+    handle_tensorboard_start(guild_app:start_child(TBChild), Port, Opts).
+
+tensorboard_logdir(Project) ->
+    string:join(guild_project_util:all_runroots(Project), ",").
+
+handle_tensorboard_start({ok, _}, Port, Opts) ->
+    maybe_report_tensorboard_port(proplists:get_bool(debug, Opts), Port),
+    tb_info(Port);
+handle_tensorboard_start({error, Err}, _Port, _Opts) ->
+    report_tensorboard_error(Err),
+    tb_info(undefined).
+
+maybe_report_tensorboard_port(true, Port) ->
+    guild_cli:out("TensorBoard running on port ~b~n", [Port]);
+maybe_report_tensorboard_port(false, _Port) ->
+    ok.
+
+tb_info(Port) ->
+    #{port => Port}.
+
+report_tensorboard_error(Err) ->
+    guild_cli:out(
+      io_lib:format(
+        "Unable to start TensorBoard (~p)\n"
+        "TensorBoard integration will be disabled\n",
+        [Err])).
+
+init_project_view(Project, Opts, TBInfo) ->
+    Settings = view_settings(Opts, TBInfo),
     {ok, View} = guild_view_v2:start_link(Project, Settings),
     View.
 
-view_settings(Opts) ->
-    #{refreshInterval => guild_view_cmd:interval_opt(Opts)}.
+view_settings(Opts, TBInfo) ->
+    #{refreshInterval => guild_view_cmd:interval_opt(Opts),
+      tensorboard => TBInfo}.
 
 start_http_server(View, Port, Opts) ->
     case guild_view_v2_http:start_server(View, Port, Opts) of

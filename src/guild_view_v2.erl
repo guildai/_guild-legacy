@@ -1,7 +1,7 @@
 -module(guild_view_v2).
 
 -export([start_link/2, app_page_env/2, formatted_runs/1,
-         resolve_run/2]).
+         resolve_run/2, settings/1]).
 
 -export([handle_msg/3]).
 
@@ -38,6 +38,9 @@ formatted_runs(View) ->
 resolve_run(View, Id) ->
     e2_service:call(View, {fun resolve_run_/2, [Id]}).
 
+settings(View) ->
+    e2_service:call(View, {fun settings_/1, []}).
+
 %% ===================================================================
 %% Dispatch
 %% ===================================================================
@@ -55,7 +58,7 @@ app_page_env_(Run, State) ->
     #{
        viewdef => guild_view_v2_viewdef:viewdef(Model, Project),
        project => project_summary(Project),
-       settings => settings(State)
+       settings => settings_(State)
      }.
 
 %% ===================================================================
@@ -158,4 +161,4 @@ load_project(#state{pdir=Dir}) ->
     {ok, Project} = guild_project:from_dir(Dir),
     Project.
 
-settings(#state{settings=S}) -> S.
+settings_(#state{settings=S}) -> S.

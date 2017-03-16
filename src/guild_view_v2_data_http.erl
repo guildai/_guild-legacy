@@ -1,24 +1,31 @@
 -module(guild_view_v2_data_http).
 
--export([app/3]).
+-export([create_app/1, app/4]).
+
+create_app(View) ->
+    ViewSettings = guild_view_v2:settings(View),
+    psycho_util:dispatch_app(
+      {?MODULE, app},
+      [method, parsed_path, View, ViewSettings]).
+
 
 %% ===================================================================
 %% Dispatch
 %% ===================================================================
 
-app("GET", {"/data/runs", _, _}, View) ->
+app("GET", {"/data/runs", _, _}, View, _) ->
     handle_runs(View);
-app("GET", {"/data/series/" ++ Path, _, Params}, View) ->
+app("GET", {"/data/series/" ++ Path, _, Params}, View, _) ->
     handle_series(View, Path, Params);
-app("GET", {"/data/flags", _, Params}, View) ->
+app("GET", {"/data/flags", _, Params}, View, _) ->
     handle_flags(View, Params);
-app("GET", {"/data/attrs", _, Params}, View) ->
+app("GET", {"/data/attrs", _, Params}, View, _) ->
     handle_attrs(View, Params);
-app("GET", {"/data/output", _, Params}, View) ->
+app("GET", {"/data/output", _, Params}, View, _) ->
     handle_output(View, Params);
-app("GET", {"/data/tf/" ++ Path, Qs, _}, _View) ->
-    handle_tf_data(Path, Qs);
-app(_, _, _) ->
+app("GET", {"/data/tf/" ++ Path, Qs, _}, _View, Settings) ->
+    handle_tf_data(Path, Qs, Settings);
+app(_, _, _, _) ->
     guild_http:bad_request().
 
 %% ===================================================================
@@ -86,14 +93,20 @@ handle_output(View, Params) ->
 %% TensorFlow data
 %% ===================================================================
 
-handle_tf_data(Path, Qs) ->
+handle_tf_data(Path, Qs, #{tensorboard:=#{port:=Port}})
+  when is_integer(Port) ->
+    handle_tf_data_(Path, Qs, Port);
+handle_tf_data(_Path, _Qs, _Settings) ->
+    guild_http:internal_error("TensorBoard not running").
+
+handle_tf_data_(Path, Qs, Port) ->
     FullPath = [Path, "?", Qs],
-    case guild_tf_data_proxy:data(6006, FullPath) of
-        {ok, JSON} ->
-            guild_http:ok_json(JSON);
-        {error, {status, Status}} ->
-            {Status, [], []}
-    end.
+    handle_tf_data_result(guild_tf_data_proxy:data(Port, FullPath)).
+
+handle_tf_data_result({ok, JSON}) ->
+    guild_http:ok_json(JSON);
+handle_tf_data_result({error, {status, Status}}) ->
+    {Status, [], []}.
 
 %% ===================================================================
 %% Shared
