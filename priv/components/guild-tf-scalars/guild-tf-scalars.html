@@ -2,10 +2,19 @@
 
 <dom-module id="guild-tf-scalars">
   <template>
-    <tf-scalar-dashboard
-        backend="[[env.tf.backend]]"
-        router="[[env.tf.router]]">
-    </tf-scalar-dashboard>
+    <style>
+     #container {
+         position: relative;
+         top: -5px;
+         padding: 0 2px 0 5px;
+     }
+    </style>
+    <div id="container">
+      <tf-scalar-dashboard
+          backend="[[env.tf.backend]]"
+          router="[[env.tf.router]]">
+      </tf-scalar-dashboard>
+    </div>
   </template>
   <script>
    Polymer({
