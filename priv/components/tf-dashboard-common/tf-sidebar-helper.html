@@ -89,11 +89,13 @@ tf-run-selector.
 
       .sidebar-section {
         border-top: solid 1px rgba(0, 0, 0, 0.12);
-        padding: 0 0 20px 0;
+        padding: 20px 0px 20px 30px;
+        @apply(--tf-sidebar-helper-sidebar-section);
       }
 
       .sidebar-section:first-child {
         border: none;
+        @apply(--tf-sidebar-helper-first-sidebar-section);
       }
 
       .sidebar-section:last-child {

@@ -7,6 +7,32 @@
 <dom-module id="guild-tf-page">
   <template>
     <style>
+     :root {
+         --tf-multi-checkbox-outer-container: {
+             height: inherit;
+         }
+
+         --tf-sidebar-helper-sidebar-section: {
+             padding: 20px 0;
+         }
+
+         --tf-sidebar-helper-first-sidebar-section: {
+             padding-top: 0;
+         }
+
+         --tf-option-selector-content-wrapper: {
+             display: flex;
+             flex-wrap: wrap;
+         }
+
+         --tf-regex-group-regex-inpput: {
+              margin-left: 0;
+         }
+
+         --tf-dashboard-style-sidebar-section: {
+             padding: 20px 0;
+         }
+     }
     </style>
     <guild-page-header title="[[env.project.title]]">
       <guild-tf-tabs selected="{{selectedTab}}"></guild-tf-tabs>
