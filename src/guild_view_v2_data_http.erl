@@ -16,6 +16,8 @@ app("GET", {"/data/attrs", _, Params}, View) ->
     handle_attrs(View, Params);
 app("GET", {"/data/output", _, Params}, View) ->
     handle_output(View, Params);
+app("GET", {"/data/tf/" ++ Path, Qs, _}, _View) ->
+    handle_tf_data(Path, Qs);
 app(_, _, _) ->
     guild_http:bad_request().
 
@@ -79,6 +81,19 @@ handle_output(View, Params) ->
     Run = run_for_params(Params, View),
     JSON = guild_data_reader:output_json(Run),
     guild_http:ok_json(JSON).
+
+%% ===================================================================
+%% TensorFlow data
+%% ===================================================================
+
+handle_tf_data(Path, Qs) ->
+    FullPath = [Path, "?", Qs],
+    case guild_tf_data_proxy:data(6006, FullPath) of
+        {ok, JSON} ->
+            guild_http:ok_json(JSON);
+        {error, {status, Status}} ->
+            {Status, [], []}
+    end.
 
 %% ===================================================================
 %% Shared
