@@ -44,3 +44,18 @@ block-insert \
     priv/components/tf-dashboard-common/dashboard-style.html \
     '.sidebar-section {' '}' \
     '\        @apply(--tf-dashboard-style-sidebar-section);'
+
+block-insert \
+    priv/components/tf-dashboard-common/tf-collapsable-pane.html \
+    '.heading {' '}' \
+    '\        @apply(--tf-collapsable-pane-heading);'
+
+block-insert \
+    priv/components/tf-dashboard-common/tf-collapsable-pane.html \
+    ':host {' '}' \
+    '\        @apply(--tf-collapsable-pane);'
+
+block-insert \
+    priv/components/tf-dashboard-common/tf-collapsable-pane.html \
+    ':host:first-of-type {' '}' \
+    '\        @apply(--tf-collapsable-pane-first);'

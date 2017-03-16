@@ -3,6 +3,7 @@
 <link rel="import" href="../guild-tf-scalars/guild-tf-scalars.html">
 <link rel="import" href="../guild-tf-tabs/guild-tf-tabs.html">
 <link rel="import" href="../iron-pages/iron-pages.html">
+<link rel="import" href="../paper-styles/shadow.html">
 
 <dom-module id="guild-tf-page">
   <template>
@@ -31,6 +32,20 @@
 
          --tf-dashboard-style-sidebar-section: {
              padding: 20px 0;
+         }
+
+         --tf-collapsable-pane: {
+             margin: 0 0 20px 0;
+         }
+
+         --tf-collapsable-pane-first: {
+             margin: 0 0 20px 0;
+         }
+
+         --tf-collapsable-pane-heading: {
+             background-color: var(--component-background-color);
+             font-size: 18px;
+             @apply(--shadow-elevation-2dp);
          }
      }
     </style>
