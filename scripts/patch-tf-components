@@ -5,3 +5,21 @@ line_chart_html=priv/components/vz-line-chart/vz-line-chart.html
 if ! grep -q -- '--vz-chart-tooltip' $line_chart_html; then
     sed -i -e '/\#tooltip {/{:a;n;/}$/!ba;i\        @apply(--vz-chart-tooltip);' -e '}' $line_chart_html
 fi
+
+# Remove height=0 on multi-checkox (run selector)
+cb_html=priv/components/tf-dashboard-common/tf-multi-checkbox.html
+sed -i '/Quirk to make firefox add scrolling instead of expand div/d' $cb_html
+
+# Modify spacing around sidebars
+sb_helper_html=priv/components/tf-dashboard-common/tf-sidebar-helper.html
+sed -i 's/20px 0px 20px 30px/0 0 20px 0/' $sb_helper_html
+
+# Remove negative margin for regex input
+regex_group_html=priv/components/tf-dashboard-common/tf-regex-group.html
+sed -i 's/margin-left: -3px/margin-left: 0/' $regex_group_html
+
+# Add flex display to open selector content wrapper (fix wrapping)
+opt_select_html=priv/components/tf-dashboard-common/tf-option-selector.html
+if ! grep -q -- '.content-wrapper {display: flex}' $opt_select_html; then
+    sed -i -e '/<style>/a\ \ \ \ \ \ .content-wrapper {display: flex}' $opt_select_html
+fi
