@@ -5,10 +5,8 @@
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../paper-tabs/paper-tabs.html">
 <link rel="import" href="../paper-toolbar/paper-toolbar.html">
-<link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../tf-audio-dashboard/tf-audio-dashboard.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
-<link rel="import" href="../tf-dashboard-common/tensorboard-color.html">
 <link rel="import" href="../tf-distribution-dashboard/tf-distribution-dashboard.html">
 <link rel="import" href="../tf-graph-dashboard/tf-graph-dashboard.html">
 <link rel="import" href="../tf-histogram-dashboard/tf-histogram-dashboard.html">
@@ -36,20 +34,29 @@
          };
      }
 
-     #tf-nav {
+     #nav {
          display: flex;
          justify-content: space-between;
      }
 
+     paper-toolbar {
+         --paper-toolbar-content: {
+             justify-content: space-between;
+         }
+         --paper-toolbar-background: {
+             background-color: inherit;
+         }
+     }
+
      paper-tabs {
          color: var(--toolbar-text-color);
-         margin-left: 20px;
          font-size: 14px;
          height: 38px;
          --paper-tabs-selection-bar-color: #999;;
      }
 
      paper-tab {
+         padding: 0 17px;
          --paper-tab-ink: var(--toolbar-tab-ink);
      }
 
@@ -60,8 +67,8 @@
 
     <paper-header-panel>
       <guild-page-header class="paper-header" title="[[env.project.title]]">
-        <div id="tf-nav">
-          <paper-tabs selected="{{selected}}" noink>
+        <div id="nav">
+          <paper-tabs selected="{{selected}}">
             <template is="dom-repeat" items="[[tabs]]" as="tab">
               <paper-tab data-mode="[[tab.id]]">[[tab.label]]</paper-tab>
             </template>
