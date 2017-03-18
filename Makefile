@@ -17,9 +17,9 @@ component-deps:
 	bower install
 	scripts/patch-components
 
-tf-component-deps:
+sync-tf-component:
 	scripts/sync-tf-components
-	scripts/patch-tf-components
+	scripts/patch-components
 
 lint-components: polylint
 	polylint --root priv/components --input `(cd priv/components && find -name guild-*.html)`
