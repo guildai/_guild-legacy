@@ -26,7 +26,9 @@
   <template>
     <style>
      :root {
-         --toolbar-text-color: #5e5e5e;
+         --toolbar-color: #48484e;
+         --toolbar-text-color: #fff;
+         --toolbar-text-accent-color: #ddd;
          --toolbar-tab-ink: #ccc;
          --component-background-color: #f6f6f6;
          --vz-chart-tooltip: {
@@ -35,15 +37,16 @@
          }
      }
      app-toolbar {
-         background-color: var(--component-background-color);
+         background-color: var(--toolbar-color);
          color: var(--toolbar-text-color);
-         border-bottom: 0.8px solid #e7e7e7;
+         border-bottom: 1px solid var(--toolbar-text-accent-color);
      }
      paper-tabs {
          color: var(--toolbar-text-color);
          margin-left: 20px;
          font-size: 14px;
-         --paper-tabs-selection-bar-color: var(--toolbar-text-color);
+         height: 40px;
+         --paper-tabs-selection-bar-color: var(--toolbar-text-accent-color);
      }
      paper-tab {
          --paper-tab-ink: var(--toolbar-tab-ink);

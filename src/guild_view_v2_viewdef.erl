@@ -36,12 +36,12 @@ pages(ViewSection, Model, Project) ->
 default_pages(ViewSection, Model, Project) ->
     [#{id     => <<"overview">>,
        label  => <<"Overview">>,
-       icon   => <<"dashboard">>,
+       icon   => <<"apps">>,
        layout => overview_layout(ViewSection, Model, Project)
       },
      #{id     => <<"compare">>,
        label  => <<"Compare">>,
-       icon   => <<"view-list">>,
+       icon   => <<"compare-arrows">>,
        layout => compare_layout(ViewSection, Model, Project)
      },
      #{id     => <<"tensorboard">>,

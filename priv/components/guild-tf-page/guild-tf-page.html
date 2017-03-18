@@ -23,6 +23,10 @@
   <template>
     <style>
      :root {
+         --toolbar-text-color: #444;
+         --toolbar-text-accent-color: #ccc;
+         --toolbar-tab-ink: #ccc;
+
          --tf-multi-checkbox-outer-container: {
              height: inherit;
              margin-bottom: 20px;
@@ -116,7 +120,7 @@
      paper-header-panel {
          --paper-header-panel-shadow: {
              display: none;
-         };
+         } ;
      }
 
      #nav {
@@ -129,7 +133,7 @@
          font-size: 14px;
          height: 38px;
          margin-left: 0px;
-         --paper-tabs-selection-bar-color: #999;;
+         --paper-tabs-selection-bar-color: var(--toolbar-text-accent-color );
      }
 
      paper-tab {
