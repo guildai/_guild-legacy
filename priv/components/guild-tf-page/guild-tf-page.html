@@ -31,6 +31,13 @@
              padding: 20px 0;
          }
 
+         --tf-dashboard-layout-sidebar: {
+             padding: 20px;
+             margin: 0 20px 0 0;
+             background-color: var(--component-background-color);
+             @apply(--shadow-elevation-2dp);
+         }
+
          --tf-sidebar-helper-first-sidebar-section: {
              padding-top: 0;
          }
@@ -79,7 +86,7 @@
      :host {
          display: block;
          height: 100%;
-         padding: 0 15px;
+         padding: 0 15px 15px 15px;
      }
 
      paper-header-panel {

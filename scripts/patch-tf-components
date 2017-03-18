@@ -71,6 +71,6 @@ block-insert \
     '\        @apply(--tf-categorizer-underscore-categorization);'
 
 block-insert \
-    priv/components/tf-graph/tf-graph-controls.html \
-    '.allcontrols {' '}' \
-    '\  @apply(--tf-graph-controls-allcontrols);'
+    priv/components/tf-dashboard-common/tf-dashboard-layout.html \
+    '#sidebar {' '}' \
+    '\        @apply(--tf-dashboard-layout-sidebar);'
