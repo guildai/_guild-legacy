@@ -21,6 +21,61 @@
 <dom-module id="guild-tf-page">
   <template>
     <style>
+     :root {
+         --tf-multi-checkbox-outer-container: {
+             height: inherit;
+             margin-bottom: 20px;
+         }
+
+         --tf-sidebar-helper-sidebar-section: {
+             padding: 20px 0;
+         }
+
+         --tf-sidebar-helper-first-sidebar-section: {
+             padding-top: 0;
+         }
+
+         --tf-option-selector-content-wrapper: {
+             display: flex;
+             flex-wrap: wrap;
+         }
+
+         --tf-regex-group-regex-inpput: {
+              margin-left: 0;
+         }
+
+         --tf-dashboard-style-sidebar-section: {
+             padding: 20px 0;
+         }
+
+         --tf-collapsable-pane: {
+             margin: 0 0 20px 0;
+         }
+
+         --tf-collapsable-pane-first: {
+             margin: 0 0 20px 0;
+         }
+
+         --tf-collapsable-pane-heading: {
+             background-color: var(--component-background-color);
+             font-size: 18px;
+             padding: 12px 18px;
+             @apply(--shadow-elevation-2dp);
+         }
+
+         --tf-categorizer: {
+             padding-bottom: 0;
+         }
+
+         --tf-categorizer-underscore-categorization: {
+             display: none;
+         }
+
+         --tf-graph-controls-allcontrols: {
+             width: 240px;
+         }
+     }
+
      :host {
          display: block;
          height: 100%;

@@ -69,3 +69,8 @@ block-insert \
     priv/components/tf-dashboard-common/tf-categorizer.html \
     '#underscore-categorization {' '}' \
     '\        @apply(--tf-categorizer-underscore-categorization);'
+
+block-insert \
+    priv/components/tf-graph/tf-graph-controls.html \
+    '.allcontrols {' '}' \
+    '\  @apply(--tf-graph-controls-allcontrols);'
