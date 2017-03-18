@@ -76,11 +76,21 @@ block-insert \
     '\        @apply(--tf-dashboard-layout-sidebar);'
 
 block-insert \
-    priv/components//tf-graph-board/tf-graph-board.html \
+    priv/components/tf-graph-board/tf-graph-board.html \
     '.container {' '}' \
     '\  @apply(--tf-graph-board-container);'
 
 block-insert \
-    priv/components//tf-graph/tf-graph.html \
+    priv/components/tf-graph/tf-graph.html \
     '.container {' '}' \
     '\  @apply(--tf-graph-container);'
+
+block-insert \
+    priv/components/tf-graph/tf-graph-controls.html \
+    '.allcontrols {' '}' \
+    '\  @apply(--tf-graph-controls-allcontrols);'
+
+block-insert \
+    priv/components/tf-graph/tf-graph-controls.html \
+    '.legend-holder {' '}' \
+    '\  @apply(--tf-graph-controls-legend-holder);'
