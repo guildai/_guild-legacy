@@ -4,6 +4,7 @@
 <link rel="import" href="../paper-header-panel/paper-header-panel.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../paper-tabs/paper-tabs.html">
+<link rel="import" href="../paper-styles/paper-styles.html">
 <link rel="import" href="../tf-audio-dashboard/tf-audio-dashboard.html">
 <link rel="import" href="../tf-backend/tf-backend.html">
 <link rel="import" href="../tf-distribution-dashboard/tf-distribution-dashboard.html">
@@ -36,6 +37,9 @@
              margin: 0 20px 0 0;
              background-color: var(--component-background-color);
              @apply(--shadow-elevation-2dp);
+             height: calc(100% - 4px);
+             top: 1px;
+             margin-left: 1px;
          }
 
          --tf-sidebar-helper-first-sidebar-section: {
@@ -68,6 +72,8 @@
              font-size: 18px;
              padding: 12px 18px;
              @apply(--shadow-elevation-2dp);
+             width: calc(100% - 4px);
+             margin-left: 1px;
          }
 
          --tf-categorizer: {
@@ -81,6 +87,19 @@
          --tf-graph-controls-allcontrols: {
              width: 240px;
          }
+
+         --tf-graph-board-container: {
+             padding: 0;
+         }
+
+         --tf-graph-container: {
+             padding: 0;
+             @apply(--shadow-elevation-2dp);
+             top: 1px;
+             width: calc(100% - 4px);
+             height: calc(100% - 4px);
+         }
+
      }
 
      :host {

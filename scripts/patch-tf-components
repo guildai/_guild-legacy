@@ -74,3 +74,13 @@ block-insert \
     priv/components/tf-dashboard-common/tf-dashboard-layout.html \
     '#sidebar {' '}' \
     '\        @apply(--tf-dashboard-layout-sidebar);'
+
+block-insert \
+    priv/components//tf-graph-board/tf-graph-board.html \
+    '.container {' '}' \
+    '\  @apply(--tf-graph-board-container);'
+
+block-insert \
+    priv/components//tf-graph/tf-graph.html \
+    '.container {' '}' \
+    '\  @apply(--tf-graph-container);'
