@@ -282,11 +282,7 @@ apply_extra_sources(Field, SourcesSet) ->
 %% ===================================================================
 
 tensorboard_layout() ->
-    container(
-      [row(
-         [col(
-            <<"col-12">>,
-            [component(<<"guild-tf-page">>)])])]).
+    component(<<"guild-tf-page">>).
 
 %% ===================================================================
 %% Layout helpers

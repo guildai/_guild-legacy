@@ -51,8 +51,12 @@ init_project_view(Project, Opts, TBInfo) ->
     View.
 
 view_settings(Opts, TBInfo) ->
+    TF = apply_tf_demo_mode(TBInfo, Opts),
     #{refreshInterval => guild_view_cmd:interval_opt(Opts),
-      tensorboard => TBInfo}.
+      tensorboard => TF}.
+
+apply_tf_demo_mode(M, Opts) ->
+    M#{demo => proplists:get_bool(tf_demo, Opts)}.
 
 start_http_server(View, Port, Opts) ->
     case guild_view_v2_http:start_server(View, Port, Opts) of

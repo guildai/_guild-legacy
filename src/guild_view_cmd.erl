@@ -55,7 +55,8 @@ view_options() ->
       [{metavar, "SECONDS"}]},
      {logging, "-l, --logging",
       "enable logging", [flag]},
-     {v2, "--v2", "use Polymer based view (experimental)", [flag]}].
+     {v2, "--v2", "use Polymer based view (experimental)", [flag]},
+     {tf_demo, "--tf-demo", "Use tf-demo data", [hidden, flag]}].
 
 fmt(Msg, Data) -> io_lib:format(Msg, Data).
 
