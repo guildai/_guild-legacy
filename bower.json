@@ -13,7 +13,6 @@
         "fa-awesome":                 "pkaske/fa-awesome",
         "graphlib":                   "1.0.7",
         "iron-collapse":              "PolymerElements/iron-collapse",
-        "iron-data-table":            "Saulis/iron-data-table",
         "iron-demo-helpers":          "PolymerElements/iron-demo-helpers",
         "iron-icons":                 "PolymerElements/iron-icons",
         "iron-pages":                 "PolymerElements/iron-pages",
