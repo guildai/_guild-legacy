@@ -12,6 +12,8 @@
    Polymer({
        is: "guild-attrs",
 
+       behaviors: [Guild.DataListener],
+
        properties: {
            dataSource: {
                type: String,
@@ -19,8 +21,6 @@
                readOnly: true
            }
        },
-
-       behaviors: [Guild.DataListener],
 
        handleData: function(data) {
            this.$.table.object = data;
