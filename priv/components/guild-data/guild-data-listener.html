@@ -40,13 +40,13 @@
 
      handleFetchResult: function(result) {
          var data = this.maybeReduce(result);
-         this.handleData(data);
+         this.handleData.bind(this)(data);
          this.maybeScheduleNextFetch();
      },
 
      maybeScheduleNextFetch: function() {
          var interval = this.dataFetchInterval;
-         if (interval > 0 && this.repeatData()) {
+         if (interval > 0 && this.repeatData.bind(this)()) {
              this.fetchData(interval);
          }
      },
