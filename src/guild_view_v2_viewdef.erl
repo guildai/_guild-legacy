@@ -41,7 +41,7 @@ default_pages(ViewSection, Model, Project) ->
       },
      #{id     => <<"compare">>,
        label  => <<"Compare">>,
-       icon   => <<"compare-arrows">>,
+       icon   => <<"av:playlist-add-check">>,
        layout => compare_layout(ViewSection, Model, Project)
      },
      #{id     => <<"tensorboard">>,
@@ -209,13 +209,7 @@ apply_project_series(Name, Project, BaseAttrs) ->
 compare_layout(ViewSection, _Model, Project) ->
     %% Exercising code - TODO implement
     _Fields = compare_fields(ViewSection, Project),
-    container(
-      [row(
-         [col(
-            <<"col-12">>,
-            [component(
-               <<"guild-page-header">>,
-               #{title => <<"TODO">>})])])]).
+    component(<<"guild-compare-page">>).
 
 %% ===================================================================
 %% Compare fields
@@ -281,8 +275,7 @@ apply_extra_sources(Field, SourcesSet) ->
 %% TensorBoard layout
 %% ===================================================================
 
-tensorboard_layout() ->
-    component(<<"guild-tf-page">>).
+tensorboard_layout() -> component(<<"guild-tf-page">>).
 
 %% ===================================================================
 %% Layout helpers
