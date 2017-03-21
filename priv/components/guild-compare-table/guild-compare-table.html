@@ -1,10 +1,11 @@
 <link rel="import" href="../fa-awesome/fa-awesome.html">
+<link rel="import" href="../guild-data-table/default-styles.html">
+<link rel="import" href="../guild-data-table/guild-data-table.html">
 <link rel="import" href="../guild-data/guild-data-listener.html">
 <link rel="import" href="../guild-imports/d3.html">
 <link rel="import" href="../guild-run/guild-run.html">
 <link rel="import" href="../guild-styles/guild-styles.html">
-<link rel="import" href="../guild-data-table/default-styles.html">
-<link rel="import" href="../guild-data-table/guild-data-table.html">
+<link rel="import" href="../guild-util/guild-util.html">
 
 <dom-module id="guild-compare-table">
   <template>
@@ -16,8 +17,8 @@
          }
      }
      fa-awesome {
-         --fa-awesome-icon-width: 20px;
-         --fa-awesome-icon-height: 20px;
+         --fa-awesome-icon-width: 18px;
+         --fa-awesome-icon-height: 18px;
          margin-right: 0.5em;
      }
      .date {
@@ -79,6 +80,10 @@
        },
 
        attached: function() {
+           this.initFieldColumns();
+       },
+
+       initFieldColumns: function() {
            var table = this.$.table;
            this.fields.forEach(function(field, index) {
                var fieldName = "f" + index;
@@ -107,31 +112,31 @@
            }
        },
 
+       formatTime: function(epoch) {
+           return this.timeFormat(new Date(epoch));
+       },
+
        handleData: function(data) {
            var table = this.$.table;
            table.items = this.formatItems(data);
        },
 
        formatItems: function(data) {
-           var runStatus = this.runStatus.bind(this);
-           var itemValues = this.itemValues.bind(this);
+           var itemBase = this.itemBase.bind(this);
+           var itemFields = this.itemFields.bind(this);
            return data.map(function(item, index) {
-               return {
-                   run: item.run,
-                   status: runStatus(item.run),
-                   index: index,
-                   values: itemValues(item),
-                   "f0": {sort: 1.0 + index, value: "hello" + index},
-                   "f1": {sort: 1.1 + index, value: 1.1 + index},
-                   "f2": {sort: 1.2 + index, value: 1.2 + index},
-                   "f3": {sort: 1.3 + index, value: 1.3 + index},
-                   "f4": {sort: 1.4 + index, value: 1.4 + index}
-               }
+               return Object.assign(
+                   itemBase(item, index),
+                   itemFields(item));
            });
        },
 
-       formatTime: function(epoch) {
-           return this.timeFormat(new Date(epoch));
+       itemBase: function(item, index) {
+           return {
+               run: item.run,
+               status: this.runStatus(item.run),
+               index: index
+           }
        },
 
        runStatus: function(run) {
@@ -155,19 +160,44 @@
            }
        },
 
-       itemValues: function(item) {
-           var values = {};
-           return values;
+       itemFields: function(item) {
+           var fields = {};
+           var fieldValue = this.fieldValue.bind(this);
+           this.fields.forEach(function(field, index) {
+               // field.sources here is spelled correctly - we're assuming
+               // for the time being that field.sources will only every be
+               // a single source and can be used to lookup corresponding
+               // data in item.
+               var data = item[field.sources];
+               var name = "f" + index;
+               fields[name] = fieldValue(data, field);
+           });
+           return fields;
        },
 
-       cellVal: function(item, column) {
-           if (!item.run) {
-               // There's apparently a preliminary init of item to an
-               // empty object, which triggers a call to cellVal here.
-               // This is our test to skip.
-               return undefined;
+       fieldValue: function(data, field) {
+           var raw = this.fieldRawValue(data, field);
+           var formatted = this.fieldFormattedValue(raw, field);
+           return {sort: raw, value: formatted};
+       },
+
+       fieldRawValue: function(data, field) {
+           if (field.attribute) {
+               return data[field.attribute];
+           } else if (field.reduce) {
+               var reduce = Guild.Reduce[field.reduce];
+               if (reduce) {
+                   var reduced = reduce(data);
+                   return reduced[Object.keys(reduced)[0]];
+               }
            }
-           return item.values[column.name] + item.index;
+           return undefined;
+       },
+
+       fieldFormattedValue: function(raw, field) {
+           return field.format
+                ? Guild.Util.tryFormat(raw, field.format)
+                : raw;
        },
 
        runSelected: function(e) {
