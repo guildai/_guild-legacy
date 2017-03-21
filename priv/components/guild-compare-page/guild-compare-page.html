@@ -1,3 +1,4 @@
+<link rel="import" href="../guild-compare-table/guild-compare-table.html">
 <link rel="import" href="../guild-page-header/guild-page-header.html">
 
 <dom-module id="guild-compare-page">
@@ -9,16 +10,8 @@
          padding: 0 15px 15px 15px;
      }
     </style>
-      <guild-page-header class="paper-header" title="[[env.project.title]]">
-      </guild-page-header>
-      <iron-data-table id="table">
-        <data-table-column name="Time" flex="1" sort-by="index">
-          <template><span class="date">[[item.time]]</span></template>
-        </data-table-column>
-        <data-table-column name="Model" flex="10" filter-by="message">
-          <template>[[item.message]]</template>
-        </data-table-column>
-      </iron-data-table>
+    <guild-page-header title="[[env.project.title]]"></guild-page-header>
+    <guild-compare-table env="[[env]]"></guild-compare-table>
   </template>
   <script>
    Polymer({

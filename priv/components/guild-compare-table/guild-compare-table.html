@@ -1,0 +1,116 @@
+<link rel="import" href="../fa-awesome/fa-awesome.html">
+<link rel="import" href="../guild-data/guild-data-listener.html">
+<link rel="import" href="../guild-imports/d3.html">
+<link rel="import" href="../guild-run/guild-run.html">
+<link rel="import" href="../guild-styles/guild-styles.html">
+<link rel="import" href="../guild-data-table/default-styles.html">
+<link rel="import" href="../guild-data-table/guild-data-table.html">
+
+<dom-module id="guild-compare-table">
+  <template>
+    <style include="guild-run-status-styles"></style>
+    <style>
+     iron-data-table {
+         --iron-data-table-cell: {
+             padding: 0;
+         }
+     }
+     fa-awesome {
+         --fa-awesome-icon-width: 20px;
+         --fa-awesome-icon-height: 20px;
+         margin-right: 0.5em;
+     }
+     .date {
+         white-space: nowrap;
+     }
+    </style>
+    <guild-data-table
+        id="table"
+        selection-enabled
+        on-selecting-item="runSelected">
+      <data-table-column flex="0" width="50px" padding="0 12px" sort-by="status.sort">
+        <template>
+          <fa-awesome
+              class$="[[item.status.iconClass]]"
+              spin$="[[item.status.spin]]"
+              icon="[[item.status.icon]]">
+          </fa-awesome>
+        </template>
+      </data-table-column>
+      <data-table-column name="Time" flex="0" width="10em" sort-by="index">
+        <template><span class="date">[[item.time]]</span></template>
+      </data-table-column>
+      <data-table-column name="Model" flex="1">
+        <template>[[item.model]]</template>
+      </data-table-column>
+    </guild-data-table>
+  </template>
+  <script>
+   Polymer({
+       is: "guild-compare-table",
+
+       behaviors: [Guild.DataListener],
+
+       properties: {
+           dataSource: {
+               type: String,
+               computed: 'computeDataSource(sources)'
+           },
+           sources: {
+               type: String,
+               value: ""
+           }
+       },
+
+       listeners_: {
+           'selecting-item': ""
+       },
+
+       computeDataSource: function(sources) {
+           return "compare?sources=" + sources;
+       },
+
+       handleData: function(data) {
+           this.$.table.items = this.formatItems(data);
+       },
+
+       formatItems: function(data) {
+           var formatTime = d3.time.format("%b %d %H:%M:%S");
+           var applyStatusSort = function(status) {
+               status.sort = this.statusSort(status);
+               return status;
+           }.bind(this);
+           return data.map(function(item, index) {
+               return {
+                   index: index,
+                   id: item.run.id,
+                   status: applyStatusSort(Guild.Run.runStatus(item.run)),
+                   time: formatTime(new Date(item.run.started)),
+                   model: item.run.model
+               }
+           });
+       },
+
+       statusSort: function(status) {
+           var label = status.label;
+           if (label == "Running") {
+               return 0;
+           } else if (label == "Completed") {
+               return 1;
+           } else if (label == "Terminated") {
+               return 2;
+           } else if (label == "Error") {
+               return 3;
+           } else {
+               return 4;
+           }
+       },
+
+       runSelected: function(e) {
+           var page1 = this.env.viewdef.pages[0].id;
+           var runId = e.detail.item.id;
+           window.location = "/" + page1 + "?run=" + runId;
+       }
+   });
+  </script>
+</dom-module>
