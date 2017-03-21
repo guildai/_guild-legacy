@@ -207,9 +207,8 @@ apply_project_series(Name, Project, BaseAttrs) ->
 %% ===================================================================
 
 compare_layout(ViewSection, _Model, Project) ->
-    %% Exercising code - TODO implement
-    _Fields = compare_fields(ViewSection, Project),
-    component(<<"guild-compare-page">>).
+    Fields = compare_fields(ViewSection, Project),
+    component(<<"guild-compare-page">>, [], #{fields => Fields}).
 
 %% ===================================================================
 %% Compare fields
@@ -250,7 +249,7 @@ fields_lookup_for_runtime(Runtime) ->
 compare_field(Name, Project, [Lookup|ExtraLookups]) ->
     Field = resolve_field(Name, Project, Lookup),
     ExtraSources = field_extra_sources(Name, ExtraLookups),
-    apply_extra_sources(Field, ExtraSources).
+    field_to_map(apply_extra_sources(Field, ExtraSources)).
 
 field_extra_sources(Name, Lookups) ->
     field_extra_sources_acc(Name, Lookups, sets:new()).
@@ -270,6 +269,11 @@ maybe_apply_field_source(Field, S) ->
 apply_extra_sources(Field, SourcesSet) ->
     Sources = sets:to_list(maybe_apply_field_source(Field, SourcesSet)),
     [{"sources", Sources}|Field].
+
+field_to_map(Field) ->
+    maps:from_list(
+      [{list_to_binary(Name), list_to_binary(Val)}
+       || {Name, Val} <- Field]).
 
 %% ===================================================================
 %% TensorBoard layout
@@ -291,10 +295,16 @@ col(Classes, Items) ->
     #{type => col, classes => Classes, items => Items}.
 
 component(Name) ->
-    component(Name, []).
+    component(Name, [], #{}).
 
 component(Name, Attrs) ->
-    #{type => component, name => Name, attrs => Attrs}.
+    component(Name, Attrs, #{}).
+
+component(Name, Attrs, Config) ->
+    #{type => component,
+      name => Name,
+      attrs => Attrs,
+      config => Config}.
 
 %% ===================================================================
 %% Shared

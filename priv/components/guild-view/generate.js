@@ -68,6 +68,7 @@ Guild.Generate = new function() {
             component.setAttribute(key, attrs[key]);
         });
         component.env = state.env;
+        component.config = componentDef.config;
         Polymer.dom(parent).appendChild(component);
     };
 

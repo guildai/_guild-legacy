@@ -28,7 +28,11 @@
         id="table"
         selection-enabled
         on-selecting-item="runSelected">
-      <data-table-column flex="0" width="50px" padding="0 12px" sort-by="status.sort">
+      <data-table-column
+          flex="0"
+          width="50px"
+          padding="0 12px"
+          sort-by="status.sort">
         <template>
           <fa-awesome
               class$="[[item.status.iconClass]]"
@@ -37,11 +41,19 @@
           </fa-awesome>
         </template>
       </data-table-column>
-      <data-table-column name="Time" flex="0" width="10em" sort-by="index">
-        <template><span class="date">[[item.time]]</span></template>
+      <data-table-column
+          name="Time"
+          flex="0"
+          width="10em"
+          sort-by="index">
+        <template><span class="date">[[formatTime(item.run.started)]]</span></template>
       </data-table-column>
-      <data-table-column name="Model" flex="1">
-        <template>[[item.model]]</template>
+      <data-table-column
+          name="Model"
+          flex="1"
+          sort-by="run.model"
+          filter-by="run.model">
+        <template>[[item.run.model]]</template>
       </data-table-column>
     </guild-data-table>
   </template>
@@ -52,43 +64,80 @@
        behaviors: [Guild.DataListener],
 
        properties: {
+           env: Object,
+           fields: Array,
            dataSource: {
                type: String,
-               computed: 'computeDataSource(sources)'
+               computed: 'computeDataSource(fields)'
            },
-           sources: {
-               type: String,
-               value: ""
+           timeFormat: {
+               type: Object,
+               value: function() {
+                   return d3.time.format("%b %d %H:%M:%S");
+               }
            }
        },
 
-       listeners_: {
-           'selecting-item': ""
+       attached: function() {
+           var table = this.$.table;
+           this.fields.forEach(function(field, index) {
+               var fieldName = "f" + index;
+               var col = document.createElement("data-table-column");
+               col.name = field.label;
+               col.sortBy = fieldName + ".sort";
+               col.filterBy = fieldName + ".value";
+               var template = document.createElement("template");
+               template.innerHTML = "[[item." + fieldName + ".value]]";
+               col._setTemplate(template);
+               Polymer.dom(table).appendChild(col);
+           });
        },
 
-       computeDataSource: function(sources) {
-           return "compare?sources=" + sources;
+       computeDataSource: function(fields) {
+           var sources = new Set();
+           fields.forEach(function(field) {
+               field.sources.split(",").forEach(function(source) {
+                   sources.add(source);
+               });
+           });
+           if (sources.size > 0) {
+               return "compare?sources=" + Array.from(sources).join(",");
+           } else {
+               return "compare"
+           }
        },
 
        handleData: function(data) {
-           this.$.table.items = this.formatItems(data);
+           var table = this.$.table;
+           table.items = this.formatItems(data);
        },
 
        formatItems: function(data) {
-           var formatTime = d3.time.format("%b %d %H:%M:%S");
-           var applyStatusSort = function(status) {
-               status.sort = this.statusSort(status);
-               return status;
-           }.bind(this);
+           var runStatus = this.runStatus.bind(this);
+           var itemValues = this.itemValues.bind(this);
            return data.map(function(item, index) {
                return {
+                   run: item.run,
+                   status: runStatus(item.run),
                    index: index,
-                   id: item.run.id,
-                   status: applyStatusSort(Guild.Run.runStatus(item.run)),
-                   time: formatTime(new Date(item.run.started)),
-                   model: item.run.model
+                   values: itemValues(item),
+                   "f0": {sort: 1.0 + index, value: "hello" + index},
+                   "f1": {sort: 1.1 + index, value: 1.1 + index},
+                   "f2": {sort: 1.2 + index, value: 1.2 + index},
+                   "f3": {sort: 1.3 + index, value: 1.3 + index},
+                   "f4": {sort: 1.4 + index, value: 1.4 + index}
                }
            });
+       },
+
+       formatTime: function(epoch) {
+           return this.timeFormat(new Date(epoch));
+       },
+
+       runStatus: function(run) {
+           var status = Guild.Run.runStatus(run);
+           status.sort = this.statusSort(status);
+           return status;
        },
 
        statusSort: function(status) {
@@ -106,9 +155,24 @@
            }
        },
 
+       itemValues: function(item) {
+           var values = {};
+           return values;
+       },
+
+       cellVal: function(item, column) {
+           if (!item.run) {
+               // There's apparently a preliminary init of item to an
+               // empty object, which triggers a call to cellVal here.
+               // This is our test to skip.
+               return undefined;
+           }
+           return item.values[column.name] + item.index;
+       },
+
        runSelected: function(e) {
            var page1 = this.env.viewdef.pages[0].id;
-           var runId = e.detail.item.id;
+           var runId = e.detail.item.run.id;
            window.location = "/" + page1 + "?run=" + runId;
        }
    });
