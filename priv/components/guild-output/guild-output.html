@@ -1,21 +1,21 @@
 <link rel="import" href="../guild-component-panel/guild-component-panel.html">
 <link rel="import" href="../guild-data/guild-data-listener.html">
 <link rel="import" href="../guild-imports/d3.html">
-<link rel="import" href="../iron-data-table/default-styles.html">
-<link rel="import" href="../iron-data-table/iron-data-table.html">
+<link rel="import" href="../guild-data-table/default-styles.html">
+<link rel="import" href="../guild-data-table/guild-data-table.html">
 
 <dom-module id="guild-output">
   <template>
     <style>
-     :host {
-         --default-header: var(--iron-data-table-header);
+     :root {
+         --default-iron-data-table-header: var(--iron-data-table-header);
      }
      iron-data-table {
          background-color: #fff;
          font-size: 14px;
          line-height: 1.4;
          --iron-data-table-header: {
-             @apply(--default-header);
+             @apply(--default-iron-data-table-header);
              font-size: 14px;
              background-color: #fff;
              color: var(--primary-text-color);
@@ -26,14 +26,14 @@
      }
     </style>
     <guild-component-panel heading="Output">
-      <iron-data-table id="table">
-        <data-table-column name="Time" flex="1" sort-by="index">
+      <guild-data-table id="table">
+        <data-table-column name="Time" flex="0" width="12em" sort-by="index">
           <template><span class="date">[[item.time]]</span></template>
         </data-table-column>
-        <data-table-column name="Message" flex="10" filter-by="message">
+        <data-table-column name="Message" flex="1" filter-by="message">
           <template>[[item.message]]</template>
         </data-table-column>
-      </iron-data-table>
+      </guild-data-table>
     </guild-component-panel>
   </template>
   <script>
