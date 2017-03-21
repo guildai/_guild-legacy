@@ -98,7 +98,8 @@ source_key(Name) -> list_to_binary(Name).
 run_source("flags", Run)           -> flags(Run);
 run_source("attrs", Run)           -> attrs(Run);
 run_source("output", Run)          -> output(Run);
-run_source("series/" ++ Path, Run) -> series(Run, Path, all).
+run_source("series/" ++ Path, Run) -> series(Run, Path, all);
+run_source(Other, _Run)            -> error({run_source, Other}).
 
 %% ===================================================================
 %% Utils / support

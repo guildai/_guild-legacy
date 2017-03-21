@@ -97,13 +97,24 @@ handle_output(View, Params) ->
 handle_compare(View, Params) ->
     Sources = sources_for_params(Params),
     Runs = guild_view_v2:all_runs(View),
-    Compare = guild_data_reader_v2:compare(Runs, Sources),
-    guild_http:ok_json(guild_json:encode(Compare)).
+    Compare = (catch guild_data_reader_v2:compare(Runs, Sources)),
+    handle_compare_result(Compare).
 
 sources_for_params(Params) ->
     Param = proplists:get_value("sources", Params, ""),
     Split = string:tokens(Param, ","),
     lists:usort(Split).
+
+handle_compare_result({'EXIT', Err}) ->
+    handle_compare_error(Err);
+handle_compare_result(Compare) ->
+    guild_http:ok_json(guild_json:encode(Compare)).
+
+handle_compare_error({{run_source, Source}, _}) ->
+    guild_http:bad_request(["invalid source: ", Source]);
+handle_compare_error(Other) ->
+    error_logger:error_report({compare_error, Other}),
+    guild_http:internal_error().
 
 %% ===================================================================
 %% TensorFlow data
