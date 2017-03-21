@@ -31,7 +31,11 @@
      },
 
      dataFetchUrl: function() {
-         return "/data/" + this.dataSource + "?run=" + this.env.runId;
+         var base = "/data/" + this.dataSource;
+         var runParam = "run=" + this.env.runId;
+         return base.indexOf("?") == -1
+              ? base + "?" + runParam
+              : base + "&" + runParam;
      },
 
      handleFetchResult: function(result) {
