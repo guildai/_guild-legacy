@@ -23,6 +23,8 @@ app("GET", {"/data/attrs", _, Params}, View, _) ->
     handle_attrs(View, Params);
 app("GET", {"/data/output", _, Params}, View, _) ->
     handle_output(View, Params);
+app("GET", {"/data/compare", _, Params}, View, _) ->
+    handle_compare(View, Params);
 app("GET", {"/data/tf/" ++ Path, Qs, _}, _View, Settings) ->
     handle_tf_data(Path, Qs, Settings);
 app(_, _, _, _) ->
@@ -34,8 +36,7 @@ app(_, _, _, _) ->
 
 handle_runs(View) ->
     Runs = guild_view_v2:formatted_runs(View),
-    JSON = guild_json:encode(Runs),
-    guild_http:ok_json(JSON).
+    guild_http:ok_json(guild_json:encode(Runs)).
 
 %% ===================================================================
 %% Series
@@ -45,8 +46,8 @@ handle_series(View, Path, Params) ->
     Run = run_for_params(Params, View),
     Pattern = http_uri:decode(Path),
     Max = max_epoch_for_params(Params),
-    JSON = guild_data_reader:series_json(Run, Pattern, Max),
-    guild_http:ok_json(JSON).
+    Series = guild_data_reader_v2:series(Run, Pattern, Max),
+    guild_http:ok_json(guild_json:encode(Series)).
 
 max_epoch_for_params(Params) ->
     Schema = [{"max_epochs", [{any, [integer, "all"]}]}],
@@ -68,8 +69,8 @@ max_epoch_validate_error(_) ->
 
 handle_flags(View, Params) ->
     Run = run_for_params(Params, View),
-    JSON = guild_data_reader:flags_json(Run),
-    guild_http:ok_json(JSON).
+    Flags = guild_data_reader_v2:flags(Run),
+    guild_http:ok_json(guild_json:encode(Flags)).
 
 %% ===================================================================
 %% Attrs
@@ -77,17 +78,32 @@ handle_flags(View, Params) ->
 
 handle_attrs(View, Params) ->
     Run = run_for_params(Params, View),
-    JSON = guild_data_reader:attrs_json(Run),
-    guild_http:ok_json(JSON).
+    Attrs = guild_data_reader_v2:attrs(Run),
+    guild_http:ok_json(guild_json:encode(Attrs)).
 
 %% ===================================================================
-%% Attrs
+%% Output
 %% ===================================================================
 
 handle_output(View, Params) ->
     Run = run_for_params(Params, View),
-    JSON = guild_data_reader:output_json(Run),
-    guild_http:ok_json(JSON).
+    Output = guild_data_reader_v2:output(Run),
+    guild_http:ok_json(guild_json:encode(Output)).
+
+%% ===================================================================
+%% Compare
+%% ===================================================================
+
+handle_compare(View, Params) ->
+    Sources = sources_for_params(Params),
+    Runs = guild_view_v2:all_runs(View),
+    Compare = guild_data_reader_v2:compare(Runs, Sources),
+    guild_http:ok_json(guild_json:encode(Compare)).
+
+sources_for_params(Params) ->
+    Param = proplists:get_value("sources", Params, ""),
+    Split = string:tokens(Param, ","),
+    lists:usort(Split).
 
 %% ===================================================================
 %% TensorFlow data

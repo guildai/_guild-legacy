@@ -1,7 +1,7 @@
 -module(guild_view_v2).
 
 -export([start_link/2, app_page_env/2, formatted_runs/1,
-         resolve_run/2, settings/1]).
+         resolve_run/2, all_runs/1, settings/1]).
 
 -export([handle_msg/3]).
 
@@ -37,6 +37,9 @@ formatted_runs(View) ->
 
 resolve_run(View, Id) ->
     e2_service:call(View, {fun resolve_run_/2, [Id]}).
+
+all_runs(View) ->
+    e2_service:call(View, {fun all_runs_/1, []}).
 
 settings(View) ->
     e2_service:call(View, {fun settings_/1, []}).
@@ -104,36 +107,14 @@ runs(#state{run_roots=RunRoots}) ->
     guild_run:runs_for_runroots(RunRoots).
 
 format_runs(Runs) ->
-    sort_formatted_runs([format_run(Run) || Run <- Runs]).
-
-format_run(Run) ->
-    {[
-      {id, guild_run:id(Run)},
-      {dir, list_to_binary(guild_run:dir(Run))},
-      {status, guild_run_util:run_status(Run)}
-      |format_run_attrs(guild_run:attrs(Run))
-     ]}.
-
-format_run_attrs(Attrs) ->
-    [format_run_attr(Attr) || Attr <- Attrs].
-
-format_run_attr({Name, Val}) ->
-    {list_to_binary(Name), format_attr_val(Name, Val)}.
-
-format_attr_val("started",     Bin) -> binary_to_integer(Bin);
-format_attr_val("stopped",     Bin) -> binary_to_integer(Bin);
-format_attr_val("exit_status", Bin) -> binary_to_integer(Bin);
-format_attr_val(_Name,         Bin) -> Bin.
+    sort_formatted_runs([guild_run_util:format_run(Run) || Run <- Runs]).
 
 sort_formatted_runs(Runs) ->
     Cmp = fun(A, B) -> run_start_time(A) > run_start_time(B) end,
     lists:sort(Cmp, Runs).
 
-run_start_time({Attrs}) ->
-    case lists:keyfind(<<"started">>, 1, Attrs) of
-        {_, Val} -> Val;
-        false -> 0
-    end.
+run_start_time(#{<<"started">>:=Started}) -> Started;
+run_start_time(#{}) -> 0.
 
 %% ===================================================================
 %% Resolve run
@@ -152,6 +133,13 @@ run_for_id(_Id, []) ->
 
 run_for_id(Id, Id, Run, _)    -> Run;
 run_for_id(_,  Id, _,   Rest) -> run_for_id(Id, Rest).
+
+%% ===================================================================
+%% All runs
+%% ===================================================================
+
+all_runs_(#state{run_roots=RunRoots}) ->
+    guild_run:runs_for_runroots(RunRoots).
 
 %% ===================================================================
 %% Helpers

@@ -14,10 +14,18 @@
 
 -module(guild_run_util).
 
--export([run_status/1, run_os_pid/1]).
+-export([run_status/1, run_os_pid/1, format_run/1]).
+
+%% ===================================================================
+%% Run status
+%% ===================================================================
 
 run_status(Run) ->
     run_status_for_pid(run_os_pid(Run)).
+
+%% ===================================================================
+%% Run OS pid
+%% ===================================================================
 
 run_os_pid(Run) ->
     Path = guild_rundir:guild_file(guild_run:dir(Run), "LOCK"),
@@ -40,3 +48,26 @@ run_status_for_pid({ok, Pid}) ->
     end;
 run_status_for_pid(error) ->
     stopped.
+
+%% ===================================================================
+%% Format run
+%% ===================================================================
+
+format_run(Run) ->
+    maps:from_list(
+      [{id, guild_run:id(Run)},
+       {dir, list_to_binary(guild_run:dir(Run))},
+       {status, run_status(Run)}
+       |format_run_attrs(guild_run:attrs(Run))
+      ]).
+
+format_run_attrs(Attrs) ->
+    [format_run_attr(Attr) || Attr <- Attrs].
+
+format_run_attr({Name, Val}) ->
+    {list_to_binary(Name), format_attr_val(Name, Val)}.
+
+format_attr_val("started",     Bin) -> binary_to_integer(Bin);
+format_attr_val("stopped",     Bin) -> binary_to_integer(Bin);
+format_attr_val("exit_status", Bin) -> binary_to_integer(Bin);
+format_attr_val(_Name,         Bin) -> Bin.
