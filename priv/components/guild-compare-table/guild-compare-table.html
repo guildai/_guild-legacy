@@ -172,8 +172,9 @@
 
        fieldValue: function(data, field) {
            var raw = this.fieldRawValue(data, field);
+           var sort = raw == undefined ? null: raw;
            var formatted = this.fieldFormattedValue(raw, field);
-           return {sort: raw, value: formatted};
+           return {sort: sort, value: formatted};
        },
 
        fieldRawValue: function(data, field) {
