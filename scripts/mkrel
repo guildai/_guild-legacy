@@ -7,17 +7,17 @@ PKG_NAME=guild
 # Erlang. Failing to keep these versions in sync will almost certainly
 # cause hard to diagnose bugs in Guild.
 #
-ERTS_VER=8.1   # !!!! READ ABOVE COMMENT BEFORE CHANGING !!!!
+ERTS_VER=8.3   # !!!! READ ABOVE COMMENT BEFORE CHANGING !!!!
 REL_OTP_APPS=(
-    compiler-7.0.2
-    crypto-3.7.1
-    inets-6.3.3
-    kernel-5.1
-    observer-2.2.2
-    runtime_tools-1.10.1
-    stdlib-3.1
-    syntax_tools-2.1
-    wx-1.7.1
+    compiler-7.0.4
+    crypto-3.7.3
+    inets-6.3.6
+    kernel-5.2
+    observer-2.3.1
+    runtime_tools-1.11.1
+    stdlib-3.3
+    syntax_tools-2.1.1
+    wx-1.8
 )
 
 REL_ROOT=releases
