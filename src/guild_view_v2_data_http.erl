@@ -130,10 +130,11 @@ handle_tf_data_(Path, Qs, Port) ->
     FullPath = [Path, "?", Qs],
     handle_tf_data_result(guild_tf_data_proxy:data(Port, FullPath)).
 
-handle_tf_data_result({ok, JSON}) ->
-    guild_http:ok_json(JSON);
-handle_tf_data_result({error, {status, Status}}) ->
-    {Status, [], []}.
+handle_tf_data_result({ok, {Status, Headers, Body}}) ->
+    {Status, Headers, Body};
+handle_tf_data_result({error, Err}) ->
+    guild_log:internal("Error reading from tf proxy: ~p~n", [Err]),
+    guild_http:internal_error().
 
 %% ===================================================================
 %% Shared
