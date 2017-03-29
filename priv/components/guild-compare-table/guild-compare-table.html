@@ -11,10 +11,22 @@
   <template>
     <style include="guild-run-status-styles"></style>
     <style>
-     fa-awesome {
-         --fa-awesome-icon-width: 18px;
-         --fa-awesome-icon-height: 18px;
-         margin-right: 0.5em;
+     :root {
+         --data-table-cell: {
+             padding: 0 5px;
+             font-size: 14px;
+         };
+         --data-table-sort-icon: {
+             padding: 0;
+             width: 20px;
+         };
+     }
+     .status-header {
+         margin-left: -4px;
+         width: 0;
+     }
+     .status-cell {
+         margin-left: 5px;
      }
      .date {
          white-space: nowrap;
@@ -29,12 +41,18 @@
           width="50px"
           padding="0 12px"
           sort-by="status.sort">
+        <template is="header">
+          <div class="status-header"></div>
+        </template>
         <template>
-          <fa-awesome
-              class$="[[item.status.iconClass]]"
-              spin$="[[item.status.spin]]"
-              icon="[[item.status.icon]]">
-          </fa-awesome>
+          <div class="status-cell">
+            <fa-awesome
+                class$="[[item.status.iconClass]]"
+                spin$="[[item.status.spin]]"
+                icon="[[item.status.icon]]"
+                size="22">
+            </fa-awesome>
+          </div>
         </template>
       </data-table-column>
       <data-table-column
