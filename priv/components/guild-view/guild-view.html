@@ -8,7 +8,6 @@
 <link rel="import" href="../guild-event/guild-event.html">
 <link rel="import" href="../guild-icons/guild-icons.html">
 <link rel="import" href="../guild-imports/bootstrap-grid.html">
-<link rel="import" href="../guild-modal-message/guild-modal-message.html">
 <link rel="import" href="../guild-run/guild-run.html">
 <link rel="import" href="../guild-run/guild-runs-listener.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
@@ -21,6 +20,8 @@
 
 <link rel="import" href="404-page.html">
 <link rel="import" href="guild-view-page.html">
+<link rel="import" href="modal-message.html">
+<link rel="import" href="fullscreen-overlay.html">
 
 <dom-module id="guild-view">
   <template>
@@ -60,6 +61,18 @@
          text-decoration: none;
          color: var(--toolbar-text-color);
      }
+     .fullscreen {
+         display: block;
+         z-index: 9999;
+         position: fixed;
+         width: 100%;
+         height: 100%;
+         top: 0;
+         right: 0;
+         left: 0;
+         bottom: 0;
+         overflow: auto;
+     }
     </style>
 
     <app-location route="{{route}}"></app-location>
@@ -70,7 +83,8 @@
         query-params="{{queryParams}}"
         tail="{{routeTail}}"></app-route>
 
-    <guild-modal-message id="dialog"></guild-modal-message>
+    <modal-message id="dialog"></modal-message>
+    <fullscreen-overlay id="fullscreen"></fullscreen-overlay>
 
     <app-drawer-layout narrow="{{narrow}}">
       <app-drawer id="drawer" hidden$="[[!narrow]]">
@@ -138,6 +152,10 @@
         observers: [
             'pageChanged(currentPage.id)'
         ],
+
+        listeners: {
+            'fullscreen': 'handleFullscreen'
+        },
 
         ready: function() {
             Guild.Event.register(
@@ -210,6 +228,28 @@
 
         closeDrawer: function() {
             this.$.drawer.close();
+        },
+
+        handleFullscreen: function(e) {
+            this.$.fullscreen.appendChild(e.target);
+            this.$.fullscreen.open();
+            //Polumer.dom(e.target).classList.toggle("fullscreen");
+
+            /*
+            var s = e.target.style;
+            s.display = 'block';
+            s.zIndex = 2;
+            s.position = 'fixed';
+            s.width = '100%';
+            s.height = '100%';
+            s.top = 0;
+            s.right = 0;
+            s.left = 0;
+            s.bottom = 0;
+            s.overflow = 'auto';
+            s.opacity = 1;
+            s.backgroundColor = "#fff";
+            */
         }
     });
   </script>

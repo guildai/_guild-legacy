@@ -13,7 +13,11 @@
   </style>
   <template>
     <paper-material>
-      <guild-expansion-panel heading="[[heading]]" opened fixed="[[fixed]]">
+      <guild-expansion-panel
+          heading="[[heading]]"
+          fixed="[[fixed]]"
+          fullscreen="[[fullscreen]]"
+          opened>
         <div id="container">
           <content></content>
         </div>
@@ -25,7 +29,8 @@
        is: "guild-component-panel",
        properties: {
            heading: String,
-           fixed: Boolean
+           fixed: Boolean,
+           fullscreen: Boolean
        }
    });
   </script>

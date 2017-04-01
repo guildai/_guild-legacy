@@ -9,12 +9,10 @@
      .fixed-header {
          color: var(--primary-text-color);
          display: flex;
-         layout-direction: row;
          align-items: center;
-         justify-content: space-between;
      }
      .header {
-         cursor: pointer;
+         align-items: center;
          padding: 5px 20px;
      }
      .fixed-header {
@@ -24,15 +22,24 @@
          margin: 0;
          font-size: 18px;
          font-weight: normal;
+         flex: 1;
      }
      paper-icon-button {
          color: var(--disabled-text-color);
      }
     </style>
     <template is="dom-if" if="[[!fixed]]">
-      <div class="header" on-click="toggle">
+      <div class="header">
         <h2>[[heading]]</h2>
-        <paper-icon-button icon="[[toggleIcon]]"></paper-icon-button>
+        <paper-icon-button
+            icon="[[toggleIcon]]"
+            on-click="toggle">
+        </paper-icon-button>
+        <paper-icon-button
+            icon="fullscreen"
+            on-click="fireFullscreen"
+            hidden="[[!fullscreen]]">
+        </paper-icon-button>
       </div>
       <iron-collapse opened="{{opened}}">
         <slot></slot>
@@ -60,6 +67,10 @@
                reflectToAttribute: true,
                notify: true
            },
+           fullscreen: {
+               type: Boolean,
+               value: false
+           },
            toggleIcon: {
                type: String,
                computed: 'computeToggleIcon(opened)'
@@ -69,6 +80,10 @@
        toggle: function() {
            this.opened = !this.opened;
            this.fire('toggle', this);
+       },
+
+       fireFullscreen: function(e) {
+           this.fire("fullscreen", this);
        },
 
        computeToggleIcon: function(opened) {

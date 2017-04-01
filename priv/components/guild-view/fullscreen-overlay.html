@@ -1,0 +1,26 @@
+<link rel="import" href="../iron-overlay-behavior/iron-overlay-behavior.html">
+
+<dom-module id="fullscreen-overlay">
+  <template>
+    <style>
+     :host {
+         background: white;
+         color: black;
+         width: calc(100% - 60px);
+         height: calc(100% - 60px);
+         box-shadow: rgba(0, 0, 0, 0.24) -2px 5px 12px 0px, rgba(0, 0, 0, 0.12) 0px 0px 12px 0px;
+     }
+    </style>
+    <content></content>
+  </template>
+</dom-module>
+
+<script>
+ Polymer({
+     is: "fullscreen-overlay",
+
+     behaviors: [
+         Polymer.IronOverlayBehavior
+     ]
+ });
+</script>

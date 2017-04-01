@@ -1,0 +1,16 @@
+<script>
+ var Guild = Guild || {};
+ Guild.Fullscreen = {
+
+     listeners: {
+         "fullscreen": "handleFullscreen"
+     },
+
+     handleFullscreen: function(e) {
+         if (e.target != this) {
+             e.stopPropagation();
+             this.fire("fullscreen");
+         }
+     }
+ };
+</script>

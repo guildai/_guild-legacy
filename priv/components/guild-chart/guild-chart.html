@@ -1,5 +1,6 @@
 <link rel="import" href="../guild-component-panel/guild-component-panel.html">
 <link rel="import" href="../guild-data/guild-data-listener.html">
+<link rel="import" href="../guild-util/guild-fullscreen-behavior.html">
 <link rel="import" href="../vz-line-chart/vz-line-chart.html">
 
 <dom-module id="guild-chart">
@@ -13,7 +14,7 @@
          align-items: stretch;
      }
     </style>
-    <guild-component-panel heading="[[title]]">
+    <guild-component-panel heading="[[title]]" fullscreen>
       <div id="container">
         <vz-line-chart id="chart" x-type="wall_time"></vz-line-chart>
       </div>
@@ -27,7 +28,7 @@
            title: String
        },
 
-       behaviors: [Guild.DataListener],
+       behaviors: [Guild.DataListener, Guild.Fullscreen],
 
        handleData: function(data) {
            var names = Object.keys(data);
