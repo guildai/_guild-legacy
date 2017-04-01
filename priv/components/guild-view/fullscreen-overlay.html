@@ -7,8 +7,8 @@
          background: white;
          color: black;
          width: calc(100% - 60px);
-         height: calc(100% - 60px);
          box-shadow: rgba(0, 0, 0, 0.24) -2px 5px 12px 0px, rgba(0, 0, 0, 0.12) 0px 0px 12px 0px;
+         pointer-events: none;
      }
     </style>
     <content></content>
@@ -21,6 +21,36 @@
 
      behaviors: [
          Polymer.IronOverlayBehavior
-     ]
+     ],
+
+     properties: {
+         withBackdrop: {
+             type: Boolean,
+             value: true
+         },
+         content: {
+             type: Object,
+             observer: 'contentChanged'
+         },
+         contentParent: Object
+     },
+
+     listeners: {
+         'iron-overlay-canceled': 'handleCancel'
+     },
+
+     contentChanged: function(content) {
+         if (content == undefined) {
+             return;
+         }
+         this.contentParent = content.parentElement;
+         this.appendChild(content);
+     },
+
+     handleCancel: function(e) {
+         this.contentParent.appendChild(this.content);
+         this.content.fire("guild-fullscreen-canceled");
+         this.content = undefined;
+     }
  });
 </script>

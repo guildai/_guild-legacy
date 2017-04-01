@@ -154,7 +154,8 @@
         ],
 
         listeners: {
-            'fullscreen': 'handleFullscreen'
+            'guild-fullscreen': 'handleFullscreen',
+            'guild-exit-fullscreen': 'handleExitFullscreen'
         },
 
         ready: function() {
@@ -231,25 +232,12 @@
         },
 
         handleFullscreen: function(e) {
-            this.$.fullscreen.appendChild(e.target);
+            this.$.fullscreen.content = e.target;
             this.$.fullscreen.open();
-            //Polumer.dom(e.target).classList.toggle("fullscreen");
+        },
 
-            /*
-            var s = e.target.style;
-            s.display = 'block';
-            s.zIndex = 2;
-            s.position = 'fixed';
-            s.width = '100%';
-            s.height = '100%';
-            s.top = 0;
-            s.right = 0;
-            s.left = 0;
-            s.bottom = 0;
-            s.overflow = 'auto';
-            s.opacity = 1;
-            s.backgroundColor = "#fff";
-            */
+        handleExitFullscreen: function(e) {
+            this.$.fullscreen.cancel();
         }
     });
   </script>

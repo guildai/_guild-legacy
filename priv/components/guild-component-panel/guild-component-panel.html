@@ -14,9 +14,11 @@
     <paper-material>
       <guild-expansion-panel
           heading="[[heading]]"
-          fixed="[[fixed]]"
-          fullscreen="[[fullscreen]]"
-          opened>
+          no-toggle="[[noToggle]]"
+          opened="{{opened}}">
+        <div class="actions">
+          <content select=".actions"></content>
+        </div>
         <div id="container">
           <content></content>
         </div>
@@ -28,8 +30,11 @@
        is: "guild-component-panel",
        properties: {
            heading: String,
-           fixed: Boolean,
-           fullscreen: Boolean
+           noToggle: Boolean,
+           opened: {
+               type: Boolean,
+               value: true
+           }
        }
    });
   </script>
