@@ -47,7 +47,7 @@ Guild.Generate = new function() {
 
     var generateRow = function(parent, rowDef, state) {
         var row = document.createElement("div");
-        row.setAttribute("class", "row");
+        row.setAttribute("class", "row guild-view-row");
         Polymer.dom(parent).appendChild(row);
         generateChildren(row, rowDef.items, state);
     };
