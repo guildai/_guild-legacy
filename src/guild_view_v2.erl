@@ -1,7 +1,7 @@
 -module(guild_view_v2).
 
 -export([start_link/2, app_page_env/2, formatted_runs/1,
-         resolve_run/2, all_runs/1, settings/1]).
+         resolve_run/2, all_runs/1, settings/1, viewdef/2]).
 
 -export([handle_msg/3]).
 
@@ -43,6 +43,9 @@ all_runs(View) ->
 
 settings(View) ->
     e2_service:call(View, {fun settings_/1, []}).
+
+viewdef(View, Run) ->
+    e2_service:call(View, {fun viewdef_/2, [Run]}).
 
 %% ===================================================================
 %% Dispatch
@@ -140,6 +143,15 @@ run_for_id(_,  Id, _,   Rest) -> run_for_id(Id, Rest).
 
 all_runs_(#state{run_roots=RunRoots}) ->
     guild_run:runs_for_runroots(RunRoots).
+
+%% ===================================================================
+%% Viewdef
+%% ===================================================================
+
+viewdef_(Run, State) ->
+    Project = load_project(State),
+    {ok, Model} = guild_project_util:run_model(Run, Project),
+    guild_view_v2_viewdef:viewdef(Model, Project).
 
 %% ===================================================================
 %% Helpers

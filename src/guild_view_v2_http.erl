@@ -84,15 +84,31 @@ log_middleware() ->
     fun(Upstream) -> guild_log_http:create_app(Upstream) end.
 
 %% ===================================================================
-%% Page handler
+%% App page handler
 %% ===================================================================
 
 app_page_handler(View) ->
     psycho_util:dispatch_app(
       {?MODULE, handle_app_page},
-      [View, parsed_query_string]).
+      [parsed_path, View]).
 
-handle_app_page(View, Params) ->
+handle_app_page({"/", QS, Params}, View) ->
+    handle_index_page(Params, QS, View);
+handle_app_page({_, _, Params}, View) ->
+    handle_other_page(Params, View).
+
+handle_index_page(Params, QS, View) ->
+    Run = run_for_params(Params, View),
+    Viewdef = guild_view_v2:viewdef(View, Run),
+    guild_http:redirect(viewdef_page1_path(Viewdef, QS)).
+
+viewdef_page1_path(#{pages:=[#{id:=PageId}|_]}, QS) ->
+    ["/", PageId, maybe_qs(QS)].
+
+maybe_qs("") -> "";
+maybe_qs(QS) -> ["?", QS].
+
+handle_other_page(Params, View) ->
     Run = run_for_params(Params, View),
     Vars = app_page_vars(View, Run),
     Page = guild_dtl:render(guild_view_v2_index_page, Vars),
