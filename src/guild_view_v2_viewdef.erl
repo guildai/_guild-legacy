@@ -82,7 +82,7 @@ field_cols(ViewSection, Model, Project) ->
 field_col(Field) ->
     P = fun(Name) -> binary_prop(Name, Field) end,
     col(
-      <<"col-12 col-sm-6 col-xl-4 col-xxl-3 pb-3">>,
+      <<"col-12 col-sm-6 col-xl-4 col-xxl-3">>,
       [component(
          <<"guild-field">>,
          #{label         => P("label"),

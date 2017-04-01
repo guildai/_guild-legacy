@@ -69,7 +69,8 @@ Guild.Generate = new function() {
         });
         component.env = state.env;
         component.config = componentDef.config;
-        Polymer.dom(parent).appendChild(component);
+        wrapper = wrapComponent(component);
+        Polymer.dom(parent).appendChild(wrapper);
     };
 
     var componentSource = function(componentDef, state) {
@@ -82,6 +83,13 @@ Guild.Generate = new function() {
 
     var defaultComponentSource = function(name, state) {
         return state.page.resolveUrl("../" + name + "/" + name + ".html");
+    };
+
+    var wrapComponent = function(component) {
+        var wrapper = document.createElement("div");
+        wrapper.setAttribute("class", "component-wrapper");
+        wrapper.appendChild(component);
+        return wrapper;
     };
 
     this.generate = generate;
