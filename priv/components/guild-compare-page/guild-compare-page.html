@@ -13,7 +13,10 @@
          margin-bottom: 20px;
      }
     </style>
-    <guild-page-header title="[[env.project.title]]"></guild-page-header>
+    <guild-page-header
+        title="[[env.project.title]]"
+        title-tooltip="[[env.project.description]]">
+    </guild-page-header>
     <guild-compare-table env="[[env]]" fields=[[config.fields]]></guild-compare-table>
   </template>
   <script>

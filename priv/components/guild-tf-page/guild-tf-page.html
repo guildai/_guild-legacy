@@ -151,7 +151,10 @@
     </style>
 
     <paper-header-panel>
-      <guild-page-header class="paper-header" title="[[env.project.title]]">
+      <guild-page-header
+          class="paper-header"
+          title="[[env.project.title]]"
+          title-tooltip="[[env.project.description]]">
         <div id="nav">
           <paper-tabs selected="{{selected}}">
             <template is="dom-repeat" items="[[tabs]]" as="tab">
