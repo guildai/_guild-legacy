@@ -34,14 +34,15 @@
          white-space: nowrap;
      }
      .toggles {
-         margin-top: 10px;
+         margin: 10px 0 0 50px;
          display: inline-block;
      }
     </style>
     <guild-data-table
         id="table"
         selection-enabled
-        on-selecting-item="runSelected">
+        multi-selection
+        on-selecting-item_="runSelected">
       <data-table-column
           flex="0"
           width="50px"
