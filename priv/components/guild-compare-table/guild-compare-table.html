@@ -6,6 +6,7 @@
 <link rel="import" href="../guild-run/guild-run.html">
 <link rel="import" href="../guild-styles/guild-styles.html">
 <link rel="import" href="../guild-util/guild-util.html">
+<link rel="import" href="../paper-toggle-button/paper-toggle-button.html">
 
 <dom-module id="guild-compare-table">
   <template>
@@ -70,6 +71,9 @@
         <template>[[item.run.model]]</template>
       </data-table-column>
     </guild-data-table>
+    <div class="toggles">
+      <paper-toggle-button checked="{{showFailed}}">Show failed runs</paper-toggle-button>
+    </div>
   </template>
   <script>
    Polymer({
@@ -89,11 +93,28 @@
                value: function() {
                    return d3.time.format("%b %d %H:%M:%S");
                }
+           },
+           showFailed: {
+               type: Boolean,
+               value: false,
+               observer: 'showFailedChanged'
            }
        },
 
        attached: function() {
+           this.initStatusFilter();
            this.initFieldColumns();
+       },
+
+       initStatusFilter: function() {
+           this.$.table.push('filter', {
+               path: 'status.label',
+               filter: this.statusFilter()
+           });
+       },
+
+       statusFilter: function() {
+           return this.showFailed ? "" : "Completed|Running";
        },
 
        initFieldColumns: function() {
@@ -218,6 +239,12 @@
            var page1 = this.env.viewdef.pages[0].id;
            var runId = e.detail.item.run.id;
            window.location = "/" + page1 + "?run=" + runId;
+       },
+
+       showFailedChanged: function(val, old) {
+           if (old != undefined) {
+               this.$.table.set("filter.0.filter", this.statusFilter());
+           }
        }
    });
   </script>
