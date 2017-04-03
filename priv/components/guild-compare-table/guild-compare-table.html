@@ -160,7 +160,20 @@
 
        handleData: function(data) {
            var table = this.$.table;
-           table.items = this.formatItems(data);
+           var newItems = this.formatItems(data);
+           if (table.items == undefined) {
+               table.items = newItems;
+           } else if (this.itemsChanged(table.items, newItems)) {
+               table.items = newItems
+           }
+       },
+
+       itemsChanged: function(items, newItems) {
+           return JSON.stringify(items) != JSON.stringify(newItems);
+       },
+
+       repeatData: function() {
+           return true;
        },
 
        formatItems: function(data) {
