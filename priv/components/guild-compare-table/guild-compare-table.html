@@ -76,7 +76,7 @@
       </data-table-column>
     </guild-data-table>
     <div class="toggles">
-      <paper-toggle-button checked="{{showFailed}}">Show failed runs</paper-toggle-button>
+      <paper-toggle-button checked="{{hideFailed}}">Hide failed runs</paper-toggle-button>
     </div>
   </template>
   <script>
@@ -98,10 +98,10 @@
                    return d3.time.format("%b %d %H:%M:%S");
                }
            },
-           showFailed: {
+           hideFailed: {
                type: Boolean,
                value: false,
-               observer: 'showFailedChanged'
+               observer: 'hideFailedChanged'
            }
        },
 
@@ -118,7 +118,7 @@
        },
 
        statusFilter: function() {
-           return this.showFailed ? "" : "Completed|Running";
+           return this.hideFailed ? "Completed|Running" : "";
        },
 
        initFieldColumns: function() {
@@ -245,7 +245,7 @@
            window.location = "/" + page1 + "?run=" + runId;
        },
 
-       showFailedChanged: function(val, old) {
+       hideFailedChanged: function(val, old) {
            if (old != undefined) {
                this.$.table.set("filter.0.filter", this.statusFilter());
            }
