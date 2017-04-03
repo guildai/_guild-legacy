@@ -39,8 +39,10 @@
      },
 
      handleFetchResult: function(result) {
-         var data = this.maybeReduce(result);
-         this.handleData.bind(this)(data);
+         if (result != null) {
+             var data = this.maybeReduce(result);
+             this.handleData.bind(this)(data);
+         }
          this.maybeScheduleNextFetch();
      },
 

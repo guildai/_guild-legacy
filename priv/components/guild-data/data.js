@@ -37,6 +37,10 @@ Guild.Data = new function() {
                 callback(json);
             } else {
                 console.error(xhr);
+                // Weak interface, but keeping it simple for
+                // now. Errors are reported implicitly as null value
+                // to the callback.
+                callback(null);
             }
         };
         xhr.send();
