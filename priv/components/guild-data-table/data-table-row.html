@@ -14,7 +14,11 @@
         @apply(--iron-data-table-row-selected);
       }
 
-      :host(:not([header])[even]) {
+      :host([selected]):after {
+        @apply(--iron-data-table-row-selected-after);
+      }
+
+     :host(:not([header])[even]) {
         @apply(--iron-data-table-row-even);
       }
 

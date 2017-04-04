@@ -32,6 +32,7 @@
      }
      .date {
          white-space: nowrap;
+         color: var(--default-primary-color, #03A9F4);
      }
      .toggles {
          margin: 10px 0 0 50px;
@@ -41,8 +42,7 @@
     <guild-data-table
         id="table"
         selection-enabled
-        multi-selection
-        on-selecting-item_="runSelected">
+        multi-selection>
       <data-table-column
           flex="0"
           width="50px"
@@ -70,7 +70,9 @@
           flex="0"
           width="10em"
           sort-by="index">
-        <template><span class="date">[[formatTime(item.run.started)]]</span></template>
+        <template>
+          <a class="date" href$="[[runLink(item.run)]]">[[formatTime(item.run.started)]]</a>
+        </template>
       </data-table-column>
       <data-table-column
           name="Model"
@@ -156,7 +158,20 @@
        },
 
        formatTime: function(epoch) {
-           return this.timeFormat(new Date(epoch));
+           if (epoch) {
+               return this.timeFormat(new Date(epoch));
+           } else {
+               return "";
+           }
+       },
+
+       runLink: function(run) {
+           if (run) {
+               var page1 = this.env.viewdef.pages[0].id;
+               return "/" + page1 + "?run=" + run.id;
+           } else {
+               return "";
+           }
        },
 
        handleData: function(data) {
@@ -255,12 +270,6 @@
            return field.format
                 ? Guild.Util.tryFormat(raw, field.format)
                 : raw;
-       },
-
-       runSelected: function(e) {
-           var page1 = this.env.viewdef.pages[0].id;
-           var runId = e.detail.item.run.id;
-           window.location = "/" + page1 + "?run=" + runId;
        },
 
        hideFailedChanged: function(val, old) {

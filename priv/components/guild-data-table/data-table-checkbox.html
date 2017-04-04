@@ -44,12 +44,12 @@
       }
 
       :host([checked]) .checkmark {
-        border-bottom: 2px solid white;
-        border-right: 2px solid white;
-        width: 36%;
-        height: 70%;
-        -webkit-transform-origin: 97% 86%;
-        transform-origin: 97% 86%;
+        border-bottom: 3px solid white;
+        border-right: 3px solid white;
+        width: 7px;
+        height: 11px;
+        -webkit-transform-origin: 5px 11px;
+        transform-origin: 5px 11px;
         -webkit-animation: checkmark-expand 140ms ease-out forwards;
         animation: checkmark-expand 140ms ease-out forwards;
       }
@@ -74,8 +74,8 @@
 
       :host([indeterminate]) .checkmark {
         border-bottom: 2px solid var(--primary-text-color);
-        width: 60%;
-        height: 45%;
+        width: 9px;
+        height: 8px;
         margin-left: 3px;
         -webkit-animation: indeterminate-expand 140ms ease-out forwards;
         animation: indeterminate-expand 140ms ease-out forwards;
