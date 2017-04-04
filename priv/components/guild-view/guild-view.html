@@ -105,7 +105,7 @@
         <app-header reveals>
           <app-toolbar>
             <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
-            <div><a href="/[[defaultPage.id]]">Guild View</a></div>
+            <div><a href="javascript:window.location='/'">Guild View</a></div>
             <paper-tabs hidden$="[[narrow]]" selected="{{currentPage.id}}" attr-for-selected="page-id">
               <template is="dom-repeat" items="[[env.viewdef.pages]]" as="page">
                 <paper-tab page-id="[[page.id]]">
