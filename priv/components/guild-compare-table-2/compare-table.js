@@ -49,9 +49,9 @@ Guild.CompareTable = new function() {
                 searchPlaceholder: "Filter",
                 zeroRecords: "Waiting for data..."
             },
-            dom: "<'row'<'col-sm-12'f>>" +
-                "<'row'<'col-sm-12'tr>>" +
-                "<'row'<'col-sm-12'i>>"
+            dom: "<'row'<'col-12'f>>"
+                + "<'row'<'col-12'tr>>"
+                + "<'row'<'col-12'i>>"
         });
     };
 
@@ -77,7 +77,7 @@ Guild.CompareTable = new function() {
 
     var statusCol = function() {
         return {
-            title: "",
+            title: statusTitle(),
             data: "status",
             width: "20px",
             render: {
@@ -88,6 +88,10 @@ Guild.CompareTable = new function() {
                 filter: "label"
             }
         };
+    };
+
+    var statusTitle = function() {
+        return "<span class='header-title status-title'></span>";
     };
 
     var statusIcon = function(status) {
@@ -106,7 +110,7 @@ Guild.CompareTable = new function() {
 
     var timeCol = function() {
         return {
-            title: "Time",
+            title: headerTitle("Time"),
             data: "time",
             orderSequence: ["desc", "asc"],
             width: "8em",
@@ -120,6 +124,10 @@ Guild.CompareTable = new function() {
         };
     };
 
+    var headerTitle = function(title) {
+        return "<span class='header-title'>" + title + "</span>";
+    };
+
     var runLink = function(val, run) {
         var link = "/?run=" + run.id;
         return "<a href=\"javascript:window.location='"
@@ -128,7 +136,7 @@ Guild.CompareTable = new function() {
 
     var modelCol = function() {
         return {
-            title: "Model",
+            title: headerTitle("Model"),
             data: "run",
             render: {
                 display: "model",
@@ -141,7 +149,7 @@ Guild.CompareTable = new function() {
     var fieldCols = function(fields) {
         return fields.map(function(field, index) {
             return {
-                title: field.label,
+                title: headerTitle(field.label),
                 data: "f" + index,
                 orderSequence: ["desc", "asc"],
                 type: fieldType(field),
