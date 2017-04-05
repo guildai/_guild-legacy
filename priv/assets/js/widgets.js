@@ -603,7 +603,7 @@ guild.widget.register("compare-table", function(widget, state) {
     };
 
     var initWidget = function() {
-        var coldefs = initColdefs(widget);
+        var coldefs = initColdefs();
         var columns = initColumns(coldefs);
         var table = widget.DataTable({
             data: [],
