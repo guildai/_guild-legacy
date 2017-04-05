@@ -31,11 +31,16 @@
      #filter {
          width: 20em;
          position: relative;
-         margin-top: -15px;
+         margin-top: -20px;
      }
     </style>
     <div id="scopeSubtree">
-      <paper-input id="filter" label="Filter" on-keyup="filter"></paper-input>
+      <paper-input
+          id="filter"
+          label="Filter"
+          type="search"
+          on-keyup="filter"
+          on-input="filter" ></paper-input>
       <table id="table" class="hover row-border"></table>
     </div>
   </template>
@@ -52,7 +57,8 @@
                type: String,
                computed: 'computeDataSource(fields)'
            },
-           dt: Object
+           dt: Object,
+           cachedSearchInput: Object
        },
 
        computeDataSource: function(fields) {
@@ -72,7 +78,16 @@
        },
 
        filter: function(e) {
-           console.log(e.target.value);
+           var search = this.searchInput();
+           search.value = e.target.value;
+           search.dispatchEvent(new Event("input"));
+       },
+
+       searchInput: function() {
+           if (this.cachedSearchInput == undefined) {
+               this.cachedSearchInput = this.$$("input[type='search']");
+           }
+           return this.cachedSearchInput;
        }
    });
   </script>

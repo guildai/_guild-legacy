@@ -114,7 +114,8 @@ Guild.CompareTable = new function() {
                 display: function(time, _type, row) {
                     return runLink(time.value, row.run);
                 },
-                sort: "sort"
+                sort: "sort",
+                filter: "value"
             }
         };
     };
