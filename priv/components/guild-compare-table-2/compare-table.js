@@ -84,7 +84,8 @@ Guild.CompareTable = new function() {
                 display: function(status) {
                     return statusIcon(status);
                 },
-                sort: "sort"
+                sort: "sort",
+                filter: "label"
             }
         };
     };
@@ -107,6 +108,7 @@ Guild.CompareTable = new function() {
         return {
             title: "Time",
             data: "time",
+            orderSequence: ["desc", "asc"],
             width: "8em",
             render: {
                 display: function(time, _type, row) {
@@ -129,19 +131,43 @@ Guild.CompareTable = new function() {
             data: "run",
             render: {
                 display: "model",
-                sort: "model"
+                sort: "model",
+                filter: "model"
             }
         };
     };
 
     var fieldCols = function(fields) {
-        return [];
+        return fields.map(function(field, index) {
+            return {
+                title: field.label,
+                data: "f" + index,
+                orderSequence: ["desc", "asc"],
+                type: fieldType(field),
+                render: function(field, type) {
+                    if (type == "sort") {
+                        return field.sort;
+                    } else {
+                        return field.value;
+                    }
+                },
+                render_: {
+                    display: "value",
+                    sort: "sort",
+                    filter: "value"
+                }
+            };
+        });
+    };
+
+    var fieldType = function(field) {
+        // Infer numeric type by reduce function
+        return field.reduce ? "num" : "string";
     };
 
     var refresh = function(dt, data, fields) {
         var items = formatItems(data, fields);
         items.forEach(function(item) {
-            console.log(item);
             var row = dt.row.add(item);
             row.draw();
         });
@@ -211,7 +237,7 @@ Guild.CompareTable = new function() {
     var fieldValue = function(data, field) {
         var raw = fieldRawValue(data, field);
         var sort = raw == undefined ? null: raw;
-        var formatted = fieldFormattedValue(raw, field);
+        var formatted = fieldFormattedValue(raw, field) || "";
         return {sort: sort, value: formatted};
     };
 
