@@ -33,12 +33,12 @@ Guild.CompareTable = new function() {
         }
     };
 
-    var init = function(table, fields) {
+    var init = function(table, fields, options) {
         return jQuery(table).DataTable({
             data: [],
             columns: columns(fields),
             order: [[1, 'desc']],
-            scrollY: "360px",
+            scrollY: (options && options.height) || "360px",
             scrollCollapse: true,
             paging: false,
             language: {
