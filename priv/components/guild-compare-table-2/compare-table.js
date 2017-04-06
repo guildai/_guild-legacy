@@ -36,6 +36,7 @@ Guild.CompareTable = new function() {
     var init = function(table, fields, options) {
         return jQuery(table).DataTable({
             data: [],
+            rowId: "run.id",
             columns: columns(fields),
             order: [[1, 'desc']],
             scrollY: (options && options.height) || "360px",
@@ -97,10 +98,10 @@ Guild.CompareTable = new function() {
     var statusIcon = function(status) {
         return "<fa-awesome class='" + status.iconClass + "'"
             + maybeSpinAttr(status.spin)
-            + "' icon='" + status.icon
+            + " icon='" + status.icon
             + "' size='22'></fa-awesome>"
             + "<paper-tooltip position='right'"
-            + " animation-delay='250'>"
+            + " animation-delay='250' offset='0'>"
             + status.label + "</paper-tooltip>";
     };
 
@@ -176,13 +177,9 @@ Guild.CompareTable = new function() {
 
     var refresh = function(dt, data, fields) {
         var items = formatItems(data, fields);
-        items.forEach(function(item) {
-            var row = dt.row.add(item);
-            row.draw();
-        });
-        //deleteMissingRows(dt, rows);
-        //addOrUpdateRows(dt, rows);
-    };
+        deleteMissingRows(dt, items);
+        addOrUpdateRows(dt, items);
+   };
 
     var formatItems = function(data, fields) {
         return data.map(function(item, index) {
@@ -269,13 +266,11 @@ Guild.CompareTable = new function() {
             : raw;
     };
 
-    var deleteMissingRows = function(dt, rows) {
-        var ids = {};
-        rows.map(function(row) { ids[row[0].id] = null; });
+    var deleteMissingRows = function(dt, items) {
+        var itemIds = itemIdLookup(items);
         var missing = [];
         dt.rows().every(function(index) {
-            var id = dt.row(index).data()[0].id;
-            if (!(id in ids)) {
+            if (!itemIds.has(dt.row(index).data().run.id)) {
                 missing.push(index);
             }
         });
@@ -284,41 +279,46 @@ Guild.CompareTable = new function() {
         }
     };
 
-    var addOrUpdateRows = function(dt, rows) {
-        for (var i in rows) {
-            var newRowData = rows[i];
-            var curRowIndex = findTableRow(dt, newRowData[0].id);
-            if (curRowIndex != null) {
-                updateRowData(dt, curRowIndex, newRowData);
+    var itemIdLookup = function(items) {
+        var ids = items.map(function(item) { return item.run.id; });
+        return new Set(ids);
+    };
+
+    var addOrUpdateRows = function(dt, items) {
+        var added = false;
+        items.forEach(function(item, index) {
+            var curRow = findRow(dt, item);
+            if (curRow != null) {
+                updateRow(dt, curRow, item);
             } else {
-                var newRow = dt.row.add(newRowData);
-                newRow.draw();
+                addRow(dt, item);
+                added = true;
             }
+        });
+        if (added) {
+            dt.columns.adjust();
         }
-        dt.columns.adjust();
     };
 
-    var initRows = function(data, coldefs) {
-        return data.map(function(item) { return initRow(item, coldefs); });
+    var findRow = function(dt, target) {
+        var row = dt.row("#" + target.run.id);
+        return row.data() != undefined ? row : null;
     };
 
-    var initRow = function(item, coldefs) {
-        var row = [];
-        row.push(item.run);
-        for (var i in coldefs) {
-            row.push(coldefValue(coldefs[i], item));
-        }
-        return row;
-    };
-
-    var updateRowData = function(table, rowIndex, newData) {
-        for (var i = 0; i < newData.length; i++) {
-            var curVal = table.cell(rowIndex, i).data();
-            var newVal = newData[i];
-            if (rowCellChanged(i, curVal, newVal)) {
-                table.cell(rowIndex, i).data(newVal);
+    var updateRow = function(dt, row, newItem) {
+        var curItem = row.data();
+        dt.columns().every(function(colIndex) {
+            var property = dt.column(colIndex).dataSrc();
+            var curVal = curItem[property];
+            var newVal = newItem[property];
+            if (itemValChanged(curVal, newVal)) {
+                dt.cell(row, colIndex).data(newVal);
             }
-        }
+        });
+    };
+
+    var itemValChanged = function(a, b) {
+        return JSON.stringify(a) != JSON.stringify(b);
     };
 
     var rowCellChanged = function(index, curVal, newVal) {
@@ -327,6 +327,11 @@ Guild.CompareTable = new function() {
         } else {
             return curVal != newVal;
         }
+    };
+
+    var addRow = function(dt, item) {
+        var row = dt.row.add(item);
+        row.draw();
     };
 
     this.fieldsDataSource = fieldsDataSource;

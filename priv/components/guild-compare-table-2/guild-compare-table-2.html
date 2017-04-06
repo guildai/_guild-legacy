@@ -1,3 +1,4 @@
+<link rel="import" href="../guild-data/guild-data-listener.html">
 <link rel="import" href="../guild-styles/guild-styles.html">
 <link rel="import" href="../paper-input/paper-input.html">
 
@@ -20,8 +21,15 @@
           label="Filter"
           type="search"
           on-keyup="filter"
-          on-input="filter" ></paper-input>
-      <table id="table" class="hover row-border"></table>
+          on-input="filter">
+      </paper-input>
+      <table
+          id="table"
+          class="hover row-border"
+          cellpadding="0"
+          cellspacing="0"
+          border="0">
+      </table>
     </div>
   </template>
   <script>
@@ -55,6 +63,10 @@
 
        handleData: function(data) {
            Guild.CompareTable.refresh(this.dt, data, this.fields);
+       },
+
+       repeatData: function() {
+           return true;
        },
 
        filter: function(e) {
