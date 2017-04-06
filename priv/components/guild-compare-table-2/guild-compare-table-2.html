@@ -94,12 +94,12 @@
        },
 
        filter: function(e) {
-           var search = this.searchInput();
+           var search = this.searchInputElement();
            search.value = e.target.value;
            search.dispatchEvent(new Event("input"));
        },
 
-       searchInput: function() {
+       searchInputElement: function() {
            if (this.cachedSearchInput == undefined) {
                this.cachedSearchInput = this.$$("input[type='search']");
            }
