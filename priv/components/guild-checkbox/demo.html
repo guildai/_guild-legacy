@@ -1,0 +1,126 @@
+<html>
+  <head>
+    <title>guild-checkbox demo</title>
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <link rel="import" href="../paper-button/paper-button.html">
+    <link rel="import" href="../paper-button/paper-button.html">
+    <link rel="import" href="guild-checkbox.html">
+    <style>
+     body {
+         padding: 20px;
+         font-family: 'Roboto', 'Noto', sans-serif;
+     }
+     table {
+         margin: 20px -10px;
+     }
+     table th {
+         font-weight: normal;
+         color: #666;
+     }
+     table td {
+         font-family: mono;
+         font-size: 0.8rem;
+     }
+     table th, table td {
+         padding: 0 10px;
+     }
+     guild-checkbox {
+         margin-right: 10px;
+     }
+    </style>
+  </head>
+  <body>
+    <dom-module id="guild-checkbox-demo">
+      <template>
+        <style>
+         paper-button {
+             text-transform: none;
+             font-family: mono;
+             font-size: 0.8rem;
+             padding: 10px 20px;
+         }
+        </style>
+        <div>
+          <guild-checkbox id="cb1" checked="{{checked1}}" aria-checked="{{ac1}}">Checkbox 1</guild-checkbox>
+          <guild-checkbox id="cb2" checked="{{checked2}}" aria-checked="{{ac2}}">Checkbox 2</guild-checkbox>
+          <guild-checkbox id="cb3" checked="{{checked3}}" aria-checked="{{ac3}}">Checkbox 3</guild-checkbox>
+          <guild-checkbox aria-checked="true" disabled>Disabled</guild-checkbox>
+          <guild-checkbox disabled>Disabled</guild-checkbox>
+        </div>
+        <div style="margin-top:20px">
+          <code>aria-checked</code> =
+          <paper-button raised on-click="acTrue">true</paper-button>
+          <paper-button raised on-click="acFalse">false</paper-button>
+          <paper-button raised on-click="acMixed">mixed</paper-button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Checkbox</th>
+              <th><code>checked</code></th>
+              <th><code>aria-checked</code></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>[[checked1]]</td>
+              <td>"[[ac1]]"</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>[[checked2]]</td>
+              <td>"[[ac2]]"</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>[[checked3]]</td>
+              <td>"[[ac3]]"</td>
+            </tr>
+          </tbody>
+        </table>
+      </template>
+      <script>
+       HTMLImports.whenReady(function () {
+           Polymer({
+               is: 'guild-checkbox-demo',
+
+               properties: {
+                   checked1: Boolean,
+                   checked2: Boolean,
+                   checked3: Boolean,
+                   ac1: String,
+                   ac2: String,
+                   ac3: String
+               },
+
+               ready: function() {
+                   this.ac1 = "true";
+                   this.ac2 = "false";
+                   this.ac3 = "mixed";
+               },
+
+               acTrue: function() {
+                   this.setAc("true");
+               },
+
+               acFalse: function() {
+                   this.setAc("false");
+               },
+
+               acMixed: function() {
+                   this.setAc("mixed");
+               },
+
+               setAc: function(val) {
+                   this.$.cb1.ariaChecked = val;
+                   this.$.cb2.ariaChecked = val;
+                   this.$.cb3.ariaChecked = val;
+               }
+           });
+       });
+      </script>
+    </dom-module>
+    <guild-checkbox-demo></guild-checkbox-demo>
+  </body>
+</html>
