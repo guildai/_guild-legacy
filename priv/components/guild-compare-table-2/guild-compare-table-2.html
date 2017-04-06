@@ -108,7 +108,7 @@
 
        hideFailedChanged: function(val, old) {
            if (this.dt != undefined) {
-               var status = this.dt.column(0);
+               var status = this.dt.column(1);
                if (val) {
                    status.search("Completed|Running", true).draw();
                } else {

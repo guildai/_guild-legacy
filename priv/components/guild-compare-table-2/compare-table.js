@@ -38,7 +38,7 @@ Guild.CompareTable = new function() {
             data: [],
             rowId: "run.id",
             columns: columns(fields),
-            order: [[1, 'desc']],
+            order: [[2, 'desc']],
             scrollY: (options && options.height) || "360px",
             scrollCollapse: true,
             paging: false,
@@ -62,7 +62,7 @@ Guild.CompareTable = new function() {
 
     var baseCols = function() {
         return [
-            //selectedCol(),
+            selectedCol(),
             statusCol(),
             timeCol(),
             modelCol()
@@ -71,8 +71,14 @@ Guild.CompareTable = new function() {
 
     var selectedCol = function() {
         return {
-            title: "Selected",
-            orderable: false
+            title: "<guild-compare-table-select class='title'></guild-compare-table-select>",
+            data: null,
+            width: "18px",
+            render: {
+                display: function(item) {
+                    return "<guild-compare-table-select></guild-compare-table-select>";
+                }
+            }
         };
     };
 
