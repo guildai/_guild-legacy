@@ -71,7 +71,7 @@ Guild.CompareTable = new function() {
 
     var selectedCol = function() {
         return {
-            title: "<guild-compare-table-select class='title'></guild-compare-table-select>",
+            title: "<guild-compare-table-select header></guild-compare-table-select>",
             data: null,
             width: "18px",
             render: {
@@ -200,7 +200,8 @@ Guild.CompareTable = new function() {
             run: item.run,
             time: formatTime(item.run.started),
             status: runStatus(item.run),
-            index: index
+            index: index,
+            selected: false
         };
     };
 

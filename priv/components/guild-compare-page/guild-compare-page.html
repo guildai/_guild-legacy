@@ -26,9 +26,21 @@
    Polymer({
        is: "guild-compare-page",
 
+       listeners: {
+           "run-select-changed": "handleRunSelectChanged"
+       },
+
        properties: {
            env: Object,
            config: Object
+       },
+
+       handleRunSelectChanged: function() {
+           this.debounce("run-select", this.refresh, 100);
+       },
+
+       refresh: function() {
+           console.log("TODO: refresh compare page elements");
        }
    });
   </script>
