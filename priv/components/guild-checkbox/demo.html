@@ -40,12 +40,11 @@
              padding: 10px 20px;
          }
         </style>
+        <h3>Aria checked</h3>
         <div>
-          <guild-checkbox id="cb1" checked="{{checked1}}" aria-checked="{{ac1}}">Checkbox 1</guild-checkbox>
-          <guild-checkbox id="cb2" checked="{{checked2}}" aria-checked="{{ac2}}">Checkbox 2</guild-checkbox>
-          <guild-checkbox id="cb3" checked="{{checked3}}" aria-checked="{{ac3}}">Checkbox 3</guild-checkbox>
-          <guild-checkbox aria-checked="true" disabled>Disabled</guild-checkbox>
-          <guild-checkbox disabled>Disabled</guild-checkbox>
+          <guild-checkbox id="cb1" aria-checked="{{ac1}}">Checkbox 1 ([[ac1]])</guild-checkbox>
+          <guild-checkbox id="cb2" aria-checked="{{ac2}}">Checkbox 2 ([[ac2]])</guild-checkbox>
+          <guild-checkbox id="cb3" aria-checked="{{ac3}}">Checkbox 3 ([[ac3]])</guild-checkbox>
         </div>
         <div style="margin-top:20px">
           <code>aria-checked</code> =
@@ -53,32 +52,10 @@
           <paper-button raised on-click="acFalse">false</paper-button>
           <paper-button raised on-click="acMixed">mixed</paper-button>
         </div>
-        <table>
-          <thead>
-            <tr>
-              <th>Checkbox</th>
-              <th><code>checked</code></th>
-              <th><code>aria-checked</code></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>1</td>
-              <td>[[checked1]]</td>
-              <td>"[[ac1]]"</td>
-            </tr>
-            <tr>
-              <td>2</td>
-              <td>[[checked2]]</td>
-              <td>"[[ac2]]"</td>
-            </tr>
-            <tr>
-              <td>3</td>
-              <td>[[checked3]]</td>
-              <td>"[[ac3]]"</td>
-            </tr>
-          </tbody>
-        </table>
+        <h3>Other styles</h3>
+          <guild-checkbox aria-checked="true" disabled>Disabled</guild-checkbox>
+          <guild-checkbox disabled>Disabled</guild-checkbox>
+          <guild-checkbox noink>No ink</guild-checkbox>
       </template>
       <script>
        HTMLImports.whenReady(function () {
@@ -86,9 +63,6 @@
                is: 'guild-checkbox-demo',
 
                properties: {
-                   checked1: Boolean,
-                   checked2: Boolean,
-                   checked3: Boolean,
                    ac1: String,
                    ac2: String,
                    ac3: String

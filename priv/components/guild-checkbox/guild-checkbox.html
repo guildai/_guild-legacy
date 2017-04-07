@@ -4,8 +4,9 @@
   <template>
     <paper-checkbox
         id="cb"
-        checked="{{checked}}"
+        checked="[[cbChecked]]"
         disabled="{{disabled}}"
+        noink="{{noink}}"
         on-change="checkedChanged"
     ><content></content></paper-checkbox>
   </template>
@@ -14,17 +15,21 @@
        is: "guild-checkbox",
 
        properties: {
-           checked: {
-               type: Boolean,
-               readOnly: true,
-               notify: true
-           },
            ariaChecked: {
                type: String,
                observer: 'ariaCheckedChanged',
                notify: true
            },
-           disabled: Boolean
+           disabled: Boolean,
+           noink: Boolean,
+           cbChecked: {
+               type: Boolean,
+               computed: 'computeCbChecked(ariaChecked)'
+           }
+       },
+
+       computeCbChecked: function(ariaChecked) {
+           return ariaChecked == "true";
        },
 
        attached: function() {
@@ -32,21 +37,10 @@
        },
 
        checkedChanged: function() {
-           var checked = this.$.cb.checked;
-           this._setChecked(checked);
-           if (checked) {
-               this.ariaChecked = "true";
-           } else {
-               this.ariaChecked = "false";
-           }
+           this.ariaChecked = this.$.cb.checked ? "true" : "false";
        },
 
        ariaCheckedChanged: function(val, old) {
-           if (val == "true") {
-               this._setChecked(true);
-           } else {
-               this._setChecked(false);
-           }
            if ((val == "mixed" && old != undefined) || old == "mixed") {
                this.refreshMixedStyle();
            }

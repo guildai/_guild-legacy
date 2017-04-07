@@ -73,13 +73,18 @@ Guild.CompareTable = new function() {
         return {
             title: "<guild-compare-table-select header></guild-compare-table-select>",
             data: null,
+            orderable: false,
             width: "18px",
             render: {
                 display: function(item) {
-                    return "<guild-compare-table-select></guild-compare-table-select>";
+                    return tableSelect();
                 }
             }
         };
+    };
+
+    var tableSelect = function() {
+        return "<guild-compare-table-select></guild-compare-table-select>";
     };
 
     var statusCol = function() {
@@ -341,7 +346,12 @@ Guild.CompareTable = new function() {
         row.draw();
     };
 
+    var highlightSelectedRows = function() {
+        console.log("TODO: highlight selected yo");
+    };
+
     this.fieldsDataSource = fieldsDataSource;
     this.init = init;
     this.refresh = refresh;
+    this.highlightSelected = highlightSelectedRows;
 };

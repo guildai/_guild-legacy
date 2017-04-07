@@ -1,89 +1,54 @@
-<link rel="import" href="../fa-awesome/fa-awesome.html">
-<link rel="import" href="../guild-data-table/default-styles.html">
-<link rel="import" href="../guild-data-table/guild-data-table.html">
 <link rel="import" href="../guild-data/guild-data-listener.html">
-<link rel="import" href="../guild-imports/d3.html">
-<link rel="import" href="../guild-run/guild-run.html">
 <link rel="import" href="../guild-styles/guild-styles.html">
-<link rel="import" href="../guild-util/guild-util.html">
+<link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-toggle-button/paper-toggle-button.html">
-<link rel="import" href="../paper-tooltip/paper-tooltip.html">
+
+<link rel="import" href="compare-table-support.html">
 
 <dom-module id="guild-compare-table">
   <template>
     <style include="guild-run-status-styles"></style>
+    <style include="compare-table-styles"></style>
     <style>
-     :root {
-         --data-table-cell: {
-             padding: 0 5px;
-             font-size: 14px;
-         };
-         --data-table-sort-icon: {
-             padding: 0;
-             width: 20px;
-         };
+     .controls {
+         display: flex;
+         flex-direction: row;
+         justify-content: space-between;
+         align-items: center;
+         margin-top: -20px;
      }
-     .status-header {
-         margin-left: -4px;
-         width: 0;
+
+     .actions {
+         margin-top: 10px;
+         margin-right: 10px;
      }
-     .status-cell {
-         margin-left: 5px;
-     }
-     .date {
-         white-space: nowrap;
-         color: var(--default-primary-color);
-     }
-     .toggles {
-         margin: 10px 0 0 50px;
-         display: inline-block;
+
+     #filter {
+         width: 20em;
      }
     </style>
-    <guild-data-table
-        id="table"
-        selection-enabled
-        multi-selection>
-      <data-table-column
-          flex="0"
-          width="50px"
-          padding="0 12px"
-          sort-by="status.sort">
-        <template is="header">
-          <div class="status-header"></div>
-        </template>
-        <template>
-          <div class="status-cell">
-            <fa-awesome
-                class$="[[item.status.iconClass]]"
-                spin$="[[item.status.spin]]"
-                icon="[[item.status.icon]]"
-                size="22">
-            </fa-awesome>
-            <paper-tooltip
-                position="right"
-                animation-delay="250">[[item.status.label]]</paper-tooltip>
-          </div>
-        </template>
-      </data-table-column>
-      <data-table-column
-          name="Time"
-          flex="0"
-          width="10em"
-          sort-by="index">
-        <template>
-          <a class="date" href$="[[runLink(item.run)]]">[[formatTime(item.run.started)]]</a>
-        </template>
-      </data-table-column>
-      <data-table-column
-          name="Model"
-          flex="1"
-          sort-by="run.model"
-          filter-by="run.model">
-        <template>[[item.run.model]]</template>
-      </data-table-column>
-    </guild-data-table>
-    <div class="toggles">
-      <paper-toggle-button checked="{{hideFailed}}">Hide failed runs</paper-toggle-button>
+    <div id="scopeSubtree">
+      <div class="controls">
+        <paper-input
+            id="filter"
+            label="Filter"
+            type="search"
+            on-keyup="filter"
+            on-input="filter">
+        </paper-input>
+        <div class="actions">
+          <paper-toggle-button
+              checked="{{hideFailed}}"
+          >Hide failed runs</paper-toggle-button>
+        </div>
+      </div>
+      <table
+          id="table"
+          class="hover row-border"
+          cellpadding="0"
+          cellspacing="0"
+          border="0">
+      </table>
     </div>
   </template>
   <script>
@@ -99,12 +64,8 @@
                type: String,
                computed: 'computeDataSource(fields)'
            },
-           timeFormat: {
-               type: Object,
-               value: function() {
-                   return d3.time.format("%b %d %H:%M:%S");
-               }
-           },
+           dt: Object,
+           cachedSearchInput: Object,
            hideFailed: {
                type: Boolean,
                value: false,
@@ -112,169 +73,47 @@
            }
        },
 
-       attached: function() {
-           this.initStatusFilter();
-           this.initFieldColumns();
-       },
-
-       initStatusFilter: function() {
-           this.$.table.push('filter', {
-               path: 'status.label',
-               filter: this.statusFilter()
-           });
-       },
-
-       statusFilter: function() {
-           return this.hideFailed ? "Completed|Running" : "";
-       },
-
-       initFieldColumns: function() {
-           var table = this.$.table;
-           this.fields.forEach(function(field, index) {
-               var fieldName = "f" + index;
-               var col = document.createElement("data-table-column");
-               col.name = field.label;
-               col.sortBy = fieldName + ".sort";
-               col.filterBy = fieldName + ".value";
-               var template = document.createElement("template");
-               template.innerHTML = "[[item." + fieldName + ".value]]";
-               col._setTemplate(template);
-               Polymer.dom(table).appendChild(col);
-           });
-       },
-
        computeDataSource: function(fields) {
-           var sources = new Set();
-           fields.forEach(function(field) {
-               field.sources.split(",").forEach(function(source) {
-                   sources.add(source);
-               });
-           });
-           if (sources.size > 0) {
-               return "compare?sources=" + Array.from(sources).join(",");
-           } else {
-               return "compare"
-           }
+           return Guild.CompareTable.fieldsDataSource(fields);
        },
 
-       formatTime: function(epoch) {
-           if (epoch) {
-               return this.timeFormat(new Date(epoch));
-           } else {
-               return "";
-           }
-       },
-
-       runLink: function(run) {
-           if (run) {
-               var page1 = this.env.viewdef.pages[0].id;
-               return "/" + page1 + "?run=" + run.id;
-           } else {
-               return "";
-           }
+       ready: function() {
+           this.scopeSubtree(this.$.scopeSubtree, true);
+           this.dt = Guild.CompareTable.init(
+               this.$.table,
+               this.fields,
+               {height: "374px"});
        },
 
        handleData: function(data) {
-           var table = this.$.table;
-           var newItems = this.formatItems(data);
-           if (table.items == undefined) {
-               table.items = newItems;
-           } else if (this.itemsChanged(table.items, newItems)) {
-               table.items = newItems
-           }
-       },
-
-       itemsChanged: function(items, newItems) {
-           return JSON.stringify(items) != JSON.stringify(newItems);
+           Guild.CompareTable.refresh(this.dt, data, this.fields);
        },
 
        repeatData: function() {
            return true;
        },
 
-       formatItems: function(data) {
-           var itemBase = this.itemBase.bind(this);
-           var itemFields = this.itemFields.bind(this);
-           return data.map(function(item, index) {
-               return Object.assign(
-                   itemBase(item, index),
-                   itemFields(item));
-           });
+       filter: function(e) {
+           var search = this.searchInputElement();
+           search.value = e.target.value;
+           search.dispatchEvent(new Event("input"));
        },
 
-       itemBase: function(item, index) {
-           return {
-               run: item.run,
-               status: this.runStatus(item.run),
-               index: index
+       searchInputElement: function() {
+           if (this.cachedSearchInput == undefined) {
+               this.cachedSearchInput = this.$$("input[type='search']");
            }
-       },
-
-       runStatus: function(run) {
-           var status = Guild.Run.runStatus(run);
-           status.sort = this.statusSort(status);
-           return status;
-       },
-
-       statusSort: function(status) {
-           var label = status.label;
-           if (label == "Running") {
-               return 0;
-           } else if (label == "Completed") {
-               return 1;
-           } else if (label == "Terminated") {
-               return 2;
-           } else if (label == "Error") {
-               return 3;
-           } else {
-               return 4;
-           }
-       },
-
-       itemFields: function(item) {
-           var fields = {};
-           var fieldValue = this.fieldValue.bind(this);
-           this.fields.forEach(function(field, index) {
-               // field.sources here is spelled correctly - we're assuming
-               // for the time being that field.sources will only every be
-               // a single source and can be used to lookup corresponding
-               // data in item.
-               var data = item[field.sources];
-               var name = "f" + index;
-               fields[name] = fieldValue(data, field);
-           });
-           return fields;
-       },
-
-       fieldValue: function(data, field) {
-           var raw = this.fieldRawValue(data, field);
-           var sort = raw == undefined ? null: raw;
-           var formatted = this.fieldFormattedValue(raw, field);
-           return {sort: sort, value: formatted};
-       },
-
-       fieldRawValue: function(data, field) {
-           if (field.attribute) {
-               return data[field.attribute];
-           } else if (field.reduce) {
-               var reduce = Guild.Reduce[field.reduce];
-               if (reduce) {
-                   var reduced = reduce(data);
-                   return reduced[Object.keys(reduced)[0]];
-               }
-           }
-           return undefined;
-       },
-
-       fieldFormattedValue: function(raw, field) {
-           return field.format
-                ? Guild.Util.tryFormat(raw, field.format)
-                : raw;
+           return this.cachedSearchInput;
        },
 
        hideFailedChanged: function(val, old) {
-           if (old != undefined) {
-               this.$.table.set("filter.0.filter", this.statusFilter());
+           if (this.dt != undefined) {
+               var status = this.dt.column(1);
+               if (val) {
+                   status.search("Completed|Running", true).draw();
+               } else {
+                   status.search("").draw();
+               }
            }
        }
    });

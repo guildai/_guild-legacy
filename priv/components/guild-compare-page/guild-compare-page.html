@@ -1,7 +1,5 @@
+<link rel="import" href="../guild-compare-table/guild-compare-table.html">
 <link rel="import" href="../guild-page-header/guild-page-header.html">
-
-<!-- temp as we work on v2 of data table -->
-<link rel="import" href="../guild-compare-table-2/guild-compare-table-2.html">
 
 <dom-module id="guild-compare-page">
   <template>
@@ -20,7 +18,11 @@
         title="[[env.project.title]]"
         title-tooltip="[[env.project.description]]">
     </guild-page-header>
-    <guild-compare-table-2 env="[[env]]" fields="[[config.fields]]"></guild-compare-table-2>
+    <guild-compare-table
+        id="table"
+        env="[[env]]"
+        fields="[[config.fields]]">
+    </guild-compare-table>
   </template>
   <script>
    Polymer({
@@ -40,7 +42,7 @@
        },
 
        refresh: function() {
-           console.log("TODO: refresh compare page elements");
+           console.log(["TODO: refresh compare UI", this.$.table.selectedRuns]);
        }
    });
   </script>

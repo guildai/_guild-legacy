@@ -1,0 +1,140 @@
+<link rel="import" href="../guild-checkbox/guild-checkbox.html">
+
+<dom-module id="guild-compare-table-select">
+  <template>
+    <style>
+     :host {
+         --paper-checkbox-label: {
+             display: none;
+         };
+         --paper-checkbox-size: 16px;
+     }
+    </style>
+    <guild-checkbox noink aria-checked="{{checked}}"></guild-checkbox>
+  </template>
+  <script>
+   Polymer({
+       is: "guild-compare-table-select",
+
+       properties: {
+           header: {
+               type: Boolean,
+               value: false
+           },
+           checked: {
+               type: String,
+               value: "false",
+               observer: 'changed',
+               notify: true
+           },
+           dt: {
+               type: Object,
+               readOnly: true
+           },
+           row: {
+               type: Object,
+               readOnly: true
+           },
+           _refreshHeader: {
+               type: Boolean,
+               value: true
+           },
+           _toggleAll: {
+               type: Boolean,
+               value: true
+           }
+       },
+
+       attached: function() {
+           var tr = $(this).parents('tr')
+           var dt = tr.parents('guild-compare-table')[0].dt;
+           var row = dt.row(tr);
+           this._setDt(dt);
+           this._setRow(row);
+       },
+
+       changed: function(_, old) {
+           if (old == undefined) return;
+           if (this.header) {
+               this.maybeToggleAll();
+           } else {
+               this.toggle();
+               this.maybeRefreshHeader();
+           }
+       },
+
+       maybeToggleAll: function() {
+           if (this._toggleAll) {
+               this.toggleAll();
+           }
+       },
+
+       toggleAll: function() {
+           var checked = this.checked;
+           this.tableRuns().each(function(_, select) {
+               select.checkFromHeader(checked);
+           });
+       },
+
+       tableRuns: function() {
+           return $(this.dt.rows().nodes()).find("guild-compare-table-select");
+       },
+
+       checkFromHeader: function(val) {
+           this._refreshHeader = false;
+           this.checked = val;
+           this._refreshHeader = true;
+       },
+
+       toggle: function() {
+           var item = this.row.data();
+           item.selected = this.checked == "true";
+           this.refreshHighlight(this.row, item.selected);
+           this.fire("run-select-changed");
+       },
+
+       refreshHighlight: function(row, selected) {
+           if (selected) {
+               $(row.node()).addClass("highlight");
+           } else {
+               $(row.node()).removeClass("highlight");
+           }
+       },
+
+       maybeRefreshHeader: function() {
+           if (this._refreshHeader) {
+               this.refreshHeader();
+           }
+       },
+
+       refreshHeader: function() {
+           var header = this.tableHeader();
+           var runs = this.tableRuns();
+           header.setHeaderState(this.headerCheckedForRuns(runs));
+       },
+
+       tableHeader: function() {
+           return $(this.dt.table().header()).find("guild-compare-table-select")[0];
+       },
+
+       headerCheckedForRuns: function(runs) {
+           var first = null;
+           for (var i = 0; i < runs.length; i++) {
+               var cur = runs[i].checked;
+               if (first == null) {
+                   first = cur;
+               } else if (first != cur) {
+                   return "mixed"
+               }
+           }
+           return first;
+       },
+
+       setHeaderState: function(val) {
+           this._toggleAll = false;
+           this.checked = val;
+           this._toggleAll = true;
+       }
+   });
+  </script>
+</dom-module>
