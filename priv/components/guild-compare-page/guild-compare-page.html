@@ -42,7 +42,10 @@
        },
 
        refresh: function() {
-           console.log(["TODO: refresh compare UI", this.$.table.selectedRuns]);
+           var ids = this.$.table.selected().map(function(item) {
+               return item.run.id;
+           });
+           console.log(["TODO: refresh compare UI", ids]);
        }
    });
   </script>

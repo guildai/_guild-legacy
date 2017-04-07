@@ -115,6 +115,13 @@
                    status.search("").draw();
                }
            }
+       },
+
+       selected: function() {
+           var filtered = this.dt.rows().data().filter(function(item) {
+               return item.selected;
+           });
+           return filtered.toArray();
        }
    });
   </script>
