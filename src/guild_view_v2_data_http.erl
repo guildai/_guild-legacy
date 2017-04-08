@@ -98,7 +98,7 @@ handle_output(View, Params) ->
 
 handle_compare(View, Params) ->
     Sources = sources_for_params(Params),
-    Runs = guild_view_v2:all_runs(View),
+    Runs = runs_for_params(Params, View),
     Compare = (catch guild_data_reader_v2:compare(Runs, Sources)),
     handle_compare_result(Compare).
 
@@ -106,6 +106,22 @@ sources_for_params(Params) ->
     Param = proplists:get_value("sources", Params, ""),
     Split = string:tokens(Param, ","),
     lists:usort(Split).
+
+runs_for_params(Params, View) ->
+    All = guild_view_v2:all_runs(View),
+    Ids = run_ids_for_params(Params),
+    filter_runs_by_id(All, Ids).
+
+run_ids_for_params(Params) ->
+    Param = proplists:get_value("runs", Params, ""),
+    AsStr = string:tokens(Param, ","),
+    [I || {I, []} <- lists:map(fun string:to_integer/1, AsStr)].
+
+filter_runs_by_id(Runs, []) ->
+    Runs;
+filter_runs_by_id(Runs, Ids) ->
+    Filter = fun(Run) -> lists:member(guild_run:id(Run), Ids) end,
+    lists:filter(Filter, Runs).
 
 handle_compare_result({'EXIT', Err}) ->
     handle_compare_error(Err);
