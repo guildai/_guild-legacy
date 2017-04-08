@@ -1,0 +1,19 @@
+<link rel="import" href="../guild-compare-component-panel/guild-compare-component-panel.html">
+
+<dom-module id="guild-chart-compare-component">
+  <template>
+    <guild-compare-component-panel title="[[source]]">
+      <p>TODO: a cool chart for [[source]]</p>
+    </guild-compare-component-panel>
+  </template>
+  <script>
+   Polymer({
+       is: "guild-chart-compare-component",
+
+       properties: {
+           env: Object,
+           source: String
+       }
+   });
+  </script>
+</dom-module>

@@ -136,8 +136,8 @@
 
        itemSelected: function(e) {
            var menu = e.target;
-           var component = menu.items[menu.selected].innerText;
-           this.fire("component-selected", {component: component});
+           var source = menu.items[menu.selected].innerText;
+           this.fire("component-selected", {source: source});
        }
    });
   </script>

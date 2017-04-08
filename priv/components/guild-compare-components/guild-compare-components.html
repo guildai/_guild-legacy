@@ -34,7 +34,24 @@
        },
 
        componentSelected: function(e) {
-           console.log(e.detail.component);
+           var component = this.componentForSource(e.detail.source);
+           Polymer.dom(this.$.container).appendChild(component);
+       },
+
+       componentForSource: function(source) {
+           if (source.startsWith("series/")) {
+               return this.newChartComponent(source);
+           } else {
+               console.log("TODO: component for " + source);
+           }
+       },
+
+       newChartComponent: function(source) {
+           var c = document.createElement("guild-chart-compare-component");
+           c.classList.add("component");
+           c.env = this.env;
+           c.source = source;
+           return c;
        }
    });
   </script>

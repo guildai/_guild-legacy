@@ -153,6 +153,11 @@
             defaultPage: {
                 type: String,
                 computed: 'computeDefaultPage(env)'
+            },
+            fullscreenNotifyTarget: Object,
+            notifyingFullscreenCanceled: {
+                type: Boolean,
+                value: false
             }
         },
 
@@ -162,7 +167,8 @@
 
         listeners: {
             'guild-fullscreen': 'handleFullscreen',
-            'guild-exit-fullscreen': 'handleExitFullscreen'
+            'guild-fullscreen-exit': 'handleFullscreenExit',
+            'guild-fullscreen-canceled': 'handleFullscreenCanceled'
         },
 
         ready: function() {
@@ -239,12 +245,22 @@
         },
 
         handleFullscreen: function(e) {
-            this.$.fullscreen.content = e.target;
+            this.$.fullscreen.content = e.detail.content;
+            this.fullscreenNotifyTarget = e.detail.notifyTarget;
             this.$.fullscreen.open();
         },
 
-        handleExitFullscreen: function(e) {
+        handleFullscreenExit: function(e) {
             this.$.fullscreen.cancel();
+        },
+
+        handleFullscreenCanceled: function(e) {
+            if (!this.notifyingFullscreenCanceled
+                && this.fullscreenNotifyTarget) {
+                this.notifyingFullscreenCanceled = true;
+                this.fullscreenNotifyTarget.fire(e.type);
+                this.notifyingFullscreenCanceled = false;
+            }
         }
     });
   </script>

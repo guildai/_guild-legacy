@@ -39,16 +39,15 @@
      },
 
      contentChanged: function(content) {
-         if (content == undefined) {
-             return;
+         if (content != undefined) {
+             this.contentParent = content.parentElement;
+             this.appendChild(content);
          }
-         this.contentParent = content.parentElement;
-         this.appendChild(content);
      },
 
      handleCancel: function(e) {
          this.contentParent.appendChild(this.content);
-         this.content.fire("guild-fullscreen-canceled");
+         this.fire("guild-fullscreen-canceled");
          this.content = undefined;
      }
  });

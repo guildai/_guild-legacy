@@ -13,7 +13,13 @@
              type: String,
              computed: 'computeFullscreenIcon(fullscreen)'
          },
-         fullscreenTarget: {
+         fullscreenContent: {
+             type: Object,
+             value: function() {
+                 return this;
+             }
+         },
+         fullscreenNotifyTarget: {
              type: Object,
              value: function() {
                  return this;
@@ -37,11 +43,19 @@
          if (old == undefined) return;
          if (val) {
              this.onFullscreen();
-             this.fullscreenTarget.fire("guild-fullscreen");
+             this.fireFullscreenEvent("guild-fullscreen");
          } else {
              this.onFullscreenExit();
-             this.fullscreenTarget.fire("guild-exit-fullscreen");
+             this.fireFullscreenEvent("guild-fullscreen-exit");
          }
+     },
+
+     fireFullscreenEvent: function(name) {
+         var event = {
+             content: this.fullscreenContent,
+             notifyTarget: this.fullscreenNotifyTarget
+         };
+         this.fire(name, event);
      },
 
      onFullscreen: function() {
