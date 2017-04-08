@@ -1,5 +1,6 @@
 <link rel="import" href="../guild-data/guild-data-listener.html">
 <link rel="import" href="../guild-styles/guild-styles.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-toggle-button/paper-toggle-button.html">
 
@@ -15,7 +16,8 @@
          flex-direction: row;
          justify-content: space-between;
          align-items: center;
-         margin-top: -20px;
+         margin-top: -10px;
+         margin-bottom: 5px;
      }
 
      .actions {
@@ -26,15 +28,21 @@
      #filter {
          width: 20em;
      }
+
+     #filter iron-icon {
+         margin-right: 5px;
+         color: var(--paper-input-container-color, --secondary-text-color);
+     }
     </style>
     <div id="scopeSubtree">
       <div class="controls">
         <paper-input
             id="filter"
             label="Filter"
+            no-label-float
             type="search"
-            on-keyup="filter"
             on-input="filter">
+          <iron-icon icon="search" prefix></iron-icon>
         </paper-input>
         <div class="actions">
           <paper-toggle-button
