@@ -1,8 +1,22 @@
+<link rel="import" href="../guild-chart-compare-component/guild-chart-compare-component.html">
+
 <link rel="import" href="guild-compare-component-select.html">
 
 <dom-module id="guild-compare-components">
   <template>
     <style>
+     #container {
+         display: flex;
+         flex-direction: column;
+     }
+
+     .component {
+         margin-bottom: 20px;
+     }
+
+     .component:last-child {
+         margin-bottom: 10px;
+     }
     </style>
     <div id="container">
     </div>
