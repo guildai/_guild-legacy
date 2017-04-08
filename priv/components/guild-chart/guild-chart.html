@@ -1,5 +1,6 @@
 <link rel="import" href="../guild-component-panel/guild-component-panel.html">
 <link rel="import" href="../guild-data/guild-data-listener.html">
+<link rel="import" href="../guild-util/guild-fullscreen-behavior.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../vz-line-chart/vz-line-chart.html">
@@ -34,24 +35,10 @@
    Polymer({
        is: "guild-chart",
 
+       behaviors: [Guild.DataListener, Guild.FullscreenBehavior],
+
        properties: {
            title: String,
-           fullscreen: {
-               type: Boolean,
-               value: false,
-               notify: true,
-               observer: 'fullscreenChanged'
-           },
-           fullscreenIcon: {
-               type: String,
-               computed: 'computeFullscreenIcon(fullscreen)'
-           }
-       },
-
-       behaviors: [Guild.DataListener],
-
-       listeners: {
-           'guild-fullscreen-canceled': 'handleFullscreenCanceled'
        },
 
        handleData: function(data) {
@@ -77,35 +64,15 @@
            });
        },
 
-       computeFullscreenIcon: function(fullscreen) {
-           return fullscreen ? "fullscreen-exit" : "fullscreen";
-       },
-
-       toggleFullscreen: function() {
-           this.fullscreen = !this.fullscreen;
-       },
-
-       fullscreenChanged: function(val, old) {
-           if (old == undefined) {
-               return;
-           }
-           this.$.container.style.height = this.chartHeight(val);
-           this.updateStyles();
-           this.$.panel.noToggle = val;
+       onFullscreen: function() {
+           this.$.container.style.height = '520px';
+           this.$.panel.noToggle = true;
            this.$.panel.opened = true;
-           this.fire(this.fullscreenEvent(val));
        },
 
-       chartHeight: function(fullscreen) {
-           return fullscreen ? '520px' : '260px';
-       },
-
-       fullscreenEvent: function(fullscreen) {
-           return fullscreen ? "guild-fullscreen" : "guild-exit-fullscreen";
-       },
-
-       handleFullscreenCanceled: function(e) {
-           this.fullscreen = false;
+       onFullscreenExit: function() {
+           this.$.container.style.height = '260px';
+           this.$.panel.noToggle = false;
        }
    });
   </script>
