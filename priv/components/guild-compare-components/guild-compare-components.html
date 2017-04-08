@@ -1,0 +1,27 @@
+<link rel="import" href="guild-compare-component-select.html">
+
+<dom-module id="guild-compare-components">
+  <template>
+    <style>
+    </style>
+    <div id="container">
+    </div>
+    <guild-compare-component-select
+        env="[[env]]"
+        on-component-selected="componentSelected">
+    </guild-compare-component-select>
+  </template>
+  <script>
+   Polymer({
+       is: "guild-compare-components",
+
+       properties: {
+           env: Object
+       },
+
+       componentSelected: function(e) {
+           console.log(e.detail.component);
+       }
+   });
+  </script>
+</dom-module>

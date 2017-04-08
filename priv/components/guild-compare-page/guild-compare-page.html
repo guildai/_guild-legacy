@@ -1,3 +1,4 @@
+<link rel="import" href="../guild-compare-components/guild-compare-components.html">
 <link rel="import" href="../guild-compare-table/guild-compare-table.html">
 <link rel="import" href="../guild-page-header/guild-page-header.html">
 
@@ -13,6 +14,9 @@
      guild-page-header {
          margin-bottom: 20px;
      }
+     guild-compare-table {
+         margin-bottom: 20px;
+     }
     </style>
     <guild-page-header
         title="[[env.project.title]]"
@@ -23,6 +27,7 @@
         env="[[env]]"
         fields="[[config.fields]]">
     </guild-compare-table>
+    <guild-compare-components env="[[env]]"></guild-compare-components>
   </template>
   <script>
    Polymer({
