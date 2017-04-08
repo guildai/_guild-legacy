@@ -13,7 +13,7 @@
   <template>
     <paper-material>
       <guild-expansion-panel
-          heading="[[heading]]"
+          title="[[title]]"
           no-toggle="[[noToggle]]"
           opened="{{opened}}">
         <div class="actions">
@@ -29,7 +29,7 @@
    Polymer({
        is: "guild-component-panel",
        properties: {
-           heading: String,
+           title: String,
            noToggle: Boolean,
            opened: {
                type: Boolean,
