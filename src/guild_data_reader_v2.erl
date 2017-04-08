@@ -14,7 +14,8 @@
 
 -module(guild_data_reader_v2).
 
--export([flags/1, attrs/1, series/3, output/1, compare/2]).
+-export([flags/1, attrs/1, series/3, output/1, series_keys/1,
+         compare/2]).
 
 %% ===================================================================
 %% Flags
@@ -81,7 +82,26 @@ stream_id(stderr) -> 1;
 stream_id(_) -> null.
 
 %% ===================================================================
-%% Compare JSON
+%% Series keys
+%% ===================================================================
+
+series_keys(Runs) ->
+    Keys = lists:foldl(fun series_keys_acc/2, sets:new(), Runs),
+    sets:to_list(Keys).
+
+series_keys_acc(Run, Acc) ->
+    Keys = run_series_keys(Run),
+    sets:union(Acc, sets:from_list(Keys)).
+
+run_series_keys(Run) ->
+    Db = run_db(Run),
+    case guild_run_db:series_keys(Db) of
+        {ok, Keys} -> Keys;
+        {error, Err} -> error({db_series_keys, Err, Run})
+    end.
+
+%% ===================================================================
+%% Compare
 %% ===================================================================
 
 compare(Runs, Sources) ->

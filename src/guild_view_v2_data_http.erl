@@ -25,6 +25,8 @@ app("GET", {"/data/output", _, Params}, View, _) ->
     handle_output(View, Params);
 app("GET", {"/data/compare", _, Params}, View, _) ->
     handle_compare(View, Params);
+app("GET", {"/data/sources", _, _}, View, _) ->
+    handle_sources(View);
 app("GET", {"/data/tf/" ++ Path, Qs, _}, _View, Settings) ->
     handle_tf_data(Path, Qs, Settings);
 app(_, _, _, _) ->
@@ -115,6 +117,26 @@ handle_compare_error({{run_source, Source}, _}) ->
 handle_compare_error(Other) ->
     error_logger:error_report({compare_error, Other}),
     guild_http:internal_error().
+
+%% ===================================================================
+%% Sources
+%% ===================================================================
+
+handle_sources(View) ->
+    Sources = all_runs_sources(View),
+    guild_http:ok_json(guild_json:encode(Sources)).
+
+all_runs_sources(View) ->
+    Runs = guild_view_v2:all_runs(View),
+    Keys = guild_data_reader_v2:series_keys(Runs),
+    sources_for_series_keys(Keys).
+
+sources_for_series_keys(Keys) ->
+    [<<"flags">>, <<"attrs">>|format_series_keys(Keys)].
+
+format_series_keys(Keys) ->
+    Sorted = lists:sort(Keys),
+    [<<"series/", Key/binary>> || Key <- Sorted].
 
 %% ===================================================================
 %% TensorFlow data
