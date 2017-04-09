@@ -1,4 +1,5 @@
 <link rel="import" href="../guild-compare-component-panel/guild-compare-component-panel.html">
+<link rel="import" href="../guild-data/guild-run-compare-data-listener.html">
 
 <dom-module id="guild-keyval-compare-component">
   <template>
@@ -10,10 +11,10 @@
    Polymer({
        is: "guild-keyval-compare-component",
 
-       properties: {
-           env: Object,
-           source: String,
-           runs: Array
+       behaviors: [Guild.RunCompareDataListener],
+
+       handleData: function(data) {
+           console.log([this.dataSource, data]);
        }
    });
   </script>
