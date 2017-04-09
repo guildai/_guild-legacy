@@ -8,26 +8,32 @@
 
      properties: {
          env: Object,
-         dataSource: Object,
+         dataSource: String,
          dataAttribute: String,
          dataReduce: String,
          dataFormat: String,
-         dataFetchInterval: Number
+         dataFetchInterval: Number,
+         _pendingFetch: {
+             type: Object,
+             value: null
+         }
      },
 
      ready: function() {
          if (this.dataFetchInterval == undefined) {
              this.dataFetchInterval = this.env.settings.refreshInterval || 0;
          }
-         if (this.dataSource) {
-             this.fetchData(0);
-         }
+         this.scheduleFetch(0);
      },
 
-     fetchData: function(whenSeconds) {
-         var url = this.dataFetchUrl();
-         var handler = this.handleFetchResult.bind(this);
-         Guild.Data.scheduleFetch(url, handler, whenSeconds * 1000);
+     scheduleFetch: function(whenSeconds) {
+         if (this.dataSource) {
+             var url = this.dataFetchUrl();
+             var handler = this.handleFetchResult.bind(this);
+             this.cancelPendingFetch();
+             this._pendingFetch =
+                 Guild.Data.scheduleFetch(url, handler, whenSeconds * 1000);
+         }
      },
 
      dataFetchUrl: function() {
@@ -46,10 +52,17 @@
          this.maybeScheduleNextFetch();
      },
 
+     cancelPendingFetch: function() {
+         if (this._pendingFetch) {
+             window.clearTimeout(this._pendingFetch);
+             this._pendingFetch = null;
+         }
+     },
+
      maybeScheduleNextFetch: function() {
          var interval = this.dataFetchInterval;
          if (interval > 0 && this.repeatData.bind(this)()) {
-             this.fetchData(interval);
+             this.scheduleFetch(interval);
          }
      },
 

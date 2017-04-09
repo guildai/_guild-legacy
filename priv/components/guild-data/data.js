@@ -63,7 +63,7 @@ Guild.Data = new function() {
         var scheduledFetch = function() {
             Guild.Data.fetch(url, callback);
         };
-        window.setTimeout(scheduledFetch, when);
+        return window.setTimeout(scheduledFetch, when);
     };
 
     this.fetch = fetch;
