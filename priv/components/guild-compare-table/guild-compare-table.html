@@ -91,6 +91,7 @@
                this.$.table,
                this.fields,
                {height: "374px"});
+           this.dt.on("search.dt", this.handleSearch.bind(this));
        },
 
        handleData: function(data) {
@@ -130,6 +131,38 @@
                return item.selected;
            });
            return filtered.toArray();
+       },
+
+       handleSearch: function() {
+           this.debounce("check-hidden", this.checkHidden, 100);
+       },
+
+       checkHidden: function() {
+           var deselected = this.deselectRemovedItems();
+           if (deselected) {
+               // We need to fire this event because the removed items
+               // aren't in the DOM and so their events don't propagate.
+               this.fire("run-select-changed");
+           }
+           this.refreshSelectHeader();
+       },
+
+       deselectRemovedItems: function() {
+           var removed = Guild.CompareTable.removedItems(this.dt);
+           var deselected = false;
+           for (var i in removed) {
+               var item = removed[i];
+               if (item.selected) {
+                   Guild.CompareTable.deselect(this.dt, item)
+                   deselected = true;
+               }
+           }
+           return deselected;
+       },
+
+       refreshSelectHeader: function() {
+           var header = $(this.dt.table().header()).find("guild-compare-table-select")[0];
+           header.refreshHeader();
        }
    });
   </script>

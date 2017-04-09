@@ -77,7 +77,8 @@
        },
 
        tableRuns: function() {
-           return $(this.dt.rows().nodes()).find("guild-compare-table-select");
+           var nodes = this.dt.rows({search: "applied"}).nodes();
+           return $(nodes).find("guild-compare-table-select");
        },
 
        checkFromHeader: function(val) {
