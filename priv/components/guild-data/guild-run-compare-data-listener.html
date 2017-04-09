@@ -1,0 +1,53 @@
+<link rel="import" href="guild-data-listener.html">
+
+<script>
+ var Guild = Guild || {};
+ Guild.RunCompareDataListenerImpl = {
+
+     properties: {
+         env: Object,
+         source: String,
+         runs: {
+             type: Array,
+             value: []
+         },
+         dataSource: {
+             type: String,
+             computed: 'computeDataSource(source, runs, env)',
+             observer: 'dataSourceChanged'
+         }
+     },
+
+     computeDataSource: function(source, runs) {
+         var runIds = runs.map(function(run) {return run.id}).join(",");
+         return "compare?sources=" + source + "&runs=" + runIds;
+     },
+
+     dataSourceChanged: function(val) {
+         this.scheduleFetch(0);
+     },
+
+     repeatData: function() {
+         // Repeat only if something's running
+         var runs = this.runs;
+         var status = this.envRunsStatus();
+         for (var i = 0; i < runs.length; i++) {
+             if (status[runs[i].id] == "running") {
+                 return true;
+             }
+         }
+         return false;
+     },
+
+     envRunsStatus: function() {
+         return this.env.runs.reduce(function(acc, run) {
+             acc[run.id] = run.status;
+             return acc;
+         }, {});
+     }
+ };
+ Guild.RunCompareDataListener = [
+     Guild.DataListener,
+     Guild.RunCompareDataListenerImpl
+ ];
+</script>
