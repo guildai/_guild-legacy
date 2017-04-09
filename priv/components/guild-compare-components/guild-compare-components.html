@@ -1,4 +1,5 @@
 <link rel="import" href="../guild-chart-compare-component/guild-chart-compare-component.html">
+<link rel="import" href="../guild-keyval-compare-component/guild-keyval-compare-component.html">
 
 <link rel="import" href="guild-compare-component-select.html">
 
@@ -10,48 +11,94 @@
          flex-direction: column;
      }
 
-     .component {
+     .guild-compare-component {
          margin-bottom: 20px;
      }
 
-     .component:last-child {
+     .guild-compare-component:last-child {
          margin-bottom: 10px;
      }
     </style>
     <div id="container">
+      <template is="dom-repeat" items="[[components]]" as="c">
+        <template is="dom-if" if="[[c.isChart]]">
+          <guild-chart-compare-component
+              env="[[env]]"
+              source="[[c.source]]"
+              runs="[[runs]]"
+              class="guild-compare-component">
+          </guild-chart-compare-component>
+        </template>
+        <template is="dom-if" if="[[c.isKeyval]]">
+          <guild-keyval-compare-component
+              env="[[env]]"
+              source="[[c.source]]"
+              runs="[[runs]]"
+              class="guild-compare-component">
+        </template>
+      </template>
     </div>
     <guild-compare-component-select
         env="[[env]]"
-        on-component-selected="componentSelected">
+        on-component-selected="handleComponentSelected">
     </guild-compare-component-select>
+    <p>There are [[runs.length]] runs that I need to display</p>
   </template>
   <script>
    Polymer({
        is: "guild-compare-components",
 
        properties: {
-           env: Object
+           env: Object,
+           runs: Array,
+           components: {
+               type: Array,
+               value: []
+           }
        },
 
-       componentSelected: function(e) {
-           var component = this.componentForSource(e.detail.source);
-           Polymer.dom(this.$.container).appendChild(component);
+       listeners: {
+           "guild-compare-component-delete": "handleComponentDelete"
+       },
+
+       handleComponentSelected: function(e) {
+           var c = this.componentForSource(e.detail.source);
+           this.push("components", c);
        },
 
        componentForSource: function(source) {
            if (source.startsWith("series/")) {
-               return this.newChartComponent(source);
+               return {isChart: true, source: source};
+           } else if (source == "flags" || source == "attrs") {
+               return {isKeyval: true, source: source};
            } else {
-               console.log("TODO: component for " + source);
+               throw ["unsupported component source", source];
            }
        },
 
-       newChartComponent: function(source) {
-           var c = document.createElement("guild-chart-compare-component");
-           c.classList.add("component");
-           c.env = this.env;
-           c.source = source;
-           return c;
+       handleComponentDelete: function(e) {
+           var c = this.componentForTarget(e.target);
+           var index = this.componentIndex(c);
+           this.splice("components", index, 1);
+       },
+
+       componentForTarget: function(target) {
+           if (target.classList.contains("guild-compare-component")) {
+               return target;
+           } else {
+               return this.componentForTarget(target.parentNode);
+           }
+       },
+
+       componentIndex: function(target) {
+           var cs = Polymer.dom(this.root).querySelectorAll(
+               "guild-compare-component");
+           cs.forEach(function(c, index) {
+               if (c == target) {
+                   return index;
+               }
+           });
+           return -1;
        }
    });
   </script>

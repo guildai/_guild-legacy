@@ -22,14 +22,15 @@
         title="[[env.project.title]]"
         title-tooltip="[[env.project.description]]">
     </guild-page-header>
-    <!--
     <guild-compare-table
         id="table"
         env="[[env]]"
         fields="[[config.fields]]">
     </guild-compare-table>
-    -->
-    <guild-compare-components env="[[env]]"></guild-compare-components>
+    <guild-compare-components
+        env="[[env]]"
+        runs="[[selectedRuns]]">
+    </guild-compare-components>
   </template>
   <script>
    Polymer({
@@ -41,18 +42,21 @@
 
        properties: {
            env: Object,
-           config: Object
+           config: Object,
+           selectedRuns: {
+               type: Array,
+               value: []
+           }
        },
 
        handleRunSelectChanged: function() {
-           this.debounce("run-select", this.refresh, 100);
+           this.debounce("run-select", this.refreshSelectedRuns, 100);
        },
 
-       refresh: function() {
-           var ids = this.$.table.selected().map(function(item) {
-               return item.run.id;
+       refreshSelectedRuns: function() {
+           this.selectedRuns = this.$.table.selected().map(function(item) {
+               return item.run;
            });
-           console.log(["TODO: refresh compare UI", ids]);
        }
    });
   </script>

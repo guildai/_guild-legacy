@@ -16,6 +16,11 @@
             icon="[[fullscreenIcon]]"
             on-click="toggleFullscreen">
         </paper-icon-button>
+        <paper-icon-button
+            icon="close"
+            on-click="fireDelete"
+            hidden="[[noDelete]]">
+        </paper-icon-button>
       </div>
       <content></content>
     </guild-component-panel>
@@ -36,13 +41,18 @@
 
        onFullscreen: function() {
            this.$.panel.noToggle = true;
+           this.noDelete = true;
            this.$.panel.opened = true;
        },
 
        onFullscreenExit: function() {
            this.$.panel.noToggle = false;
-       }
+           this.noDelete = false;
+       },
 
+       fireDelete: function() {
+           this.fire("guild-compare-component-delete");
+       }
    });
   </script>
 </dom-module>
