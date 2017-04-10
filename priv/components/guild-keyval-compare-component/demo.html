@@ -1,0 +1,143 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <title>guild-keyval-compare-component demo</title>
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <link rel="import" href="guild-keyval-compare-component.html">
+    <style>
+     body {
+         padding: 20px;
+         font-family: 'Roboto', 'Noto', sans-serif;
+     }
+    </style>
+  </head>
+  <body>
+    <dom-module id="guild-keyval-compare-component-demo">
+      <template>
+
+        <h3>No runs</h3>
+        <guild-keyval-compare-component
+            id="noRuns"
+            source="items"
+            data-fetch-disabled
+            env="[[env]]">
+        </guild-keyval-compare-component>
+
+        <h3>One run</h3>
+        <guild-keyval-compare-component
+            id="oneRun"
+            source="items"
+            data-fetch-disabled
+            env="[[env]]">
+        </guild-keyval-compare-component>
+
+        <h3>Two runs</h3>
+        <guild-keyval-compare-component
+            id="twoRuns"
+            source="items"
+            data-fetch-disabled
+            env="[[env]]">
+        </guild-keyval-compare-component>
+
+        <h3>More than two runs</h3>
+        <guild-keyval-compare-component
+            id="moreRuns"
+            source="items"
+            data-fetch-disabled
+            env="[[env]]">
+        </guild-keyval-compare-component>
+
+      </template>
+      <script>
+       HTMLImports.whenReady(function () {
+           Polymer({
+               is: 'guild-keyval-compare-component-demo',
+               properties: {
+                   env: {
+                       type: Object,
+                       value: {
+                           settings: {}
+                       }
+                   }
+               },
+               ready: function() {
+                   var samples = this.sampleRuns();
+                   this.$.noRuns.handleData([]);
+                   this.$.oneRun.handleData(samples.slice(0, 1));
+                   this.$.twoRuns.handleData(samples.slice(0, 2));
+                   this.$.moreRuns.handleData(samples);
+               },
+               sampleRuns: function() {
+                   return [
+                       {
+                           "items": {
+                               "a": "123",
+                               "b": "456",
+                               "c": "def"
+                           },
+                           "run": {
+                               "stopped": 1491766812766,
+                               "started": 1491766757070,
+                               "model": "intro",
+                               "exit_status": 0,
+                               "status": "stopped",
+                               "id": 3269178702
+                           }
+                       },
+                       {
+                           "items": {
+                               "a": "123",
+                               "b": "789",
+                               "d": "ghi"
+                           },
+                           "run": {
+                               "stopped": 1491766646235,
+                               "started": 1491766589415,
+                               "model": "intro",
+                               "exit_status": 0,
+                               "status": "stopped",
+                               "id": 534233140
+                           }
+                       },
+                       {
+                           "items": {
+                               "a": "123",
+                               "b": "789",
+                               "c": "def",
+                               "e": "This is a relatively long value that should wrap"
+                           },
+                           "run": {
+                               "stopped": 1491766446235,
+                               "started": 1491766389415,
+                               "model": "intro",
+                               "exit_status": 0,
+                               "status": "stopped",
+                               "id": 534233140
+                           }
+                       },
+                       {
+                           "items": {
+                               "a": "123",
+                               "b": "789",
+                               "c": "def",
+                               "e": "This is a relatively long value that should wrap"
+                           },
+                           "run": {
+                               "stopped": 1491766246235,
+                               "started": 1491766189415,
+                               "model": "intro",
+                               "exit_status": 0,
+                               "status": "stopped",
+                               "id": 534233140
+                           }
+                       }
+                   ]
+               }
+           });
+       });
+      </script>
+    </dom-module>
+    <guild-keyval-compare-component-demo></guild-keyval-compare-component-demo>
+  </body>
+</html>

@@ -1,10 +1,128 @@
 <link rel="import" href="../guild-compare-component-panel/guild-compare-component-panel.html">
 <link rel="import" href="../guild-data/guild-run-compare-data-listener.html">
+<link rel="import" href="../guild-imports/d3.html">
+<link rel="import" href="../guild-run/guild-run.html">
+<link rel="import" href="../guild-styles/guild-styles.html">
+<link rel="import" href="../guild-util/jsondiffpatch.html">
+<link rel="import" href="../paper-toggle-button/paper-toggle-button.html">
 
 <dom-module id="guild-keyval-compare-component">
   <template>
-    <guild-compare-component-panel title="[[source]]">
-      <p>TODO: Show KEYVAL for source=[[source]] and [[runs.length]] runs</p>
+    <style include="guild-table-styles"></style>
+    <style>
+     div.diff {
+         margin-bottom: 20px;
+     }
+
+     div.diff:last-of-type {
+         margin-bottom: 0;
+     }
+
+     div.waiting {
+         padding: 0 20px;
+         color: #777;
+         text-align: center;
+     }
+
+     div.unchanged {
+         color: #777;
+         display: flex;
+         flex-direction: row;
+         flex-wrap: wrap;
+         align-items: center;
+         justify-content: center;
+         padding: 10px 20px;
+     }
+
+     div.table-responsive {
+         margin-bottom: 0;
+     }
+
+     paper-toggle-button {
+         --paper-toggle-button-label-color: #777;
+         --paper-toggle-button-checked-button-color: var(--paper-blue-500);
+         margin-left: 20px;
+     }
+
+     a {
+         color: var(--default-primary-color);
+     }
+
+     table {
+         background-color: #fff;
+     }
+
+     table thead th {
+         font-weight: normal;
+     }
+
+     table thead th a,
+     table tbody td span {
+         white-space: normal;
+     }
+
+     table td, table th {
+         padding: 8px 12px !important;
+     }
+
+     table tr.unchanged td.left,
+     table tr.unchanged td.right,
+     {
+         color: #999;
+     }
+
+     table tr.modified td.left span,
+     table tr.deleted td.left span {
+         color: #777;
+         background: #eee;
+         padding: 0 4px;
+     }
+
+     table tr.modified td.right span,
+     table tr.added td.right span {
+         background: var(--paper-light-blue-100);
+         padding: 0 4px;
+     }
+    </style>
+    <guild-compare-component-panel title="[[panelTitle]]">
+      <template is="dom-if" if="[[!diffs.length]]">
+        <div class="waiting">No runs selected</div>
+      </template>
+      <template is="dom-repeat" items="[[diffs]]" as="diff">
+        <div class="diff">
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead>
+                <tr>
+                  <th></th>
+                  <template is="dom-if" if="[[diff.run1]]">
+                    <th><a href="[[diff.run1.link]]">[[diff.run1.label]]</a></th>
+                  </template>
+                  <th><a href="[[diff.run2.link]]">[[diff.run2.label]]</a></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tbody hidden$="[[!diff.showValues]]">
+                  <template is="dom-repeat" items="[[diff.rows]]" as="row">
+                    <tr class$="[[row.type]]">
+                      <th class="key">[[row.key]]</th>
+                      <template is="dom-if" if="[[diff.run1]]">
+                        <td class="left"><span>[[row.left]]</span></td>
+                      </template>
+                      <td class="right"><span>[[row.right]]</span></td>
+                    </tr>
+                  </template>
+                </tbody>
+            </table>
+          </div>
+          <template is="dom-if" if="[[diff.unchanged]]">
+            <div class="unchanged">
+              Values are the same for these runs
+              <paper-toggle-button active="{{diff.showValues}}">Show values</paper-toggle-button>
+            </div>
+          </template>
+        </div>
+      </template>
     </guild-compare-component-panel>
   </template>
   <script>
@@ -13,8 +131,94 @@
 
        behaviors: [Guild.RunCompareDataListener],
 
+       properties: {
+           title: {
+               type: String,
+               value: null
+           },
+           diffs: {
+               type: Array,
+               value: []
+           },
+           timeFormat: {
+               type: Function,
+               value: function() {
+                   return d3.time.format("%b %d %H:%M:%S");
+               }
+           },
+           panelTitle: {
+               type: String,
+               computed: 'computePanelTitle(title, source)'
+           }
+       },
+
        handleData: function(data) {
-           console.log([this.dataSource, data]);
+           if (data.length == 0) {
+               this.diffs = [];
+           } else if (data.length == 1) {
+               this.diffs = [this.singleRun(data[0])];
+           } else {
+               var acc = [];
+               for (var i = 1; i < data.length; i++) {
+                   acc.push(this.diffRuns(data[i], data[i - 1]));
+               }
+               this.diffs = acc;
+           }
+       },
+
+       singleRun: function(data) {
+           return {
+               run1: null,
+               run2: this.formatRun(data.run),
+               rows: this.formatKeyvals(data[this.source]),
+               unchanged: false,
+               showValues: true
+           }
+       },
+
+       formatRun: function(run) {
+           return {
+               label: this.timeFormat(new Date(run.started)) + " - " + run.model,
+               link: "javascript:window.location='/?run=" + run.id + "'"
+           }
+       },
+
+       formatKeyvals: function(items) {
+           var keys = Object.keys(items);
+           return keys.map(function(key) {
+               return {
+                   type: "unchanged",
+                   key: key,
+                   left: null,
+                   right: items[key]
+               }
+           });
+       },
+
+       diffRuns: function(dataLeft, dataRight) {
+           var left = dataLeft[this.source];
+           var right = dataRight[this.source];
+           var delta = Guild.JSONDiffPatch.diff(left, right);
+           var rows = Guild.JSONDiffPatch.formatKeyvalDelta(delta, left);
+           return this.formatDiff(
+               dataLeft.run,
+               dataRight.run,
+               rows,
+               delta);
+       },
+
+       formatDiff: function(run1, run2, rows, delta) {
+           return {
+               run1: this.formatRun(run1),
+               run2: this.formatRun(run2),
+               rows: rows,
+               unchanged: delta == null,
+               showValues: delta != null
+           }
+       },
+
+       computePanelTitle: function(title, source) {
+           return title || source;
        }
    });
   </script>
