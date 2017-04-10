@@ -11,38 +11,38 @@
          flex-direction: column;
      }
 
-     .guild-compare-component {
-         margin-bottom: 20px;
+     .component {
+         margin: 10px 0;
      }
 
-     .guild-compare-component:last-child {
+     .component:last-child {
          margin-bottom: 10px;
      }
     </style>
     <div id="container">
       <template is="dom-repeat" items="[[components]]" as="c">
-        <template is="dom-if" if="[[c.isChart]]">
-          <guild-chart-compare-component
-              env="[[env]]"
-              source="[[c.source]]"
-              runs="[[runs]]"
-              class="guild-compare-component">
-          </guild-chart-compare-component>
-        </template>
-        <template is="dom-if" if="[[c.isKeyval]]">
-          <guild-keyval-compare-component
-              env="[[env]]"
-              source="[[c.source]]"
-              runs="[[runs]]"
-              class="guild-compare-component">
-        </template>
+        <div class="component">
+          <template is="dom-if" if="[[c.isChart]]">
+            <guild-chart-compare-component
+                env="[[env]]"
+                source="[[c.source]]"
+                runs="[[runs]]">
+            </guild-chart-compare-component>
+          </template>
+          <template is="dom-if" if="[[c.isKeyval]]">
+            <guild-keyval-compare-component
+                env="[[env]]"
+                source="[[c.source]]"
+                runs="[[runs]]"
+                title="[[c.title]]">
+          </template>
+        </div>
       </template>
     </div>
     <guild-compare-component-select
         env="[[env]]"
         on-component-selected="handleComponentSelected">
     </guild-compare-component-select>
-    <p>There are [[runs.length]] runs that I need to display</p>
   </template>
   <script>
    Polymer({
@@ -69,8 +69,18 @@
        componentForSource: function(source) {
            if (source.startsWith("series/")) {
                return {isChart: true, source: source};
-           } else if (source == "flags" || source == "attrs") {
-               return {isKeyval: true, source: source};
+           } else if (source == "flags") {
+               return {
+                   isKeyval: true,
+                   source: source,
+                   title: "Flags"
+               };
+           } else if  (source == "attrs") {
+               return {
+                   isKeyval: true,
+                   source: source,
+                   title: "Attributes"
+               };
            } else {
                throw ["unsupported component source", source];
            }
@@ -83,7 +93,7 @@
        },
 
        componentForTarget: function(target) {
-           if (target.classList.contains("guild-compare-component")) {
+           if (target.classList.contains("component")) {
                return target;
            } else {
                return this.componentForTarget(target.parentNode);
@@ -91,14 +101,13 @@
        },
 
        componentIndex: function(target) {
-           var cs = Polymer.dom(this.root).querySelectorAll(
-               "guild-compare-component");
-           cs.forEach(function(c, index) {
-               if (c == target) {
-                   return index;
+           var cs = Polymer.dom(this.root).querySelectorAll(".component");
+           for (var i = 0; i < cs.length; i++) {
+               if (cs[i] == target) {
+                   return i;
                }
-           });
-           return -1;
+           }
+           throw ["cannot find component index", target];
        }
    });
   </script>
