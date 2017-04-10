@@ -13,6 +13,7 @@
          dataReduce: String,
          dataFormat: String,
          dataFetchInterval: Number,
+         dataFetchDisabled: Boolean,
          _pendingFetch: {
              type: Object,
              value: null
@@ -27,7 +28,7 @@
      },
 
      scheduleFetch: function(whenSeconds) {
-         if (this.dataSource) {
+         if (this.dataSource && !this.dataFetchDisabled) {
              var url = this.dataFetchUrl();
              var handler = this.handleFetchResult.bind(this);
              this.cancelPendingFetch();
