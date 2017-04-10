@@ -346,10 +346,6 @@ Guild.CompareTable = new function() {
         row.draw();
     };
 
-    var highlightSelectedRows = function() {
-        console.log("TODO: highlight selected yo");
-    };
-
     var removedItems = function(dt) {
         return dt.rows({search: "removed"}).data().toArray();
     };
@@ -366,7 +362,6 @@ Guild.CompareTable = new function() {
     this.fieldsDataSource = fieldsDataSource;
     this.init = init;
     this.refresh = refresh;
-    this.highlightSelected = highlightSelectedRows;
     this.removedItems = removedItems;
     this.deselect = deselect;
 };
