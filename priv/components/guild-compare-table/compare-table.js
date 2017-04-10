@@ -48,7 +48,7 @@ Guild.CompareTable = new function() {
                 infoEmpty: "_TOTAL_ runs",
                 search: "",
                 searchPlaceholder: "Filter",
-                zeroRecords: "Waiting for data..."
+                zeroRecords: "Waiting for data"
             },
             dom: "<'row'<'col-12'f>>"
                 + "<'row'<'col-12'tr>>"
