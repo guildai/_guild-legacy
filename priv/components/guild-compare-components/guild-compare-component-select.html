@@ -56,7 +56,7 @@
         on-paper-dropdown-open="handleAddOpened">
       <paper-fab mini icon="[[addIcon]]" class="dropdown-trigger"></paper-fab>
       <div class="dropdown-content">
-        <paper-header-panel mode="waterfall">
+        <paper-header-panel id="panel" mode="waterfall">
           <paper-input
               id="filter"
               class="paper-header"
@@ -123,8 +123,8 @@
            this.refreshFilteredItems();
            // Defer these items until popup is visible
            window.setTimeout(function() {
-               this.setFilterInputFocus();
                this.resetMenu();
+               this.setFilterInputFocus();
            }.bind(this), 100);
        },
 
@@ -139,10 +139,8 @@
        },
 
        resetMenu: function() {
-           if (this.$.menu.items.length > 0) {
-               this.$.menu.items[0].scrollIntoView();
-           }
            this.$.menu.selected = -1;
+           this.$.panel.scroller.scrollTop = 0;
        },
 
        setFilterInputFocus: function() {
