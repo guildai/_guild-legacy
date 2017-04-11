@@ -1,19 +1,77 @@
 <link rel="import" href="../guild-compare-component-panel/guild-compare-component-panel.html">
+<link rel="import" href="../guild-data/guild-run-compare-data-listener.html">
+<link rel="import" href="../vz-line-chart/vz-line-chart.html">
 
 <dom-module id="guild-chart-compare-component">
   <template>
-    <guild-compare-component-panel title="[[source]]">
-      <p>TODO: Show chart for source=[[source]] and [[runs.length]] runs</p>
+    <style>
+     #container {
+         background-color: #fff;
+         padding: 20px 10px 20px 0;
+         height: 340px;
+         display: flex;
+         align-items: stretch;
+     }
+    </style>
+    <guild-compare-component-panel
+        title="[[source]]"
+        on-fullscreen="handleFullscreen"
+        on-fullscreen-exit="handleFullscreenExit">
+      <div id="container">
+        <vz-line-chart id="chart" x-type="relative"></vz-line-chart>
+      </div>
     </guild-compare-component-panel>
   </template>
   <script>
    Polymer({
        is: "guild-chart-compare-component",
 
+       behaviors: [Guild.RunCompareDataListener],
+
        properties: {
            env: Object,
            source: String,
            runs: Array
+       },
+
+       handleData: function(data) {
+           var labels = [];
+           var labelData = {};
+           data.forEach(function(item) {
+               var seriesData = this.seriesData(item[this.source]);
+               if (seriesData) {
+                   var label = Guild.Run.runLabel(item.run);
+                   labels.push(label);
+                   labelData[label] = seriesData;
+               }
+           }.bind(this));
+           this.$.chart.setVisibleSeries(labels);
+           labels.forEach(function(label) {
+               this.$.chart.setSeriesData(label, labelData[label]);
+           }.bind(this));
+       },
+
+       seriesData: function(data) {
+           var series = data[Object.keys(data)[0]];
+           return series ? this.formatDataSeries(series) : null;
+       },
+
+       formatDataSeries: function(series) {
+           return series.map(function(item, index) {
+               return {
+                   wall_time: new Date(item[0]),
+                   step: item[1] || index,
+                   scalar: item[2]
+               }
+           });
+       },
+
+       handleFullscreen: function() {
+           this.$.container.style.height = '520px';
+       },
+
+       handleFullscreenExit: function() {
+           this.$.container.style.height = '340px';
        }
    });
   </script>
