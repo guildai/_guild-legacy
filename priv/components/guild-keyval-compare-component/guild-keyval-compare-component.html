@@ -3,6 +3,7 @@
 <link rel="import" href="../guild-run/guild-run.html">
 <link rel="import" href="../guild-styles/guild-styles.html">
 <link rel="import" href="../guild-util/jsondiffpatch.html">
+<link rel="import" href="../iron-collapse/iron-collapse.html">
 <link rel="import" href="../paper-toggle-button/paper-toggle-button.html">
 
 <dom-module id="guild-keyval-compare-component">
@@ -30,7 +31,7 @@
          flex-wrap: wrap;
          align-items: center;
          justify-content: center;
-         padding: 10px 20px;
+         padding: 10px 20px 0;
      }
 
      div.table-responsive {
@@ -45,6 +46,11 @@
 
      a {
          color: var(--default-primary-color);
+     }
+
+     table th.longest-key-placeholder span {
+         font-weight: bold;
+         visibility: hidden;
      }
 
      table {
@@ -93,26 +99,31 @@
             <table class="table table-bordered table-hover">
               <thead>
                 <tr>
-                  <th width="20%"></th>
+                  <th width="20%" class="longest-key-placeholder">
+                    <span>[[longestKey(diff.rows)]]</span>
+                  </th>
                   <template is="dom-if" if="[[diff.run1]]">
-                    <th><a href="[[diff.run1.link]]">[[diff.run1.label]]</a></th>
+                    <th width="40%"><a href="[[diff.run1.link]]">[[diff.run1.label]]</a></th>
                   </template>
-                  <th><a href="[[diff.run2.link]]">[[diff.run2.label]]</a></th>
+                  <th width="40%"><a href="[[diff.run2.link]]">[[diff.run2.label]]</a></th>
                 </tr>
               </thead>
-              <tbody>
-                <tbody hidden$="[[!diff.showValues]]">
+            </table>
+            <iron-collapse opened="[[diff.showValues]]">
+              <table class="table table-bordered table-hover">
+                <tbody>
                   <template is="dom-repeat" items="[[diff.rows]]" as="row">
                     <tr class$="[[row.type]]">
-                      <th class="key">[[row.key]]</th>
+                      <th width="20%" class="key">[[row.key]]</th>
                       <template is="dom-if" if="[[diff.run1]]">
-                        <td class="left"><span>[[row.left]]</span></td>
+                        <td width="40%" class="left"><span>[[row.left]]</span></td>
                       </template>
-                      <td class="right"><span>[[row.right]]</span></td>
+                      <td width="40%" class="right"><span>[[row.right]]</span></td>
                     </tr>
                   </template>
                 </tbody>
-            </table>
+              </table>
+            </iron-collapse>
           </div>
           <template is="dom-if" if="[[diff.unchanged]]">
             <div class="unchanged">
@@ -212,6 +223,16 @@
 
        computePanelTitle: function(title, source) {
            return title || source;
+       },
+
+       longestKey: function(rows) {
+           var longest = "";
+           rows.forEach(function(row) {
+               if (row.key.length > longest.length) {
+                   longest = row.key;
+               }
+           });
+           return longest;
        }
    });
   </script>
