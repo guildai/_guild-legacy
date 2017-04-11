@@ -105,9 +105,21 @@
 
        handleAddOpened: function() {
            this.$.filter.value = "";
-           this.$.menu.selected = -1;
+           this.resetMenu();
            this.refreshFilteredItems();
            this.setFilterInputFocus();
+       },
+
+       resetMenu: function() {
+           var items = this.$.menu.items;
+           if (items.length > 0) {
+               // Defer scrollIntoView as it has no effect if the
+               // menu is not visible (wish there was a more explicit
+               // way  to implement this)
+               window.setTimeout(function() {
+                   items[0].scrollIntoView();
+               }, 100);
+           }
        },
 
        refreshFilteredItems: function() {
