@@ -2,7 +2,6 @@
 <link rel="import" href="../guild-data/guild-run-compare-data-listener.html">
 <link rel="import" href="../guild-run/guild-run.html">
 <link rel="import" href="../guild-styles/guild-styles.html">
-<link rel="import" href="../guild-util/guild-util.html">
 <link rel="import" href="../guild-util/jsondiffpatch.html">
 <link rel="import" href="../paper-toggle-button/paper-toggle-button.html">
 
@@ -172,9 +171,7 @@
 
        formatRun: function(run) {
            return {
-               label:
-                     Guild.Util.formatShortDate(new Date(run.started))
-                     + " - " + run.model,
+               label: Guild.Run.runLabel(run),
                link: "javascript:window.location='/?run=" + run.id + "'"
            }
        },
