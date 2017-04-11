@@ -1,8 +1,8 @@
 <link rel="import" href="../guild-compare-component-panel/guild-compare-component-panel.html">
 <link rel="import" href="../guild-data/guild-run-compare-data-listener.html">
-<link rel="import" href="../guild-imports/d3.html">
 <link rel="import" href="../guild-run/guild-run.html">
 <link rel="import" href="../guild-styles/guild-styles.html">
+<link rel="import" href="../guild-util/guild-util.html">
 <link rel="import" href="../guild-util/jsondiffpatch.html">
 <link rel="import" href="../paper-toggle-button/paper-toggle-button.html">
 
@@ -140,12 +140,6 @@
                type: Array,
                value: []
            },
-           timeFormat: {
-               type: Function,
-               value: function() {
-                   return d3.time.format("%b %d %H:%M:%S");
-               }
-           },
            panelTitle: {
                type: String,
                computed: 'computePanelTitle(title, source)'
@@ -178,7 +172,9 @@
 
        formatRun: function(run) {
            return {
-               label: this.timeFormat(new Date(run.started)) + " - " + run.model,
+               label:
+                     Guild.Util.formatShortDate(new Date(run.started))
+                     + " - " + run.model,
                link: "javascript:window.location='/?run=" + run.id + "'"
            }
        },

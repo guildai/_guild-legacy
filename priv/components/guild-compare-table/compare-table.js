@@ -17,8 +17,6 @@ var Guild = Guild || {};
 
 Guild.CompareTable = new function() {
 
-    var TIME_FORMAT = d3.time.format("%b %d %H:%M:%S");
-
     var fieldsDataSource = function(fields) {
         var sources = new Set();
         fields.forEach(function(field) {
@@ -233,7 +231,7 @@ Guild.CompareTable = new function() {
 
     var formatTime = function(epoch) {
         return {
-            value: TIME_FORMAT(new Date(epoch)),
+            value: Guild.Util.formatShortDate(new Date(epoch)),
             sort: epoch
         };
     };

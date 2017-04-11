@@ -21,7 +21,7 @@ Guild.Run = new function() {
         var label = "";
         if (run.started) {
             var started = new Date(run.started);
-            label += started.toDateString() + ", " + started.toLocaleTimeString();
+            label += Guild.Util.formatShortDate(started);
         }
         if (run.model) {
             if (label) {
