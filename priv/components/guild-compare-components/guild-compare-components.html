@@ -26,7 +26,8 @@
             <guild-chart-compare-component
                 env="[[env]]"
                 source="[[c.source]]"
-                runs="[[runs]]">
+                runs="[[runs]]"
+                title="[[c.title]]">
             </guild-chart-compare-component>
           </template>
           <template is="dom-if" if="[[c.isKeyval]]">
@@ -68,7 +69,11 @@
 
        componentForSource: function(source) {
            if (source.startsWith("series/")) {
-               return {isChart: true, source: source};
+               return {
+                   isChart: true,
+                   source: source,
+                   title: source.slice(7)
+               };
            } else if (source == "flags") {
                return {
                    isKeyval: true,

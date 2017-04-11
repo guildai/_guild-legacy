@@ -14,7 +14,7 @@
      }
     </style>
     <guild-compare-component-panel
-        title="[[source]]"
+        title="[[title]]"
         on-fullscreen="handleFullscreen"
         on-fullscreen-exit="handleFullscreenExit">
       <div id="container">
@@ -31,7 +31,8 @@
        properties: {
            env: Object,
            source: String,
-           runs: Array
+           runs: Array,
+           title: String
        },
 
        handleData: function(data) {
