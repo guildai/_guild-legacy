@@ -120,21 +120,12 @@
 
        handleAddOpened: function() {
            this.$.filter.value = "";
-           this.resetMenu();
            this.refreshFilteredItems();
-           this.setFilterInputFocus();
-       },
-
-       resetMenu: function() {
-           var items = this.$.menu.items;
-           if (items.length > 0) {
-               // Defer scrollIntoView as it has no effect if the
-               // menu is not visible (wish there was a more explicit
-               // way  to implement this)
-               window.setTimeout(function() {
-                   items[0].scrollIntoView();
-               }, 100);
-           }
+           // Defer these items until popup is visible
+           window.setTimeout(function() {
+               this.setFilterInputFocus();
+               this.resetMenu();
+           }.bind(this), 100);
        },
 
        refreshFilteredItems: function() {
@@ -143,14 +134,19 @@
                return text.indexOf(filter) != -1;
            };
            this.querySelectorAll("paper-item").forEach(function(item) {
-               item.hidden = !matches(item.innerText);
+               item.hidden = !matches(item.innerText.toLowerCase());
            });
        },
 
+       resetMenu: function() {
+           if (this.$.menu.items.length > 0) {
+               this.$.menu.items[0].scrollIntoView();
+           }
+           this.$.menu.selected = -1;
+       },
+
        setFilterInputFocus: function() {
-           // Hack to set focus after input is displayed
-           var filter = this.$.filter;
-           window.setTimeout(function() { filter.$.input.focus() }, 100);
+           this.$.filter.$.input.focus();
        },
 
        maybeMenuFocus: function(e) {
