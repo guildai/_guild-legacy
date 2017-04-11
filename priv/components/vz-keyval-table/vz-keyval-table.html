@@ -3,22 +3,24 @@
 <dom-module id="vz-keyval-table">
   <template>
     <style include="guild-table-styles"></style>
-     <style>
-      table {
-          background-color: #fff;
-          font-size: 14px;
-      }
+    <style>
+     table {
+         background-color: #fff;
+         font-size: 14px;
+     }
     </style>
-    <table class="table table-responsive table-bordered table-hover">
-      <tbody>
-        <template is="dom-repeat" items="[[keyvals]]">
-          <tr>
-            <th>[[item.key]]</th>
-            <td>[[item.value]]</td>
-          </tr>
-        </template>
-      </tbody>
-    </table>
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <tbody>
+          <template is="dom-repeat" items="[[keyvals]]">
+            <tr>
+              <th>[[item.key]]</th>
+              <td>[[item.value]]</td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
   </template>
   <script>
    Polymer({

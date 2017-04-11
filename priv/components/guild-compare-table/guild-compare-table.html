@@ -2,6 +2,7 @@
 <link rel="import" href="../guild-styles/guild-styles.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-material/paper-material.html">
 <link rel="import" href="../paper-toggle-button/paper-toggle-button.html">
 
 <link rel="import" href="compare-table-support.html">
@@ -14,6 +15,14 @@
      :host {
          --paper-toggle-button-checked-bar-color: var(--paper-green-200);
          --paper-toggle-button-checked-button-color: var(--paper-green-600);
+     }
+
+     paper-material {
+         background-color: white;
+     }
+
+     #container {
+         padding: 20px;
      }
 
      .controls {
@@ -40,30 +49,32 @@
          color: var(--paper-input-container-color, --secondary-text-color);
      }
     </style>
-    <div id="scopeSubtree">
-      <div class="controls">
-        <paper-input
-            id="filter"
-            label="Filter"
-            no-label-float
-            type="search"
-            on-input="filter">
-          <iron-icon icon="search" prefix></iron-icon>
-        </paper-input>
-        <div class="actions">
-          <paper-toggle-button
-              checked="{{hideFailed}}"
-          >Hide failed runs</paper-toggle-button>
+    <paper-material>
+      <div id="container">
+        <div class="controls">
+          <paper-input
+              id="filter"
+              label="Filter"
+              no-label-float
+              type="search"
+              on-input="filter">
+            <iron-icon icon="search" prefix></iron-icon>
+          </paper-input>
+          <div class="actions">
+            <paper-toggle-button
+                checked="{{hideFailed}}"
+            >Hide failed runs</paper-toggle-button>
+          </div>
         </div>
+        <table
+            id="table"
+            class="hover row-border"
+            cellpadding="0"
+            cellspacing="0"
+            border="0">
+        </table>
       </div>
-      <table
-          id="table"
-          class="hover row-border"
-          cellpadding="0"
-          cellspacing="0"
-          border="0">
-      </table>
-    </div>
+    </paper-material>
   </template>
   <script>
    Polymer({
@@ -92,7 +103,7 @@
        },
 
        ready: function() {
-           this.scopeSubtree(this.$.scopeSubtree, true);
+           this.scopeSubtree(this.$.container, true);
            this.dt = Guild.CompareTable.init(
                this.$.table,
                this.fields,

@@ -59,6 +59,7 @@
 
      table thead th {
          font-weight: normal;
+         border-bottom: none !important;
      }
 
      table thead th a,
@@ -96,7 +97,7 @@
       <template is="dom-repeat" items="[[diffs]]" as="diff">
         <div class="diff">
           <div class="table-responsive">
-            <table class="table table-bordered table-hover">
+            <table class="table">
               <thead>
                 <tr>
                   <th width="20%" class="longest-key-placeholder">
@@ -110,7 +111,7 @@
               </thead>
             </table>
             <iron-collapse opened="[[diff.showValues]]">
-              <table class="table table-bordered table-hover">
+              <table class="table table-hover">
                 <tbody>
                   <template is="dom-repeat" items="[[diff.rows]]" as="row">
                     <tr class$="[[row.type]]">

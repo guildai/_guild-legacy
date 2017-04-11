@@ -22,7 +22,11 @@
 <dom-module id="guild-tf-page">
   <template>
     <style>
-     :root {
+     :host {
+         display: block;
+         height: 100%;
+         padding: 0 15px;
+
          --toolbar-text-color: #444;
          --toolbar-text-accent-color: #ccc;
          --toolbar-tab-ink: #ccc;
@@ -30,91 +34,90 @@
          --tf-multi-checkbox-outer-container: {
              height: inherit;
              margin-bottom: 20px;
-         }
+         };
 
          --tf-sidebar-helper-sidebar-section: {
              padding: 20px 0;
-         }
+         };
 
          --tf-dashboard-layout-sidebar: {
              padding: 20px 20px 0 20px;
-             margin: 0 20px 0 0;
-             background-color: var(--component-background-color);
+             margin: 2px 20px 2px 2px;
+             background-color: white;
              @apply(--shadow-elevation-2dp);
              height: calc(100% - 4px);
              top: 1px;
              margin-left: 1px;
-         }
+         };
 
          --tf-sidebar-helper-first-sidebar-section: {
              padding-top: 0;
-         }
+         };
 
          --tf-option-selector-content-wrapper: {
              display: flex;
              flex-wrap: wrap;
-         }
+         };
 
          --tf-regex-group-regex-inpput: {
               margin-left: 0;
-         }
+         };
 
          --tf-dashboard-style-sidebar-section: {
              padding: 20px 0;
-         }
+         };
 
          --tf-collapsable-pane: {
-             margin: 0 0 20px 0;
-         }
+             margin: 2px 2px 20px 2px;
+             @apply(--shadow-elevation-2dp);
+         };
 
          --tf-collapsable-pane-first: {
-             margin: 0 0 20px 0;
-         }
+             margin: 2px 2px 20px 2px;
+         };
 
          --tf-collapsable-pane-heading: {
-             background-color: var(--component-background-color);
              font-size: 18px;
              padding: 12px 18px;
-             @apply(--shadow-elevation-2dp);
              width: calc(100% - 4px);
              margin-left: 1px;
-         }
+             box-shadow: none;
+             outline: 0;
+         };
+
+         --tf-collapsable-pane-content: {
+             border: none;
+         };
 
          --tf-categorizer: {
              padding-bottom: 0;
-         }
+         };
 
          --tf-categorizer-underscore-categorization: {
              display: none;
-         }
+         };
 
          --tf-graph-controls-allcontrols: {
              width: 240px;
              padding: 0;
              margin-top: -20px;
-         }
+         };
 
          --tf-graph-controls-legend-holder: {
              padding-bottom: 20px;
-         }
+         };
 
          --tf-graph-board-container: {
              padding: 0;
-         }
+         };
 
          --tf-graph-container: {
              padding: 0;
-             @apply(--shadow-elevation-2dp);
              top: 1px;
              width: calc(100% - 4px);
              height: calc(100% - 4px);
-         }
-     }
-
-     :host {
-         display: block;
-         height: 100%;
-         padding: 0 15px 15px 15px;
+             @apply(--shadow-elevation-2dp);
+         };
      }
 
      paper-header-panel {

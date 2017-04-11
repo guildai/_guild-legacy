@@ -65,6 +65,11 @@ block-insert \
 
 block-insert \
     priv/components/tf-dashboard-common/tf-collapsable-pane.html \
+    '.content {' '}' \
+    '\        @apply(--tf-collapsable-pane-content);'
+
+block-insert \
+    priv/components/tf-dashboard-common/tf-collapsable-pane.html \
     ':host {' '}' \
     '\        @apply(--tf-collapsable-pane);'
 
