@@ -28,7 +28,7 @@
      },
 
      listeners: {
-         'guild-fullscreen-canceled': 'handleFullscreenCanceled'
+         'fullscreen-canceled': 'handleFullscreenCanceled'
      },
 
      computeFullscreenIcon: function(fullscreen) {
@@ -43,10 +43,10 @@
          if (old == undefined) return;
          if (val) {
              this.onFullscreen();
-             this.fireFullscreenEvent("guild-fullscreen");
+             this.fireFullscreenEvent("fullscreen");
          } else {
              this.onFullscreenExit();
-             this.fireFullscreenEvent("guild-fullscreen-exit");
+             this.fireFullscreenEvent("fullscreen-exit");
          }
      },
 
