@@ -392,7 +392,6 @@ var VZ;
          */
         LineChart.prototype.setVisibleSeries = function (names) {
             var _this = this;
-            names = names.sort();
             this.seriesNames = names;
             names.reverse(); // draw first series on top
             this.datasets.forEach(function (d) { return d.offUpdate(_this.onDatasetChanged); });
