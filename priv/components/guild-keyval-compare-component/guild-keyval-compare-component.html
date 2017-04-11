@@ -89,7 +89,7 @@
          padding: 0 4px;
      }
     </style>
-    <guild-compare-component-panel title="[[panelTitle]]">
+    <guild-compare-component-panel title="[[title]]">
       <template is="dom-if" if="[[!diffs.length]]">
         <div class="waiting">No runs selected</div>
       </template>
@@ -142,17 +142,10 @@
        behaviors: [Guild.RunCompareDataListener],
 
        properties: {
-           title: {
-               type: String,
-               value: null
-           },
+           title: String,
            diffs: {
                type: Array,
                value: []
-           },
-           panelTitle: {
-               type: String,
-               computed: 'computePanelTitle(title, source)'
            }
        },
 
