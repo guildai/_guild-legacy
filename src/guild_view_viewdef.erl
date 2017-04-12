@@ -335,8 +335,7 @@ read_lookup(Path) ->
     end.
 
 model_runtime(Model) ->
-    {ok, Runtime} = guild_project:section_attr(Model, "runtime"),
-    Runtime.
+    guild_project:section_attr(Model, "runtime", "tensorflow").
 
 parse_names("") -> [];
 parse_names(Raw) ->
