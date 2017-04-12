@@ -95,22 +95,6 @@ guild.view = new function() {
 };
 
 /********************************************************************
- * Depot support
- ********************************************************************/
-
-guild.depot = new function() {
-
-    var baseInit = function() {
-        $('[data-toggle="tooltip"]').tooltip({"delay": 400, "html": true});
-        $('[data-toggle="tooltip"]').click(function() {
-            $('[data-toggle="tooltip"]').tooltip("hide");
-        });
-    };
-
-    this.baseInit = baseInit;
-};
-
-/********************************************************************
  * Widget support
  ********************************************************************/
 

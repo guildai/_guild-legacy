@@ -22,9 +22,7 @@
          resolve_value/1, format_value/2, resolve_icon_alias/1,
          navbar_links/1, navbar_item_active_class/2,
          navbar_item_link/2, render_page_view/2, page_view_css/1,
-         page_view_js/1, page_active_class/2, depot_project_source/2,
-         format_runs_count/1, format_updated/2, remove_unsafe_links/1,
-         depot_project_readme_html/1, tag_color/1, tag_id/1]).
+         page_view_js/1, page_active_class/2]).
 
 version() -> 1.
 
@@ -42,14 +40,9 @@ inventory(filters) ->
      page_view_css,
      page_view_js,
      page_active_class,
-     depot_project_source,
      format_runs_count,
      format_updated,
-     remove_unsafe_links,
-     depot_project_readme_html,
-     tag_color,
-     tag_colors,
-     tag_id];
+     remove_unsafe_links];
 inventory(tags) ->
     [].
 
@@ -317,119 +310,3 @@ page_active_class(Active, Target) ->
         Active -> "active";
         _ -> ""
     end.
-
-%% ===================================================================
-%% Depot project source
-%% ===================================================================
-
-depot_project_source(P, Name) ->
-    Source = depot_project_source_path(P, Name),
-    case file:read_file(Source) of
-        {ok, Bin} -> Bin;
-        {error, enoent} -> ""
-    end.
-
-depot_project_source_path(#{source_path:=Path}, Name) ->
-    filename:join(Path, Name).
-
-%% ===================================================================
-%% Format runs count
-%% ===================================================================
-
-format_runs_count(undefined) -> "No runs yet";
-format_runs_count([]) -> "No runs yet";
-format_runs_count([_]) -> "1 run";
-format_runs_count(Rs) -> [integer_to_list(length(Rs)), " runs"].
-
-%% ===================================================================
-%% Format updated
-%% ===================================================================
-
-format_updated(undefined, _Now) ->
-    "";
-format_updated(Updated, Now) ->
-    Age = Now - Updated,
-    if
-        Age < 60      -> "moments ago";
-        Age < 120     -> "a minute ago";
-        Age < 3600    -> io_lib:format("~b minutes ago", [Age div 60]);
-        Age < 7200    -> "an hour ago";
-        Age < 86400   -> io_lib:format("~b hours ago", [Age div 3600]);
-        Age < 172800  -> "a day ago";
-        Age < 2592000 -> io_lib:format("~b days ago", [Age div 86400]);
-        true ->
-            ["on ", guild_datetime:format_date(Updated)]
-    end.
-
-%% ===================================================================
-%% Remove unsafe links
-%% ===================================================================
-
-remove_unsafe_links(Bin) ->
-    Parts = re:split(Bin, "(href=\".+?\")"),
-    [remove_unsafe_link(Part) || Part <- Parts].
-
-remove_unsafe_link(<<"href=\"https://", _/binary>>=P) -> P;
-remove_unsafe_link(<<"href=\"http://",  _/binary>>=P) -> P;
-remove_unsafe_link(<<"href=\"ftp://",   _/binary>>=P) -> P;
-remove_unsafe_link(<<"href=\"mailto:",  _/binary>>=P) -> P;
-remove_unsafe_link(<<"href=\"",         _/binary>>)   -> "";
-remove_unsafe_link(P)                                 -> P.
-
-%% ===================================================================
-%% Depot project README HTML
-%% ===================================================================
-
-depot_project_readme_html(P) ->
-    ReadmePath = depot_project_source_path(P, "README.md"),
-    case filelib:is_file(ReadmePath) of
-        true -> markdown_to_safe_html(ReadmePath);
-        false -> ""
-    end.
-
-markdown_to_safe_html(Path) ->
-    Cmd = [guild_app:priv_bin("multimarkdown"), Path],
-    case guild_exec:run_capture(Cmd) of
-        {ok, [{stdout, Out}]} ->
-            remove_unsafe_links(Out);
-        {error, Err} ->
-            guild_log:internal(
-              "Error converting ~s to markdown: ~p~n",
-              [Path, Err]),
-            ""
-    end.
-
-%% ===================================================================
-%% Tag color
-%% ===================================================================
-
-%% Colors from Material Design color palette:
-%% https://material.io/guidelines/style/color.htm
-
-tag_color(T) when is_list(T) ->
-    tag_color(tag_hash_binary(T));
-tag_color(<<"1">>)  -> "#00ACC1"; % cyan-600
-tag_color(<<"2">>)  -> "#9FA8DA"; % indigo-200
-tag_color(<<"3">>)  -> "#7986CB"; % indigo-300
-tag_color(<<"4">>)  -> "#26A69A"; % teal-400
-tag_color(<<"5">>)  -> "#66BB6A"; % green-600
-tag_color(<<"6">>)  -> "#A1887F"; % brown-300
-tag_color(<<"7">>)  -> "#F9A825"; % yellow-800
-tag_color(<<"8">>)  -> "#F06292"; % pink-300
-tag_color(<<"9">>)  -> "#FF7043"; % deep-orange-400
-tag_color(<<"10">>) -> "#9CCC65"; % light-green-400
-tag_color(_)        -> "#90A4AE". % blue-grey-300
-
-tag_hash_binary(T) ->
-    %% Used to map tag string val to one of the indexed colors
-    %% above. We use binaries as a convenience to test the palette in
-    %% a template using notation like {{3|tag_color}}.
-    TagLower = string:to_lower(T),
-    integer_to_binary(erlang:phash2(TagLower, 11) + 1).
-
-%% ===================================================================
-%% Tag ID
-%% ===================================================================
-
-tag_id(Tag) ->
-    erlang:phash2(Tag, 10000000).

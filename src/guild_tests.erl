@@ -40,8 +40,7 @@ run() ->
     test_consult_string(),
     test_port_io(),
     test_tensorflow_port_protocol(),
-    test_tensorflow_read_image(),
-    test_depot_db().
+    test_tensorflow_read_image().
 
 run(Test) ->
     guild_trace:init_from_env(os:getenv("TRACE")),
@@ -1176,71 +1175,3 @@ test_tensorflow_read_image() ->
         = Load(RunDir, 1),
 
     ok().
-
-%% ===================================================================
-%% Depot DB
-%% ===================================================================
-
-test_depot_db() ->
-    start("depot_db"),
-
-    M = guild_depot_db,
-
-    {ok, _} = application:ensure_all_started(guild),
-
-    %% Ensure our test depot is empty.
-
-    Depot = init_depot(),
-
-    %% Calling open starts a DB process under supervision.
-
-    {ok, Pid} = M:open(Depot),
-    true = is_process_alive(Pid),
-
-    %% Let's star some projects. Initially there are no starred
-    %% projects.
-
-    {ok, []} = M:project_stars("foo"),
-    {ok, []} = M:project_stars("bar"),
-
-    %% Let's star the projects for some users.
-
-    ok = M:star_project("foo", "mary"),
-    ok = M:star_project("foo", "bob"),
-    ok = M:star_project("foo", "jane"),
-    ok = M:star_project("bar", "mary"),
-
-    %% And get our stars.
-
-    {ok, [<<"bob">>,<<"jane">>,<<"mary">>]} = M:project_stars("foo"),
-    {ok, [<<"mary">>]} = M:project_stars("bar"),
-
-    %% We can unstar as well!
-
-    ok = M:unstar_project("foo", "mary"),
-    ok = M:unstar_project("foo", "jane"),
-    ok = M:unstar_project("bar", "mary"),
-
-    {ok, [<<"bob">>]} = M:project_stars("foo"),
-    {ok, []} = M:project_stars("bar"),
-
-    %% Unstarring a non-existing project or user is okay.
-
-    ok = M:unstar_project("baz", "mary"),
-    ok = M:unstar_project("foo", "sam"),
-
-    {ok, [<<"bob">>]} = M:project_stars("foo"),
-    {ok, []} = M:project_stars("bar"),
-
-    %% Let's close up!
-
-    ok = M:close(),
-    false = is_process_alive(Pid),
-
-    ok().
-
-init_depot() ->
-    Depot = "/tmp/guild_test.depot",
-    [] = os:cmd("rm -rf \"" ++ Depot ++ "\""),
-    [] = os:cmd("mkdir \"" ++ Depot ++ "\""),
-    Depot.

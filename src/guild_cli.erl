@@ -38,7 +38,6 @@ parser_commands() ->
       ["check",
        "cmds-json",
        "delete-run",
-       "depot",
        "evaluate",
        "export",
        "import",
@@ -50,7 +49,6 @@ parser_commands() ->
        "prepare",
        "serve",
        "status",
-       "sync",
        "train",
        "view"]).
 
@@ -61,7 +59,6 @@ parser_commands(Names) ->
 cmd_info("check")       -> {guild_check_cmd, "check Guild setup"};
 cmd_info("cmds-json")   -> {guild_cmds_json_cmd, "commands JSON (hidden)"};
 cmd_info("delete-run")  -> {guild_delete_run_cmd, "deletes a run"};
-cmd_info("depot")       -> {guild_depot_cmd, "start Guild Depot"};
 cmd_info("evaluate")    -> {guild_eval_cmd, "evaluate a trained model"};
 cmd_info("export")      -> {guild_export_cmd, "export run results"};
 cmd_info("import")      -> {guild_import_cmd, "import run results"};
@@ -73,7 +70,6 @@ cmd_info("list-series") -> {guild_list_series_cmd, "list run series names"};
 cmd_info("prepare")     -> {guild_prepare_cmd, "prepare model for training"};
 cmd_info("serve")       -> {guild_serve_cmd, "serve a trained model"};
 cmd_info("status")      -> {guild_status_cmd, "train a model"};
-cmd_info("sync")        -> {guild_sync_cmd, "sync a project to a depot"};
 cmd_info("train")       -> {guild_train_cmd, "show project status"};
 cmd_info("view")        -> {guild_view_cmd, "start Guild View"}.
 
