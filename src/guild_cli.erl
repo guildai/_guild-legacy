@@ -103,7 +103,7 @@ global_opts() ->
 
 apply_global_opts(Opts) ->
     guild_trace:init_from_opts(Opts),
-    guild_reload:init_from_opts(Opts),
+    guild_reloader:init_from_opts(Opts),
     maybe_start_sasl(Opts),
     guild_observer:maybe_start_from_opts(Opts).
 
