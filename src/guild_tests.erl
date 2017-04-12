@@ -26,7 +26,6 @@ run() ->
     test_project(),
     test_input_buffer(),
     test_proc_waiting(),
-    test_format_value(),
     test_exec(),
     test_operation(),
     test_split_cmd(),
@@ -382,56 +381,6 @@ proc_waiter(Proc, Parent) ->
               Resp = guild_proc:wait_for({proc, Proc}),
               erlang:send(Parent, {self(), Resp})
       end).
-
-%% ===================================================================
-%% Format value
-%% ===================================================================
-
-test_format_value() ->
-    start("format_value"),
-
-    F = fun(Val, Fmt) ->
-            %% Flatten string for test readabilty below
-            flatten_string(guild_dtl_lib:format_value(Val, Fmt))
-        end,
-
-    %% No formatting
-
-    "hello" = F("hello", undefined),
-    1       = F(1, undefined),
-    1.0     = F(1.0, undefined),
-
-    %% Number
-
-    "1"                  = F(1,              "number"),
-    "567"                = F(567,            "number"),
-    "1,000"              = F(1000,           "number"),
-    "1,567"              = F(1567,           "number"),
-    "20,567"             = F(20567,          "number"),
-    "12,345,678,901,234" = F(12345678901234, "number"),
-
-    %% Precent
-
-    "50.00%" = F(0.5, "percent"),
-
-    %% Duration (seconds)
-
-    "0s"            = F(duration(0,  0, 0,  0), "duration"),
-    "1s"            = F(duration(0,  0, 0,  1), "duration"),
-    "1m 0s"         = F(duration(0,  0, 1,  0), "duration"),
-    "1h 0m 0s"      = F(duration(0,  1, 0,  0), "duration"),
-    "1d 0h 0m 0s"   = F(duration(1,  0, 0,  0), "duration"),
-    "1m 15s"        = F(duration(0,  0, 1, 15), "duration"),
-    "3h 1m 15s"     = F(duration(0,  3, 1, 15), "duration"),
-    "12d 3h 1m 15s" = F(duration(12, 3, 1, 15), "duration"),
-
-    ok().
-
-flatten_string(L) when is_list(L) -> lists:flatten(L);
-flatten_string(Other) -> Other.
-
-duration(D, H, M, S) ->
-    D * 86400 + H * 3600 + M * 60 + S.
 
 %% ===================================================================
 %% Exec
