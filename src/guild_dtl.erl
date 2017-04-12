@@ -17,19 +17,9 @@
 -export([init/1, render/2]).
 
 -define(templates,
-        [{"attrs-widget.html",         guild_attrs_widget},
-         {"bye.html",                  guild_bye_page},
-         {"compare-table-widget.html", guild_compare_table_widget},
-         {"flags-widget.html",         guild_flags_widget},
-         {"output-widget.html",        guild_output_widget},
-         {"page-header-widget.html",   guild_page_header_widget},
-         {"placeholder-widget.html",   guild_placeholder_widget},
+        [{"bye.html",                  guild_bye_page},
          {"project-error.html",        guild_project_error_page},
          {"project-view.html",         guild_project_view_page},
-         {"run-model-widget.html",     guild_run_model_widget},
-         {"status-widget.html",        guild_status_widget},
-         {"timeseries-widget.html",    guild_timeseries_widget},
-         {"value-panel-widget.html",   guild_value_panel_widget},
          {"view-index.html",           guild_view_index_page}
         ]).
 
