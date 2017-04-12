@@ -1,0 +1,95 @@
+<link rel="import" href="../guild-run/guild-run.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../paper-item/paper-item.html">
+
+<dom-module id="guild-run-dropdown-menu">
+  <template>
+    <style>
+     :host {
+         --paper-font-caption: {
+             display: none;
+         };
+     }
+     paper-item {
+         cursor: pointer;
+         white-space: nowrap;
+         padding: 0px 16px;
+      }
+    </style>
+    <paper-dropdown-menu
+        no-animations
+        noink
+        no-float-label
+        __dynamic-align>
+      <paper-listbox class="dropdown-content" selected="{{lbSelected}}">
+        <template is="dom-repeat" items="[[runs]]" as="run">
+          <paper-item>[[runLabel(run)]]</paper-item>
+        </template>
+      </paper-listbox>
+    </paper-dropdown-menu>
+  </template>
+  <script>
+   Polymer({
+       is: "guild-run-dropdown-menu",
+
+       properties: {
+           runs: {
+               type: Array,
+               value: [],
+               observer: 'runsChanged'
+           },
+           selected: {
+               type: Object,
+               value: null,
+               notify: true,
+               observer: 'selectedChanged'
+           },
+           lbSelected: {
+               type: Object,
+               observer: 'lbSelectedChanged'
+           },
+           _lockSelected: {
+               type: Boolean,
+               value: false
+           }
+       },
+
+       runLabel: function(run) {
+           return Guild.Run.runLabel(run);
+       },
+
+       selectedChanged: function(val) {
+           // Force a change as underlying runs may have changed
+           this._lockSelected = true;
+           this.lbSelected = null;
+           this.lbSelected = this.runIndex(val);
+           this._lockSelected = false;
+       },
+
+       runIndex: function(runId) {
+           for (var i = 0; i < this.runs.length; i++) {
+               if (this.runs[i].id == runId) {
+                   return i;
+               }
+           }
+           return -1;
+       },
+
+       lbSelectedChanged: function(val) {
+           if (!this._lockSelected) {
+               var maybeRun = this.runs[val];
+               this.selected = maybeRun ? maybeRun.id : null;
+           }
+       },
+
+       runsChanged: function(val) {
+           // Wait for listbox to update before changing its selected
+           // value. (HACK Surely there's a better way to do this!)
+           window.setTimeout(function() {
+               this.lbSelected = this.runIndex(this.selected);
+           }.bind(this), 100);
+       }
+   });
+  </script>
+</dom-module>

@@ -1,6 +1,6 @@
 <link rel="import" href="../guild-compare-component-panel/guild-compare-component-panel.html">
 <link rel="import" href="../guild-data/guild-run-compare-data-listener.html">
-<link rel="import" href="../guild-run/guild-run.html">
+<link rel="import" href="../guild-run-dropdown-menu/guild-run-dropdown-menu.html">
 <link rel="import" href="../guild-styles/guild-styles.html">
 <link rel="import" href="../guild-util/jsondiffpatch.html">
 <link rel="import" href="../iron-collapse/iron-collapse.html">
@@ -10,14 +10,6 @@
   <template>
     <style include="guild-table-styles"></style>
     <style>
-     div.diff {
-         margin-bottom: 20px;
-     }
-
-     div.diff:last-of-type {
-         margin-bottom: 0;
-     }
-
      div.waiting {
          padding: 0 20px;
          color: #777;
@@ -53,22 +45,15 @@
          visibility: hidden;
      }
 
-     table {
-         background-color: #fff;
-     }
-
      table thead th {
          font-weight: normal;
          border-bottom: none !important;
+         padding-top: 0 !important;
      }
 
      table thead th a,
      table tbody td span {
          white-space: normal;
-     }
-
-     table td, table th {
-         padding: 8px 12px !important;
      }
 
      table tr.unchanged td.left,
@@ -89,50 +74,58 @@
          background: var(--paper-light-blue-100);
          padding: 0 4px;
      }
+
+     paper-item {
+         cursor: pointer;
+      }
     </style>
     <guild-compare-component-panel title="[[title]]">
-      <template is="dom-if" if="[[!diffs.length]]">
+      <template is="dom-if" if="[[!right]]">
         <div class="waiting">No runs selected</div>
       </template>
-      <template is="dom-repeat" items="[[diffs]]" as="diff">
-        <div class="diff">
-          <div class="table-responsive">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th width="20%" class="longest-key-placeholder">
-                    <span>[[longestKey(diff.rows)]]</span>
+      <template is="dom-if" if="[[right]]">
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th width="20%" class="longest-key-placeholder">
+                  <span>[[longestKey(diff.rows)]]</span>
+                </th>
+                <template is="dom-if" if="[[left]]">
+                  <th width="40%">
+                    <guild-run-dropdown-menu runs="[[runs]]" selected="{{left}}">
+                    </guild-run-dropdown-menu>
                   </th>
-                  <template is="dom-if" if="[[diff.run1]]">
-                    <th width="40%"><a href="[[diff.run1.link]]">[[diff.run1.label]]</a></th>
-                  </template>
-                  <th width="40%"><a href="[[diff.run2.link]]">[[diff.run2.label]]</a></th>
-                </tr>
-              </thead>
+                </template>
+                <th width="40%">
+                  <guild-run-dropdown-menu runs="[[runs]]" selected="{{right}}">
+                  </guild-run-dropdown-menu>
+                </th>
+              </tr>
+            </thead>
+          </table>
+          <iron-collapse opened="[[diff.showValues]]">
+            <table class="table table-hover">
+              <tbody>
+                <template is="dom-repeat" items="[[diff.rows]]" as="row">
+                  <tr class$="[[row.type]]">
+                    <th width="20%" class="key">[[row.key]]</th>
+                    <template is="dom-if" if="[[left]]">
+                      <td width="40%" class="left"><span>[[row.left]]</span></td>
+                    </template>
+                    <td width="40%" class="right"><span>[[row.right]]</span></td>
+                  </tr>
+                </template>
+              </tbody>
             </table>
-            <iron-collapse opened="[[diff.showValues]]">
-              <table class="table table-hover">
-                <tbody>
-                  <template is="dom-repeat" items="[[diff.rows]]" as="row">
-                    <tr class$="[[row.type]]">
-                      <th width="20%" class="key">[[row.key]]</th>
-                      <template is="dom-if" if="[[diff.run1]]">
-                        <td width="40%" class="left"><span>[[row.left]]</span></td>
-                      </template>
-                      <td width="40%" class="right"><span>[[row.right]]</span></td>
-                    </tr>
-                  </template>
-                </tbody>
-              </table>
-            </iron-collapse>
-          </div>
-          <template is="dom-if" if="[[diff.unchanged]]">
-            <div class="unchanged">
-              Values are the same for these runs
-              <paper-toggle-button active="{{diff.showValues}}">Show values</paper-toggle-button>
-            </div>
-          </template>
+          </iron-collapse>
         </div>
+        <template is="dom-if" if="[[diff.unchanged]]">
+          <div class="unchanged">
+            [[unchangedMessage(left, right)]]
+            <paper-toggle-button active="{{diff.showValues}}">Show values</paper-toggle-button>
+          </div>
+        </template>
       </template>
     </guild-compare-component-panel>
   </template>
@@ -144,40 +137,93 @@
 
        properties: {
            title: String,
-           diffs: {
+           data: {
                type: Array,
                value: []
+           },
+           diff: {
+               type: Object
+           },
+           left: {
+               type: Object,
+               value: null,
+               observer: 'refreshDiff'
+           },
+           right: {
+               type: Object,
+               value: null,
+               observer: 'refreshDiff'
+           },
+           _lockDiff: {
+               type: Boolean,
+               value: false
            }
        },
 
        handleData: function(data) {
-           if (data.length == 0) {
-               this.diffs = [];
-           } else if (data.length == 1) {
-               this.diffs = [this.singleRun(data[0])];
-           } else {
-               var acc = [];
-               for (var i = 1; i < data.length; i++) {
-                   acc.push(this.diffRuns(data[i], data[i - 1]));
-               }
-               this.diffs = acc;
+           this.data = data;
+           this._lockDiff = true;
+           this.left = this.initLeft(data);
+           this.right = this.initRight(data);
+           this._lockDiff = false;
+           this.refreshDiff();
+       },
+
+       initLeft: function(data) {
+           return data.length > 1 ? data[data.length - 1].run.id : null;
+       },
+
+       initRight: function(data) {
+           return data.length > 0 ? data[0].run.id : null;
+       },
+
+       refreshDiff: function() {
+           if (!this._lockDiff) {
+               this.diff = this.computeDiff(this.left, this.right, this.data);
            }
        },
 
-       singleRun: function(data) {
+       computeDiff: function(left, right, data) {
+           if (left && right) {
+               return this.diffRuns(left, right, data);
+           } else if (right) {
+               return this.singleRun(right, data);
+           } else {
+               return this.noDiff();
+           }
+       },
+
+       diffRuns: function(left, right, data) {
+           var leftData = this.runData(left, data);
+           var rightData = this.runData(right, data);
+           var delta = Guild.JSONDiffPatch.diff(leftData, rightData);
+           var rows = Guild.JSONDiffPatch.formatKeyvalDelta(delta, leftData);
+           return this.formatDiff(rows, delta);
+       },
+
+       runData: function(runId, data) {
+           for (var i = 0; i < data.length; i++) {
+               var item = data[i];
+               if (item.run.id == runId) {
+                   return item[this.source];
+               }
+           }
+           throw ["cannot find run", runId];
+       },
+
+       formatDiff: function(rows, delta) {
            return {
-               run1: null,
-               run2: this.formatRun(data.run),
-               rows: this.formatKeyvals(data[this.source]),
+               rows: rows,
+               unchanged: delta == null,
+               showValues: delta != null
+           }
+       },
+
+       singleRun: function(run, data) {
+           return {
+               rows: this.formatKeyvals(this.runData(run, data)),
                unchanged: false,
                showValues: true
-           }
-       },
-
-       formatRun: function(run) {
-           return {
-               label: Guild.Run.runLabel(run),
-               link: "javascript:window.location='/?run=" + run.id + "'"
            }
        },
 
@@ -193,30 +239,18 @@
            });
        },
 
-       diffRuns: function(dataLeft, dataRight) {
-           var left = dataLeft[this.source];
-           var right = dataRight[this.source];
-           var delta = Guild.JSONDiffPatch.diff(left, right);
-           var rows = Guild.JSONDiffPatch.formatKeyvalDelta(delta, left);
-           return this.formatDiff(
-               dataLeft.run,
-               dataRight.run,
-               rows,
-               delta);
-       },
-
-       formatDiff: function(run1, run2, rows, delta) {
+       noDiff: function() {
            return {
-               run1: this.formatRun(run1),
-               run2: this.formatRun(run2),
-               rows: rows,
-               unchanged: delta == null,
-               showValues: delta != null
+               rows: [],
+               unchanged: false,
+               showValues: true
            }
        },
 
-       computePanelTitle: function(title, source) {
-           return title || source;
+       dataRuns: function(data) {
+           return data.map(function(item) {
+               return item.run;
+           });
        },
 
        longestKey: function(rows) {
@@ -227,6 +261,14 @@
                }
            });
            return longest;
+       },
+
+       unchangedMessage: function(left, right) {
+           if (left == right) {
+               return "Comparing the same run";
+           } else {
+               return "Runs have the same values";
+           }
        }
    });
   </script>
