@@ -61,7 +61,7 @@ components_handler() ->
     psycho_static:create_app(guild_app:priv_dir()).
 
 data_handler(View) ->
-    guild_view_v2_data_http:create_app(View).
+    guild_view_data_http:create_app(View).
 
 bye_handler() ->
     fun(_Env) -> handle_bye() end.

@@ -1,13 +1,16 @@
--module(guild_view_v2_data_http).
+-module(guild_view_data_http).
 
 -export([create_app/1, app/4]).
+
+%% ===================================================================
+%% App
+%% ===================================================================
 
 create_app(View) ->
     ViewSettings = guild_view:settings(View),
     psycho_util:dispatch_app(
       {?MODULE, app},
       [method, parsed_path, View, ViewSettings]).
-
 
 %% ===================================================================
 %% Dispatch
