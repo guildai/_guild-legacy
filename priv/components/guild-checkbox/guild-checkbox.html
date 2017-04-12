@@ -37,13 +37,7 @@
        },
 
        checkedChanged: function() {
-           if (this.ariaChecked == "mixed") {
-               // Cycle from mixed to false
-               this.$.cb.checked = false;
-               this.ariaChecked = "false";
-           } else {
-               this.ariaChecked = this.$.cb.checked ? "true" : "false";
-           }
+           this.ariaChecked = this.$.cb.checked ? "true" : "false";
        },
 
        ariaCheckedChanged: function(val, old) {
