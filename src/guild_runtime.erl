@@ -77,18 +77,14 @@ runtime_mod_for_op(Section, Project) ->
 find_runtime_attr(Section, Project) ->
     guild_util:find_apply(
       [fun() -> guild_project:section_attr(Section, "runtime") end,
-       fun() -> guild_project:attr(Project, ["project"], "runtime") end],
+       fun() -> guild_project:attr(Project, ["project"], "runtime") end,
+       fun() -> {ok, "tensorflow"} end],
       []).
 
 runtime_mod_for_attr({ok, Val}, _Section) ->
-    runtime_mod_for_name(Val);
-runtime_mod_for_attr(error, {[Type], _}) ->
-    {error, {no_runtime, Type, ""}};
-runtime_mod_for_attr(error, {[Type, Name|_], _}) ->
-    {error, {no_runtime, Type, Name}}.
+    runtime_mod_for_name(Val).
 
 runtime_mod_for_name("tensorflow")  -> {ok, guild_tensorflow_runtime};
-runtime_mod_for_name("tflearn")     -> {ok, guild_tflearn_runtime};
 runtime_mod_for_name(Name)          -> {error, {unknown_runtime, Name}}.
 
 maybe_runtime({ok, Mod}, State) ->

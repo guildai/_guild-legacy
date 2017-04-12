@@ -394,20 +394,9 @@ runtime_error_msg({runtime, Name}) ->
 runtime_for_section(Section, Project) ->
     case guild_runtime:for_section(Section, Project) of
         {ok, Runtime} -> Runtime;
-        {error, {no_runtime, _, _}} ->
-            no_runtime_error(Section);
         {error, {unknown_runtime, Val}} ->
             unsupported_runtime_error(Val)
     end.
-
-no_runtime_error({[Type], _}) ->
-    guild_cli:cli_error(
-      io_lib:format(
-        "runtime not specified for ~s", [Type]));
-no_runtime_error({[Type, Name], _}) ->
-    guild_cli:cli_error(
-      io_lib:format(
-        "runtime not specified for '~s' ~s", [Name, Type])).
 
 unsupported_runtime_error(Val) ->
     guild_cli:cli_error(io_lib:format("unknown runtime '~s'", [Val])).
