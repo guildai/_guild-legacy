@@ -184,4 +184,4 @@ handle_tf_data_result({error, Err}) ->
 %% ===================================================================
 
 run_for_params(Params, View) ->
-    guild_view_v2_http:run_for_params(Params, View).
+    guild_view_http:run_for_params(Params, View).

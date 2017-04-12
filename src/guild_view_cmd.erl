@@ -124,7 +124,7 @@ validate_interval(I) when I > 0 -> I;
 validate_interval(_) -> throw({error, "invalid value for --interval"}).
 
 start_http_server(View, Port, Opts) ->
-    case guild_view_v2_http:start_server(View, Port, Opts) of
+    case guild_view_http:start_server(View, Port, Opts) of
         {ok, Server} ->
             Server;
         {error, {{listen, eaddrinuse}, _Stack}} ->

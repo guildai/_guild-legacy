@@ -12,7 +12,7 @@
 %% See the License for the specific language governing permissions and
 %% limitations under the License.
 
--module(guild_view_v2_http).
+-module(guild_view_http).
 
 -export([start_server/3, stop_server/0, run_for_params/2]).
 
