@@ -39,8 +39,6 @@ parser_commands() ->
        "cmds-json",
        "delete-run",
        "evaluate",
-       "export",
-       "import",
        "init",
        "list-attrs",
        "list-models",
@@ -60,8 +58,6 @@ cmd_info("check")       -> {guild_check_cmd, "check Guild setup"};
 cmd_info("cmds-json")   -> {guild_cmds_json_cmd, "commands JSON (hidden)"};
 cmd_info("delete-run")  -> {guild_delete_run_cmd, "deletes a run"};
 cmd_info("evaluate")    -> {guild_eval_cmd, "evaluate a trained model"};
-cmd_info("export")      -> {guild_export_cmd, "export run results"};
-cmd_info("import")      -> {guild_import_cmd, "import run results"};
 cmd_info("init")        -> {guild_init_cmd, "initialize a Guild project"};
 cmd_info("list-attrs")  -> {guild_list_attrs_cmd, "list run attributes"};
 cmd_info("list-models") -> {guild_list_models_cmd, "list project models"};
