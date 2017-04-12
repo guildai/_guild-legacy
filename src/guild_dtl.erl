@@ -36,7 +36,7 @@ compile_templates() ->
 
 compile_template({Name, Module}) ->
     File = template_file(Name),
-    guild_dtl_util:compile_template(File, Module).
+    guild_dtl_util:compile_template(File, Module, []).
 
 template_file(Name) ->
     filename:join(guild_app:priv_dir("dtl"), Name).
