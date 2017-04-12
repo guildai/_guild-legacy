@@ -51,7 +51,7 @@ handle_series(View, Path, Params) ->
     Run = run_for_params(Params, View),
     Pattern = http_uri:decode(Path),
     Max = max_epoch_for_params(Params),
-    Series = guild_data_reader_v2:series(Run, Pattern, Max),
+    Series = guild_data_reader:series(Run, Pattern, Max),
     guild_http:ok_json(guild_json:encode(Series)).
 
 max_epoch_for_params(Params) ->
@@ -74,7 +74,7 @@ max_epoch_validate_error(_) ->
 
 handle_flags(View, Params) ->
     Run = run_for_params(Params, View),
-    Flags = guild_data_reader_v2:flags(Run),
+    Flags = guild_data_reader:flags(Run),
     guild_http:ok_json(guild_json:encode(Flags)).
 
 %% ===================================================================
@@ -83,7 +83,7 @@ handle_flags(View, Params) ->
 
 handle_attrs(View, Params) ->
     Run = run_for_params(Params, View),
-    Attrs = guild_data_reader_v2:attrs(Run),
+    Attrs = guild_data_reader:attrs(Run),
     guild_http:ok_json(guild_json:encode(Attrs)).
 
 %% ===================================================================
@@ -92,7 +92,7 @@ handle_attrs(View, Params) ->
 
 handle_output(View, Params) ->
     Run = run_for_params(Params, View),
-    Output = guild_data_reader_v2:output(Run),
+    Output = guild_data_reader:output(Run),
     guild_http:ok_json(guild_json:encode(Output)).
 
 %% ===================================================================
@@ -102,7 +102,7 @@ handle_output(View, Params) ->
 handle_compare(View, Params) ->
     Sources = sources_for_params(Params),
     Runs = runs_for_params(Params, View),
-    Compare = (catch guild_data_reader_v2:compare(Runs, Sources)),
+    Compare = (catch guild_data_reader:compare(Runs, Sources)),
     handle_compare_result(Compare).
 
 sources_for_params(Params) ->
@@ -152,7 +152,7 @@ handle_sources(View) ->
 
 all_runs_sources(View) ->
     Runs = guild_view:all_runs(View),
-    Keys = guild_data_reader_v2:series_keys(Runs),
+    Keys = guild_data_reader:series_keys(Runs),
     sources_for_series_keys(Keys).
 
 sources_for_series_keys(Keys) ->

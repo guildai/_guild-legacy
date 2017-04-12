@@ -38,7 +38,6 @@ supervisors() ->
      ?sup_child(guild_view_sup),
      ?sup_child(guild_depot_view_sup),
      ?sup_child(guild_runtime_sup),
-     ?sup_child(guild_data_reader_sup),
      ?sup_child(guild_db_sup)].
 
 core_services() ->

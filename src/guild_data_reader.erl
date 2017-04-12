@@ -14,159 +14,44 @@
 
 -module(guild_data_reader).
 
--behavior(e2_task).
-
--export([start_link/3]).
-
--export([handle_task/1]).
-
--define(null_json, <<"null">>).
+-export([flags/1, attrs/1, series/3, output/1, series_keys/1,
+         compare/2]).
 
 %% ===================================================================
-%% Start / handle task
+%% Flags
 %% ===================================================================
 
-start_link(Request, Reply, Owner) ->
-    e2_task:start_link(?MODULE, [Request, Reply, Owner]).
-
-handle_task([Request, Reply, Owner]) ->
-    link(Owner),
-    Reply(handle_request(Request)),
-    {stop, normal}.
-
-handle_request({runs_json, RunRoots}) ->
-    runs_json(RunRoots);
-handle_request({flags_json, Run}) ->
-    flags_json(Run);
-handle_request({attrs_json, Run}) ->
-    attrs_json(Run);
-handle_request({summary_json, Run}) ->
-    summary_json(Run);
-handle_request({series_json, Pattern, Run, Max}) ->
-    series_json(Run, Pattern, Max);
-handle_request({output_json, Run}) ->
-    output_json(Run);
-handle_request({compare_json, Sources, Runs, View}) ->
-    compare_json(Sources, Runs, View).
-
-%% ===================================================================
-%% Runs JSON
-%% ===================================================================
-
-runs_json(RunRoots) ->
-    Runs = guild_run:runs_for_runroots(RunRoots),
-    guild_json:encode(format_runs(Runs)).
-
-format_runs(Runs) ->
-    sort_formatted_runs([format_run(Run) || Run <- Runs]).
-
-format_run(Run) ->
-    {[
-      {id, guild_run:id(Run)},
-      {dir, list_to_binary(guild_run:dir(Run))},
-      {status, guild_run_util:run_status(Run)}
-      |format_run_attrs(guild_run:attrs(Run))
-     ]}.
-
-format_run_attrs(Attrs) ->
-    [format_run_attr(Attr) || Attr <- Attrs].
-
-format_run_attr({Name, Val}) ->
-    {list_to_binary(Name), format_attr_val(Name, Val)}.
-
-format_attr_val("started",     Bin) -> binary_to_integer(Bin);
-format_attr_val("stopped",     Bin) -> binary_to_integer(Bin);
-format_attr_val("exit_status", Bin) -> binary_to_integer(Bin);
-format_attr_val(_Name,         Bin) -> Bin.
-
-sort_formatted_runs(Runs) ->
-    Cmp = fun(A, B) -> run_start_time(A) > run_start_time(B) end,
-    lists:sort(Cmp, Runs).
-
-run_start_time({Attrs}) ->
-    case lists:keyfind(<<"started">>, 1, Attrs) of
-        {_, Val} -> Val;
-        false -> 0
-    end.
-
-%% ===================================================================
-%% Flags JSON
-%% ===================================================================
-
-flags_json(undefined) -> ?null_json;
-flags_json(Run) ->
-    try_run_db(Run, fun flags_json_for_db/1, ?null_json).
-
-flags_json_for_db(Db) ->
+flags(Run) ->
+    Db = run_db(Run),
     case guild_run_db:flags(Db) of
-        {ok, Flags} ->
-            guild_json:encode({Flags});
-        {error, Err} ->
-            guild_log:internal("Error getting flags: ~p~n", [Err]),
-            ?null_json
+        {ok, Flags} -> format_flags(Flags);
+        {error, Err} -> error({db_dlags, Err, Run})
     end.
 
+format_flags(Flags) -> maps:from_list(Flags).
+
 %% ===================================================================
-%% Attrs JSON
+%% Attrs
 %% ===================================================================
 
-attrs_json(undefined) -> ?null_json;
-attrs_json(Run) ->
-    try_run_db(Run, fun attrs_json_for_db/1, ?null_json).
-
-attrs_json_for_db(Db) ->
+attrs(Run) ->
+    Db = run_db(Run),
     case guild_run_db:attrs(Db) of
-        {ok, Attrs} ->
-            guild_json:encode({Attrs});
-        {error, Err} ->
-            guild_log:internal("Error getting attrs: ~p~n", [Err]),
-            ?null_json
+        {ok, Attrs} -> format_attrs(Attrs);
+        {error, Err} -> error({db_attrs, Err, Run})
     end.
 
-%% ===================================================================
-%% Summary JSON
-%% ===================================================================
-
-summary_json(undefined) -> ?null_json;
-summary_json(Run) -> guild_json:encode({summary_attrs(Run)}).
-
-summary_attrs(Run) ->
-    Status = guild_run:status(Run),
-    [{status,      Status},
-     {time,        format_run_time(Status, Run)},
-     {exit_status, format_exit_status(Run)}].
-
-format_run_time(Status, Run) ->
-    Start = guild_run:int_attr(Run, "started", undefined),
-    Stop = guild_run:int_attr(Run, "stopped", undefined),
-    format_run_time(Status, Start, Stop).
-
-format_run_time(_Status, T0, T1) when T0 /= undefined, T1 /= undefined ->
-    (T1 - T0) div 1000;
-format_run_time(running, T0, undefined) ->
-    (guild_run:timestamp() - T0) div 1000;
-format_run_time(_Status, _T0, _T1) ->
-    null.
-
-format_exit_status(Run) ->
-    guild_run:int_attr(Run, "exit_status", null).
+format_attrs(Attrs) -> maps:from_list(Attrs).
 
 %% ===================================================================
-%% Series JSON
+%% Series
 %% ===================================================================
 
-series_json(undefined, _Pattern, _Max) ->
-    ?null_json;
-series_json(Run, Pattern, Max) ->
-    try_run_db(Run, fun series_json_for_db/3, [Pattern, Max], ?null_json).
-
-series_json_for_db(Db, Pattern, Max) ->
+series(Run, Pattern, Max) ->
+    Db = run_db(Run),
     case guild_run_db:series(Db, Pattern) of
-        {ok, Series} ->
-            guild_json:encode({reduce_series(Series, Max)});
-        {error, Err} ->
-            guild_log:internal("Error getting series: ~p~n", [Err]),
-            ?null_json
+        {ok, Series} -> format_series(reduce_series(Series, Max));
+        {error, Err} -> error({db_series, Err, Run, Pattern})
     end.
 
 reduce_series(Series, all) ->
@@ -174,22 +59,18 @@ reduce_series(Series, all) ->
 reduce_series(Series, Max) ->
     [{Key, guild_util:reduce_to(Vals, Max)} || {Key, Vals} <- Series].
 
+format_series(Series) ->
+    maps:from_list(Series).
+
 %% ===================================================================
-%% Output JSON
+%% Output
 %% ===================================================================
 
-output_json(undefined) ->
-    ?null_json;
-output_json(Run) ->
-    try_run_db(Run, fun output_json_for_db/1, ?null_json).
-
-output_json_for_db(Db) ->
+output(Run) ->
+    Db = run_db(Run),
     case guild_run_db:output(Db) of
-        {ok, Output} ->
-            guild_json:encode(format_output(Output));
-        {error, Err} ->
-            guild_log:internal("Error getting output: ~p~n", [Err]),
-            ?null_json
+        {ok, Output} -> format_output(Output);
+        {error, Err} -> error({db_output, Err, Run})
     end.
 
 format_output(Output) ->
@@ -201,50 +82,52 @@ stream_id(stderr) -> 1;
 stream_id(_) -> null.
 
 %% ===================================================================
-%% Compare JSON
+%% Series keys
 %% ===================================================================
 
-compare_json(Sources, Runs, View) ->
-    RunsJSON = runs_compare_json(Runs, Sources, View),
-    ["[", guild_util:list_join(RunsJSON, ","), "]"].
+series_keys(Runs) ->
+    Keys = lists:foldl(fun series_keys_acc/2, sets:new(), Runs),
+    sets:to_list(Keys).
 
-runs_compare_json(Runs, Sources, View) ->
-    [run_compare_json(Run, Sources, View) || Run <- Runs].
+series_keys_acc(Run, Acc) ->
+    Keys = run_series_keys(Run),
+    sets:union(Acc, sets:from_list(Keys)).
 
-run_compare_json(Run, Sources, View) ->
-    RunJSON = guild_json:encode(format_run(Run)),
-    SourcesInnerJSON = run_sources_inner_json(Run, Sources, View),
-    ["{\"run\":", RunJSON, SourcesInnerJSON, "}"].
+run_series_keys(Run) ->
+    Db = run_db(Run),
+    case guild_run_db:series_keys(Db) of
+        {ok, Keys} -> Keys;
+        {error, Err} -> error({db_series_keys, Err, Run})
+    end.
 
-run_sources_inner_json(Run, Sources, View) ->
-    [run_source_inner_json(Run, Source, View) || Source <- Sources].
+%% ===================================================================
+%% Compare
+%% ===================================================================
 
-run_source_inner_json(Run, Source, View) ->
-    [",\"", Source, "\":", run_source_json(Run, Source, View)].
+compare(Runs, Sources) ->
+    [run_compare(Run, Sources) || Run <- Runs].
 
-run_source_json(Run, "flags", View) ->
-    view_json(View, {flags, guild_run:id(Run)});
-run_source_json(Run, "summary", View) ->
-    view_json(View, {summary, guild_run:id(Run)});
-run_source_json(Run, "series/" ++ Path, View) ->
-    view_json(View, {series, Path, [{run, guild_run:id(Run)}]});
-run_source_json(_Run, _Source, _View) ->
-    "null".
+run_compare(Run, Sources) ->
+    maps:from_list(
+      [{run, guild_run_util:format_run(Run)}
+       |[{source_key(Source), run_source(Source, Run)}
+         || Source <- Sources]]).
 
-view_json(View, Request) -> guild_project_view:json(View, Request).
+source_key(Name) -> list_to_binary(Name).
+
+run_source("flags", Run)           -> flags(Run);
+run_source("attrs", Run)           -> attrs(Run);
+run_source("output", Run)          -> output(Run);
+run_source("series/" ++ Path, Run) -> series(Run, Path, all);
+run_source(Other, _Run)            -> error({run_source, Other}).
 
 %% ===================================================================
 %% Utils / support
 %% ===================================================================
 
-try_run_db(Run, Handler, MissingResult) ->
-    try_run_db(Run, Handler, [], MissingResult).
-
-try_run_db(undefined, _Handler, _Args, MissingResult) ->
-    MissingResult;
-try_run_db(Run, Handler, Args, MissingResult) ->
+run_db(Run) ->
     RunDir = guild_run:dir(Run),
     case guild_run_db:open(RunDir) of
-        ok -> erlang:apply(Handler, [RunDir] ++ Args);
-        {error, missing}  -> MissingResult
+        ok -> RunDir;
+        {error, missing} -> error({db_missing, Run})
     end.
