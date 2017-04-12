@@ -30,7 +30,7 @@
          {"status-widget.html",        guild_status_widget},
          {"timeseries-widget.html",    guild_timeseries_widget},
          {"value-panel-widget.html",   guild_value_panel_widget},
-         {"view-v2-index.html",        guild_view_v2_index_page}
+         {"view-index.html",           guild_view_index_page}
         ]).
 
 %% ===================================================================

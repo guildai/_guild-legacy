@@ -111,7 +111,7 @@ maybe_qs(QS) -> ["?", QS].
 handle_other_page(Params, View) ->
     Run = run_for_params(Params, View),
     Vars = app_page_vars(View, Run),
-    Page = guild_dtl:render(guild_view_v2_index_page, Vars),
+    Page = guild_dtl:render(guild_view_index_page, Vars),
     guild_http:ok_html(Page).
 
 app_page_vars(View, Run) ->
