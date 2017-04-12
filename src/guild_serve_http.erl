@@ -12,7 +12,7 @@
 %% See the License for the specific language governing permissions and
 %% limitations under the License.
 
--module(guild_model_serve_http).
+-module(guild_serve_http).
 
 -export([start_server/3, app/5]).
 
@@ -32,11 +32,13 @@ maybe_start_server({error, Err}, _Project, _Run, _Port) ->
     {error, {port_init, Err}}.
 
 app("POST", "/run", Project, Run, Env) ->
-    Handler = {guild_project_view_model_http, handle_model_run, [Project, Run]},
+    Handler = {guild_view_model_http, handle_model_run, [Project, Run]},
     {recv_body, Handler, Env, [{recv_length, ?max_run_request}]};
 app("GET", "/info", Project, Run, _Env) ->
-    guild_project_view_model_http:handle_model_info(Project, Run);
+    guild_view_model_http:handle_model_info(Project, Run);
 app("GET", "/stats", Project, Run, _Env) ->
-    guild_project_view_model_http:handle_model_stats(Project, Run);
+    guild_view_model_http:handle_model_stats(Project, Run);
+app("POST", "/init", Project, Run, _Env) ->
+    guild_view_model_http:handle_model_init(Project, Run);
 app(_, _, _, _, _) ->
     guild_http:bad_request().

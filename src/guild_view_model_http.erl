@@ -12,7 +12,7 @@
 %% See the License for the specific language governing permissions and
 %% limitations under the License.
 
--module(guild_project_view_model_http).
+-module(guild_view_model_http).
 
 -export([app/4]).
 
@@ -42,7 +42,7 @@ app(_, _, _, _) ->
     guild_http:bad_request().
 
 resolve_project_run(Params, View) ->
-    RunId = guild_project_view_http:run_opt(Params),
+    RunId = guild_view_http:run_opt(Params),
     guild_project_view_http:resolve_project_run(RunId, View).
 
 %% ===================================================================
@@ -71,6 +71,8 @@ handle_model_info(Project, Run) ->
 handle_model_stats(Project, Run) ->
     http_result(guild_tensorflow_port:project_model_stats(Project, Run)).
 
+http_result(ok) ->
+    guild_http:ok_no_content();
 http_result({ok, JSON}) ->
     guild_http:ok_json(JSON);
 http_result({error, <<"not found">>}) ->
