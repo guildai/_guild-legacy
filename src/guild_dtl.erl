@@ -17,10 +17,7 @@
 -export([init/1, render/2]).
 
 -define(templates,
-        [{"bye.html",                  guild_bye_page},
-         {"project-error.html",        guild_project_error_page},
-         {"project-view.html",         guild_project_view_page},
-         {"view-index.html",           guild_view_index_page}
+        [{"view-index.html", guild_view_index_page}
         ]).
 
 %% ===================================================================
