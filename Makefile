@@ -17,6 +17,8 @@ component-deps:
 	bower install
 	scripts/patch-components
 
+compile-with-deps: component-deps compile
+
 sync-tf-component:
 	scripts/sync-tf-components
 	scripts/patch-components
