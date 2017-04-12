@@ -1,4 +1,4 @@
--module(guild_view_v2_viewdef).
+-module(guild_view_viewdef).
 
 -export([viewdef/2]).
 

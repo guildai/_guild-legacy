@@ -62,7 +62,7 @@ app_page_env_(Run, State) ->
     Project = load_project(State),
     {ok, Model} = guild_project_util:run_model(Run, Project),
     #{
-       viewdef => guild_view_v2_viewdef:viewdef(Model, Project),
+       viewdef => guild_view_viewdef:viewdef(Model, Project),
        project => project_summary(Project),
        settings => settings_(State)
      }.
@@ -151,7 +151,7 @@ all_runs_(#state{run_roots=RunRoots}) ->
 viewdef_(Run, State) ->
     Project = load_project(State),
     {ok, Model} = guild_project_util:run_model(Run, Project),
-    guild_view_v2_viewdef:viewdef(Model, Project).
+    guild_view_viewdef:viewdef(Model, Project).
 
 %% ===================================================================
 %% Helpers
