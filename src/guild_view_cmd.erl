@@ -103,7 +103,7 @@ report_tensorboard_error(Err) ->
 
 init_project_view(Project, Opts, TBInfo) ->
     Settings = view_settings(Opts, TBInfo),
-    {ok, View} = guild_view_v2:start_link(Project, Settings),
+    {ok, View} = guild_view_sup:start_view(Project, Settings),
     View.
 
 view_settings(Opts, TBInfo) ->

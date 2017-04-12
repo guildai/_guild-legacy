@@ -99,7 +99,7 @@ handle_app_page({_, _, Params}, View) ->
 
 handle_index_page(Params, QS, View) ->
     Run = run_for_params(Params, View),
-    Viewdef = guild_view_v2:viewdef(View, Run),
+    Viewdef = guild_view:viewdef(View, Run),
     guild_http:redirect(viewdef_page1_path(Viewdef, QS)).
 
 viewdef_page1_path(#{pages:=[#{id:=PageId}|_]}, QS) ->
@@ -120,7 +120,7 @@ app_page_vars(View, Run) ->
       page_title => page_title(Env)}.
 
 app_page_env(View, Run) ->
-    Env0 = guild_view_v2:app_page_env(View, Run),
+    Env0 = guild_view:app_page_env(View, Run),
     apply_run_id(Env0, Run).
 
 apply_run_id(Env, Run) ->
@@ -135,7 +135,7 @@ page_title(#{project:=#{title:=ProjectTitle}}) ->
 
 run_for_params(Params, View) ->
     Id = run_id_for_params(Params),
-    case guild_view_v2:resolve_run(View, Id) of
+    case guild_view:resolve_run(View, Id) of
         undefined -> throw(guild_http:not_found());
         Run -> Run
     end.

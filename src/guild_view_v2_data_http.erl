@@ -3,7 +3,7 @@
 -export([create_app/1, app/4]).
 
 create_app(View) ->
-    ViewSettings = guild_view_v2:settings(View),
+    ViewSettings = guild_view:settings(View),
     psycho_util:dispatch_app(
       {?MODULE, app},
       [method, parsed_path, View, ViewSettings]).
@@ -37,7 +37,7 @@ app(_, _, _, _) ->
 %% ===================================================================
 
 handle_runs(View) ->
-    Runs = guild_view_v2:formatted_runs(View),
+    Runs = guild_view:formatted_runs(View),
     guild_http:ok_json(guild_json:encode(Runs)).
 
 %% ===================================================================
@@ -123,10 +123,10 @@ parse_run_ids(Str) ->
 
 runs_for_ids([], _View) -> [];
 runs_for_ids(undefined, View) ->
-    guild_view_v2:all_runs(View);
+    guild_view:all_runs(View);
 runs_for_ids(Ids, View) ->
     Filter = fun(Run) -> lists:member(guild_run:id(Run), Ids) end,
-    lists:filter(Filter, guild_view_v2:all_runs(View)).
+    lists:filter(Filter, guild_view:all_runs(View)).
 
 handle_compare_result({'EXIT', Err}) ->
     handle_compare_error(Err);
@@ -148,7 +148,7 @@ handle_sources(View) ->
     guild_http:ok_json(guild_json:encode(Sources)).
 
 all_runs_sources(View) ->
-    Runs = guild_view_v2:all_runs(View),
+    Runs = guild_view:all_runs(View),
     Keys = guild_data_reader_v2:series_keys(Runs),
     sources_for_series_keys(Keys).
 

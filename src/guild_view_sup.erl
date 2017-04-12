@@ -12,7 +12,7 @@
 %% See the License for the specific language governing permissions and
 %% limitations under the License.
 
--module(guild_project_view_sup).
+-module(guild_view_sup).
 
 -behavior(e2_supervisor).
 
@@ -21,8 +21,8 @@
 start_link() ->
     e2_supervisor:start_link(
       ?MODULE,
-      [{guild_project_view, [temporary]}],
+      [{guild_view, [temporary]}],
       [simple_one_for_one, registered]).
 
-start_view(Project, Opts) ->
-    e2_supervisor:start_child(?MODULE, [Project, Opts]).
+start_view(Project, Settings) ->
+    e2_supervisor:start_child(?MODULE, [Project, Settings]).
