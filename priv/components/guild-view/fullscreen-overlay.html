@@ -46,9 +46,11 @@
      },
 
      handleCancel: function(e) {
-         this.contentParent.appendChild(this.content);
-         this.fire("fullscreen-canceled");
-         this.content = undefined;
+         if (e.target == this) {
+             this.contentParent.appendChild(this.content);
+             this.fire("fullscreen-canceled");
+             this.content = undefined;
+         }
      }
  });
 </script>
