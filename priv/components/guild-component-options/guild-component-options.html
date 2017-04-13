@@ -1,3 +1,4 @@
+<link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../paper-menu-button/paper-menu-button.html">
 
@@ -15,26 +16,39 @@
      }
 
      .options {
-         padding: 16px;
+         padding: 20px;
      }
 
      .options ::content h3 {
-         font-size: 14px;
-         margin: 0;
+         color: var(--primary-text-color);
+         font-size: 15px;
+         font-weight: 400;
+         margin: 4px 0;
+     }
+
+     .options ::content .value {
          color: var(--secondary-text-color);
+         font-size: 14px;
      }
     </style>
-    <paper-menu-button horizontal-align="right">
+    <paper-menu-button
+        ignore-select__
+        horizontal-align="right">
       <paper-icon-button icon="more-vert" class="dropdown-trigger">
       </paper-icon-button>
-      <div class="options dropdown-content">
+      <div id="content" class="options dropdown-content">
         <content></content>
       </div>
     </paper-menu-button>
   </template>
   <script>
    Polymer({
-       is: "guild-component-options"
+       is: "guild-component-options",
+
+       ready: function() {
+           // Force to set this here because it defaults to true
+           this.$$('paper-menu-button').restoreFocusOnClose = false;
+       }
    });
   </script>
 </dom-module>

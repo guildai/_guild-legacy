@@ -1,0 +1,74 @@
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-menu/paper-menu.html">
+<link rel="import" href="../paper-menu-button/paper-menu-button.html">
+
+<dom-module id="option-dropdown">
+  <template>
+    <style>
+     paper-menu-button {
+         padding: 0;
+     }
+
+     paper-button {
+         --paper-button: {
+             text-transform: inherit;
+             margin: 0;
+             text-align: inherit;
+         };
+     }
+
+     paper-menu ::content paper-item {
+         cursor: pointer;
+         white-space: nowrap;
+     }
+    </style>
+    <paper-menu-button id="dropdown">
+      <div class="dropdown-trigger">
+        <paper-button>
+          <h3>[[label]]</h3>
+          <div class="value">[[selectedLabel]]</div>
+        </paper-button>
+      </div>
+      <paper-menu
+          id="menu"
+          class="dropdown-content"
+          selected="{{value}}"
+          attr-for-selected="[[attrForSelected]]">
+        <template is="dom-repeat" items="[[items]]">
+          <paper-item value="[[item.value]]">[[item.label]]</paper-item>
+        </template>
+      </paper-menu>
+    </paper-menu-button>
+  </template>
+  <script>
+   Polymer({
+       is: "option-dropdown",
+
+       properties: {
+           label: String,
+           value: {
+               Object,
+               notify: true
+           },
+           items: Array,
+           selectedLabel: {
+               type: String,
+               computed: 'computeSelectedLabel(value, items)'
+           },
+           attrForSelected: {
+               type: String,
+               value: "value"
+           }
+       },
+
+       computeSelectedLabel: function(value, items) {
+           for (var i in items) {
+               if (items[i].value == value) {
+                   return items[i].label;
+               }
+           };
+           return "";
+       }
+   });
+  </script>
+</dom-module>

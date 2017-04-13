@@ -1,16 +1,28 @@
 <link rel="import" href="../guild-component-options/guild-component-options.html">
+<link rel="import" href="../guild-component-options/option-dropdown.html">
+<link rel="import" href="../guild-component-options/option-element.html">
 <link rel="import" href="../guild-smoothing-input/guild-smoothing-input.html">
+<link rel="import" href="../paper-item/paper-item.html">
 
 <dom-module id="guild-chart-options">
   <template>
     <guild-component-options>
-      <h3>Smoothing</h3>
-      <guild-smoothing-input
-          min="0"
-          max="1"
-          step="0.01"
-          value="{{smoothing}}">
-      </guild-smoothing-input>
+
+      <option-element label="Smoothing">
+        <guild-smoothing-input
+            min="0"
+            max="1"
+            step="0.01"
+            value="{{smoothing}}">
+        </guild-smoothing-input>
+      </option-element>
+
+      <option-dropdown
+          label="Horizontal axis"
+          value="{{xAxis}}"
+          items="[[xAxisOptions]]">
+      </option-dropdown>
+
     </guild-component-options>
   </template>
   <script>
@@ -21,6 +33,19 @@
            smoothing: {
                type: Number,
                notify: true
+           },
+           xAxis: {
+               type: String,
+               value: "step",
+               notify: true
+           },
+           xAxisOptions: {
+               type: Array,
+               value: [
+                   { value: "wall_time", label: "Wall time" },
+                   { value: "relative",  label: "Relative time" },
+                   { value: "step",      label: "Global step" },
+               ]
            }
        }
    });

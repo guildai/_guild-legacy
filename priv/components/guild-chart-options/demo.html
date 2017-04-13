@@ -1,0 +1,77 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <title>guild-chart-demo demo</title>
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <link rel="import" href="../paper-material/paper-material.html">
+    <link rel="import" href="guild-chart-options.html">
+    <style>
+     body {
+         padding: 20px;
+         font-family: 'Roboto', 'Noto', sans-serif;
+         background-color: #fafafa;
+     }
+    </style>
+  </head>
+  <body>
+    <dom-module id="guild-chart-options-demo">
+      <template>
+        <style>
+         :host {
+             display: flex;
+             align-items: flex-start;
+         }
+
+         paper-material {
+             background-color: white;
+             width: 400px;
+             padding: 8px;
+         }
+
+         #container {
+             display: flex;
+             justify-content: flex-end;
+         }
+
+         table th {
+             text-align: right;
+             padding: 4px 16px;
+         }
+        </style>
+        <paper-material>
+          <div id="container">
+            <guild-chart-options
+                smoothing="{{smoothing}}"
+                x-axis="{{xAxis}}">
+            </guild-chart-options>
+          </div>
+        </paper-material>
+        <table>
+          <tr>
+            <th>Smoothing</th>
+            <td>[[smoothing]]</td>
+          </tr>
+          <tr>
+            <th>xAxis</th>
+            <td>[[xAxis]]</td>
+          </tr>
+        </table>
+        </div>
+      </template>
+      <script>
+       HTMLImports.whenReady(function () {
+           Polymer({
+               is: 'guild-chart-options-demo',
+
+               properties: {
+                   smoothing: Number,
+                   xAxis: String
+               }
+           });
+       });
+      </script>
+    </dom-module>
+    <guild-chart-options-demo></guild-chart-options-demo>
+  </body>
+</html>
