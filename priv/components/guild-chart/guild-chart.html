@@ -1,9 +1,11 @@
+<link rel="import" href="../guild-component-options/guild-component-options.html">
 <link rel="import" href="../guild-component-panel/guild-component-panel.html">
 <link rel="import" href="../guild-data/guild-data-listener.html">
+<link rel="import" href="../guild-line-chart/guild-line-chart.html">
+<link rel="import" href="../guild-smoothing-input/guild-smoothing-input.html">
 <link rel="import" href="../guild-util/guild-fullscreen-behavior.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../vz-line-chart/vz-line-chart.html">
 
 <dom-module id="guild-chart">
   <template>
@@ -15,8 +17,13 @@
          display: flex;
          align-items: stretch;
      }
+
+     guild-line-chart {
+         flex: 1;
+     }
+
      paper-icon-button {
-         color: var(--disabled-text-color);
+         color: var(--secondary-text-color);
      }
     </style>
     <guild-component-panel id="panel" title="[[title]]">
@@ -25,9 +32,22 @@
             icon="[[fullscreenIcon]]"
             on-click="toggleFullscreen">
         </paper-icon-button>
+        <guild-component-options>
+            <h3>Smoothing</h3>
+            <guild-smoothing-input
+                min="0"
+                max="1"
+                step="0.01"
+                value="{{smoothing}}">
+            </guild-smoothing-input>
+        </guild-component-options>
       </div>
       <div id="container">
-        <vz-line-chart id="chart" x-type="wall_time"></vz-line-chart>
+        <guild-line-chart
+            id="chart"
+            x-type="wall_time"
+            smoothing="[[smoothing]]">
+        </guild-line-chart>
       </div>
     </guild-component-panel>
   </template>
@@ -39,6 +59,10 @@
 
        properties: {
            title: String,
+           smoothing: {
+               type: Number,
+               value: 0
+           }
        },
 
        handleData: function(data) {

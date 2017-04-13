@@ -6,6 +6,7 @@
    paper-material {
        background-color: white;
    }
+
    #container {
        padding: 0 20px 20px;
    }
@@ -16,9 +17,7 @@
           title="[[title]]"
           no-toggle="[[noToggle]]"
           opened="{{opened}}">
-        <div class="actions">
-          <content select=".actions"></content>
-        </div>
+        <content select=".actions"></content>
         <div id="container">
           <content></content>
         </div>

@@ -1,0 +1,41 @@
+<link rel="import" href="../vz-line-chart/vz-line-chart.html">
+
+<dom-module id="guild-line-chart">
+  <template>
+    <style>
+     :host {
+         display: flex;
+     }
+    </style>
+    <vz-line-chart
+        id="chart"
+        x-type="[[xType]]"
+        smoothing-enabled="[[smoothingEnabled]]"
+        smoothing-weight="[[smoothing]]">
+    </vz-line-chart>
+  </template>
+  <script>
+   Polymer({
+       properties: {
+           xType: String,
+           smoothing: Number,
+           smoothingEnabled: {
+               type: Boolean,
+               computed: 'computeSmoothingEnabled(smoothing)'
+           }
+       },
+
+       computeSmoothingEnabled: function(smoothing) {
+           return smoothing > 0;
+       },
+
+       setVisibleSeries: function(series) {
+           this.$.chart.setVisibleSeries(series);
+       },
+
+       setSeriesData: function(series, data) {
+           this.$.chart.setSeriesData(series, data);
+       }
+   });
+  </script>
+</dom-module>

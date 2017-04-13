@@ -5,27 +5,26 @@
 <dom-module id="guild-expansion-panel">
   <template>
     <style>
-     .header,
-     .fixed-header {
+     .header {
          color: var(--primary-text-color);
          display: flex;
          align-items: center;
+         padding: 5px 10px 5px 20px;
      }
-     .header {
-         align-items: center;
-         padding: 5px 20px;
-     }
-     .fixed-header {
-         padding: 10px 20px;
-     }
+
      h2 {
          margin: 0;
          font-size: 18px;
          font-weight: normal;
          flex: 1;
      }
+
+     .actions-wrapper ::content > .actions {
+         display: flex;
+     }
+
      paper-icon-button {
-         color: var(--disabled-text-color);
+         color: var(--secondary-text-color);
      }
     </style>
     <div class="header">
@@ -35,7 +34,9 @@
           on-click="toggle"
           hidden="[[noToggle]]">
       </paper-icon-button>
-      <content select=".actions"></content>
+      <div class="actions-wrapper">
+        <content select=".actions"></content>
+      </div>
     </div>
     <iron-collapse opened="{{opened}}">
       <content></content>

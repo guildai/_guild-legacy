@@ -1,0 +1,51 @@
+<link rel="import" href="../paper-slider/paper-slider.html">
+
+<dom-module id="guild-smoothing-input">
+  <template>
+    <style>
+     :host {
+         display: flex;
+     }
+
+     paper-slider {
+         width: 240px;
+         --paper-slider-input: {
+             width: 5em;
+         }
+     }
+    </style>
+    <paper-slider
+        value="{{value}}"
+        immediate-value="{{immediateValue}}"
+        step="[[step]]"
+        min="[[min]]"
+        max="[[max]]"
+        editable>
+    </paper-slider>
+  </template>
+  <script>
+   Polymer({
+       is: "guild-smoothing-input",
+
+       properties: {
+           value: {
+               type: Number,
+               notify: true
+           },
+           immediateValue: {
+               type: Number,
+               observer: 'immediateValueChanged'
+           },
+           step: Number,
+           min: Number,
+           max: Number
+       },
+
+       immediateValueChanged: function(val) {
+           this.debounce("value", function() {
+               this.value = val;
+           }.bind(this), 100);
+       }
+   });
+  </script>
+</dom-module>

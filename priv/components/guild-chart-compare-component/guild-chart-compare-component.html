@@ -1,6 +1,8 @@
 <link rel="import" href="../guild-compare-component-panel/guild-compare-component-panel.html">
+<link rel="import" href="../guild-component-options/guild-component-options.html">
 <link rel="import" href="../guild-data/guild-run-compare-data-listener.html">
-<link rel="import" href="../vz-line-chart/vz-line-chart.html">
+<link rel="import" href="../guild-line-chart/guild-line-chart.html">
+<link rel="import" href="../guild-smoothing-input/guild-smoothing-input.html">
 
 <dom-module id="guild-chart-compare-component">
   <template>
@@ -12,13 +14,32 @@
          display: flex;
          align-items: stretch;
      }
+
+     guild-line-chart {
+         flex: 1;
+     }
     </style>
     <guild-compare-component-panel
         title="[[title]]"
         on-fullscreen="handleFullscreen"
         on-fullscreen-exit="handleFullscreenExit">
+      <div class="actions">
+        <guild-component-options>
+          <h3>Smoothing</h3>
+          <guild-smoothing-input
+              min="0"
+              max="1"
+              step="0.01"
+              value="{{smoothing}}">
+          </guild-smoothing-input>
+        </guild-component-options>
+      </div>
       <div id="container">
-        <vz-line-chart id="chart" x-type="relative"></vz-line-chart>
+        <guild-line-chart
+            id="chart"
+            x-type="relative"
+            smoothing="[[smoothing]]">
+        </guild-line-chart>
       </div>
     </guild-compare-component-panel>
   </template>
@@ -29,10 +50,11 @@
        behaviors: [Guild.RunCompareDataListener],
 
        properties: {
-           env: Object,
-           source: String,
-           runs: Array,
-           title: String
+           title: String,
+           smoothing: {
+               type: Number,
+               value: 0
+           }
        },
 
        handleData: function(data) {

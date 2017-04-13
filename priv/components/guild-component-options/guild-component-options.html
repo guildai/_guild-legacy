@@ -1,0 +1,40 @@
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-menu-button/paper-menu-button.html">
+
+<dom-module id="guild-component-options">
+  <template>
+    <style>
+     :host {
+         --paper-menu-button: {
+             padding: 0;
+         }
+     }
+
+     paper-icon-button {
+         color: var(--secondary-text-color);
+     }
+
+     .options {
+         padding: 16px;
+     }
+
+     .options ::content h3 {
+         font-size: 14px;
+         margin: 0;
+         color: var(--secondary-text-color);
+     }
+    </style>
+    <paper-menu-button horizontal-align="right">
+      <paper-icon-button icon="more-vert" class="dropdown-trigger">
+      </paper-icon-button>
+      <div class="options dropdown-content">
+        <content></content>
+      </div>
+    </paper-menu-button>
+  </template>
+  <script>
+   Polymer({
+       is: "guild-component-options"
+   });
+  </script>
+</dom-module>
