@@ -1,0 +1,28 @@
+<link rel="import" href="../guild-component-options/guild-component-options.html">
+<link rel="import" href="../guild-smoothing-input/guild-smoothing-input.html">
+
+<dom-module id="guild-chart-options">
+  <template>
+    <guild-component-options>
+      <h3>Smoothing</h3>
+      <guild-smoothing-input
+          min="0"
+          max="1"
+          step="0.01"
+          value="{{smoothing}}">
+      </guild-smoothing-input>
+    </guild-component-options>
+  </template>
+  <script>
+   Polymer({
+       is: "guild-chart-options",
+
+       properties: {
+           smoothing: {
+               type: Number,
+               notify: true
+           }
+       }
+   });
+  </script>
+</dom-module>

@@ -1,8 +1,7 @@
-<link rel="import" href="../guild-component-options/guild-component-options.html">
+<link rel="import" href="../guild-chart-options/guild-chart-options.html">
 <link rel="import" href="../guild-component-panel/guild-component-panel.html">
 <link rel="import" href="../guild-data/guild-data-listener.html">
 <link rel="import" href="../guild-line-chart/guild-line-chart.html">
-<link rel="import" href="../guild-smoothing-input/guild-smoothing-input.html">
 <link rel="import" href="../guild-util/guild-fullscreen-behavior.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
@@ -32,20 +31,15 @@
             icon="[[fullscreenIcon]]"
             on-click="toggleFullscreen">
         </paper-icon-button>
-        <guild-component-options>
-            <h3>Smoothing</h3>
-            <guild-smoothing-input
-                min="0"
-                max="1"
-                step="0.01"
-                value="{{smoothing}}">
-            </guild-smoothing-input>
-        </guild-component-options>
+        <guild-chart-options
+            smoothing="{{smoothing}}"
+            x-axis="{{xAxis}}">
+        </guild-chart-option>
       </div>
       <div id="container">
         <guild-line-chart
             id="chart"
-            x-type="wall_time"
+            x-type="[[xAxis]]"
             smoothing="[[smoothing]]">
         </guild-line-chart>
       </div>
@@ -62,6 +56,10 @@
            smoothing: {
                type: Number,
                value: 0
+           },
+           xAxis: {
+               type: String,
+               value: "wall_time"
            }
        },
 
