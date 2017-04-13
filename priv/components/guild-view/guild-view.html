@@ -17,6 +17,7 @@
 <link rel="import" href="../paper-material/paper-material.html">
 <link rel="import" href="../paper-menu/paper-menu.html">
 <link rel="import" href="../paper-tabs/paper-tabs.html">
+<link rel="import" href="../paper-toolbar/paper-toolbar.html">
 
 <link rel="import" href="404-page.html">
 <link rel="import" href="guild-view-page.html">
@@ -39,11 +40,17 @@
              font-size: 12px;
          };
      }
+
      app-toolbar {
          background-color: var(--toolbar-color);
          color: var(--toolbar-text-color);
          border-bottom: 1px solid var(--toolbar-text-accent-color);
      }
+
+     .drawer-toolbar {
+         --paper-toolbar-background: transparent;
+     }
+
      paper-tabs {
          color: var(--toolbar-text-color);
          margin-left: 20px;
@@ -51,18 +58,22 @@
          height: 40px;
          --paper-tabs-selection-bar-color: var(--toolbar-text-accent-color);
      }
+
      paper-tab {
          --paper-tab-ink: var(--toolbar-tab-ink);
      }
+
      .tab-icon, .menu-icon {
          --iron-icon-width: 24px;
          --iron-icon-height: 24px;
          margin-right: 5px;
      }
+
      app-toolbar a {
          text-decoration: none;
          color: var(--toolbar-text-color);
      }
+
      .fullscreen {
          display: block;
          z-index: 9999;
@@ -90,6 +101,7 @@
 
     <app-drawer-layout narrow="{{narrow}}">
       <app-drawer id="drawer" hidden$="[[!narrow]]">
+        <paper-toolbar class="drawer-toolbar"></paper-toolbar>
         <paper-menu selected="{{currentPage.id}}" attr-for-selected="page">
           <template is="dom-repeat" items="[[env.viewdef.pages]]" as="page">
             <paper-item page="[[page.id]]" on-tap="closeDrawer">
