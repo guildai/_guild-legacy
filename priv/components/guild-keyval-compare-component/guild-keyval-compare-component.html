@@ -104,7 +104,7 @@
               </tr>
             </thead>
           </table>
-          <iron-collapse opened="[[diff.showValues]]">
+          <iron-collapse opened="[[showValues]]">
             <table class="table table-hover">
               <tbody>
                 <template is="dom-repeat" items="[[diff.rows]]" as="row">
@@ -123,7 +123,7 @@
         <template is="dom-if" if="[[diff.unchanged]]">
           <div class="unchanged">
             [[unchangedMessage(left, right)]]
-            <paper-toggle-button active="{{diff.showValues}}">Show values</paper-toggle-button>
+            <paper-toggle-button active="{{showValues}}">Show values</paper-toggle-button>
           </div>
         </template>
       </template>
@@ -161,12 +161,20 @@
        },
 
        handleData: function(data) {
-           this.data = data;
-           this._lockDiff = true;
-           this.left = this.initLeft(data);
-           this.right = this.initRight(data);
-           this._lockDiff = false;
-           this.refreshDiff();
+           if (this.dataChanged(data)) {
+               this.data = data;
+               this._lockDiff = true;
+               this.left = this.initLeft(data);
+               this.right = this.initRight(data);
+               this._lockDiff = false;
+               this.refreshDiff();
+           }
+       },
+
+       dataChanged: function(data) {
+           return (
+               data.length != this.data.length
+               || JSON.stringify(data) != JSON.stringify(this.data));
        },
 
        initLeft: function(data) {
@@ -180,6 +188,7 @@
        refreshDiff: function() {
            if (!this._lockDiff) {
                this.diff = this.computeDiff(this.left, this.right, this.data);
+               this.showValues = !this.diff.unchanged;
            }
        },
 
@@ -214,16 +223,14 @@
        formatDiff: function(rows, delta) {
            return {
                rows: rows,
-               unchanged: delta == null,
-               showValues: delta != null
+               unchanged: delta == null
            }
        },
 
        singleRun: function(run, data) {
            return {
                rows: this.formatKeyvals(this.runData(run, data)),
-               unchanged: false,
-               showValues: true
+               unchanged: false
            }
        },
 
@@ -242,8 +249,7 @@
        noDiff: function() {
            return {
                rows: [],
-               unchanged: false,
-               showValues: true
+               unchanged: false
            }
        },
 
