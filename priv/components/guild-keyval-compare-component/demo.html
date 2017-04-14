@@ -135,8 +135,10 @@
                properties: {
                    env: {
                        type: Object,
-                       value: {
-                           settings: {}
+                       value: function() {
+                           return {
+                               settings: {}
+                           }
                        }
                    }
                },

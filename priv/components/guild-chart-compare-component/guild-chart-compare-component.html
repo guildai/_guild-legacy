@@ -40,11 +40,13 @@
            title: String,
            options: {
                type: Object,
-               value: {
-                   smoothing: 0,
-                   xType: "relative",
-                   yScale: "linear",
-                   tooltipSort: "default"
+               value: function() {
+                   return {
+                       smoothing: 0,
+                       xType: "relative",
+                       yScale: "linear",
+                       tooltipSort: "default"
+                   }
                }
            }
        },

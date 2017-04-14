@@ -44,32 +44,40 @@
        properties: {
            options: {
                type: Object,
-               value: {},
+               value: function() {
+                   return {}
+               },
                notify: true
            },
            xTypeOptions: {
                type: Array,
-               value: [
-                   { value: "wall_time", label: "Wall time" },
-                   { value: "relative",  label: "Relative time" },
-                   { value: "step",      label: "Global step" }
-               ]
+               value: function() {
+                   return [
+                       { value: "wall_time", label: "Wall time" },
+                       { value: "relative",  label: "Relative time" },
+                       { value: "step",      label: "Global step" }
+                   ]
+               }
            },
            yScaleOptions: {
                type: Array,
-               value: [
-                   { value: "linear", label: "Linear" },
-                   { value: "log",  label: "Logarithmic" }
-               ]
+               value: function() {
+                   return [
+                       { value: "linear", label: "Linear" },
+                       { value: "log",  label: "Logarithmic" }
+                   ]
+               }
            },
            tooltipSortOptions: {
                type: Array,
-               value: [
-                   { value: "default",    label: "Default" },
-                   { value: "descending", label: "Large values first" },
-                   { value: "ascending",  label: "Small values first" },
-                   { value: "nearest",    label: "Values closest to the cursor" }
-               ]
+               value: function() {
+                   return [
+                       { value: "default",    label: "Default" },
+                       { value: "descending", label: "Large values first" },
+                       { value: "ascending",  label: "Small values first" },
+                       { value: "nearest",    label: "Values closest to the cursor" }
+                   ]
+               }
            }
        }
    });

@@ -36,7 +36,9 @@
        properties: {
            runs: {
                type: Array,
-               value: [],
+               value: function() {
+                   return [];
+               },
                observer: 'runsChanged'
            },
            selected: {

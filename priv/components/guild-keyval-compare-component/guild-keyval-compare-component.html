@@ -139,7 +139,9 @@
            title: String,
            data: {
                type: Array,
-               value: []
+               value: function() {
+                   return [];
+               }
            },
            diff: {
                type: Object

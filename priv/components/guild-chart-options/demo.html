@@ -70,11 +70,13 @@
 
                properties: {
                    options: {
-                       value: {
-                           smoothing: 0,
-                           xType: "step",
-                           yScale: "linear",
-                           tooltipSort: "default"
+                       value: function() {
+                           return {
+                               smoothing: 0,
+                               xType: "step",
+                               yScale: "linear",
+                               tooltipSort: "default"
+                           }
                        }
                    }
                }

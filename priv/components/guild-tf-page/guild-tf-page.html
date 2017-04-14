@@ -250,32 +250,34 @@
            tabs: {
                type: Array,
                readOnly: true,
-               value: [
-                   {
-                       id: "scalars",
-                       label: "Scalars"
-                   },
-                   {
-                       id: "images",
-                       label: "Images"
-                   },
-                   {
-                       id: "audio",
-                       label: "Audio"
-                   },
-                   {
-                       id: "graphs",
-                       label: "Graphs"
-                   },
-                   {
-                       id: "distributions",
-                       label: "Distributions"
-                   },
-                   {
-                       id: "histograms",
-                       label: "Histograms"
-                   }
-               ]
+               value: function() {
+                   return [
+                       {
+                           id: "scalars",
+                           label: "Scalars"
+                       },
+                       {
+                           id: "images",
+                           label: "Images"
+                       },
+                       {
+                           id: "audio",
+                           label: "Audio"
+                       },
+                       {
+                           id: "graphs",
+                           label: "Graphs"
+                       },
+                       {
+                           id: "distributions",
+                           label: "Distributions"
+                       },
+                       {
+                           id: "histograms",
+                           label: "Histograms"
+                       }
+                   ]
+               }
            }
        },
 
