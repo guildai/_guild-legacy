@@ -43,6 +43,7 @@
         "paper-slider":                 "PolymerElements/paper-slider#1.0.10",
         "paper-tabs":                   "PolymerElements/paper-tabs",
         "paper-toast":                  "PolymerElements/paper-toast#1.3.0",
+        "paper-toolbar":                "PolymerElements/paper-toolbar",
         "paper-toggle-button":          "PolymerElements/paper-toggle-button#1.2.0",
         "paper-tooltip":                "PolymerElements/paper-tooltip",
         "plottable":                    "1.16.2",
