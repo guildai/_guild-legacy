@@ -1,6 +1,6 @@
 <link rel="import" href="../guild-styles/guild-styles.html">
 
-<script src="generate.js"></script>
+<script src="viewpage.js"></script>
 
 <dom-module id="guild-view-page">
   <template>
@@ -29,7 +29,7 @@
        ensureGenerated: function() {
            if (!this.generated) {
                if (this.page.layout) {
-                   Guild.Generate.generate(
+                   Guild.ViewPage.generate(
                        this.root,
                        this.page.layout,
                        this.initGenerateState());
@@ -43,6 +43,12 @@
                env: this.env,
                page: this
            };
+       },
+
+       selected: function(val) {
+           Guild.ViewPage.components(this).forEach(function(c) {
+               c.active = val;
+           });
        }
    });
   </script>

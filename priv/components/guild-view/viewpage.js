@@ -15,7 +15,7 @@
 
 var Guild = Guild || {};
 
-Guild.Generate = new function() {
+Guild.ViewPage = new function() {
 
     var generate = function(parent, item, state) {
         var type = item.type;
@@ -69,6 +69,7 @@ Guild.Generate = new function() {
         });
         component.env = state.env;
         component.config = componentDef.config;
+        component.active = false;
         wrapper = wrapComponent(component);
         Polymer.dom(parent).appendChild(wrapper);
     };
@@ -92,5 +93,13 @@ Guild.Generate = new function() {
         return wrapper;
     };
 
+    var components = function(page) {
+        var wrappers = page.querySelectorAll(".component-wrapper");
+        return Array.from(wrappers).map(function(w) {
+            return w.children[0];
+        });
+    };
+
     this.generate = generate;
+    this.components = components;
 };

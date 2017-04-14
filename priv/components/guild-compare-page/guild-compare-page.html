@@ -28,6 +28,7 @@
         fields="[[config.fields]]">
     </guild-compare-table>
     <guild-compare-components
+        id="components"
         env="[[env]]"
         runs="[[selectedRuns]]">
     </guild-compare-components>
@@ -43,6 +44,9 @@
        properties: {
            env: Object,
            config: Object,
+           active: {
+               observer: 'activeChanged'
+           },
            selectedRuns: {
                type: Array,
                value: []
@@ -57,6 +61,11 @@
            this.selectedRuns = this.$.table.selected().map(function(item) {
                return item.run;
            });
+       },
+
+       activeChanged: function(val) {
+           this.$.table.active = val;
+           this.$.components.active = val;
        }
    });
   </script>

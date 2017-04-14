@@ -13,7 +13,19 @@
          dataReduce: String,
          dataFormat: String,
          dataFetchInterval: Number,
-         dataFetchDisabled: Boolean,
+         dataFetchDisabled: {
+             type: Boolean,
+             value: false
+         },
+         active: {
+             type: Boolean,
+             value: true,
+             observer: 'activeChanged'
+         },
+         canFetch: {
+             type: Boolean,
+             computed: 'computeCanFetch(active, dataFetchDisabled)'
+         },
          _pendingFetch: {
              type: Object,
              value: null
@@ -28,13 +40,17 @@
      },
 
      scheduleFetch: function(whenSeconds) {
-         if (this.dataSource && !this.dataFetchDisabled) {
+         if (this.dataSource && this.canFetch) {
              var url = this.dataFetchUrl();
              var handler = this.handleFetchResult.bind(this);
              this.cancelPendingFetch();
-             this._pendingFetch =
+              this._pendingFetch =
                  Guild.Data.scheduleFetch(url, handler, whenSeconds * 1000);
          }
+     },
+
+     computeCanFetch: function(active, fetchDisabled) {
+         return active && !fetchDisabled;
      },
 
      dataFetchUrl: function() {
@@ -91,10 +107,19 @@
 
      dataValue: function(data) {
          if (typeof data === "object" && data != null) {
-            return data[Object.keys(data)[0]];
-        } else {
-            return data;
-        }
+             return data[Object.keys(data)[0]];
+         } else {
+             return data;
+         }
+     },
+
+     activeChanged: function(active, old) {
+         if (old !== undefined) {
+             this.cancelPendingFetch();
+             if (active) {
+                 this.scheduleFetch(0);
+             }
+         }
      }
  };
 </script>

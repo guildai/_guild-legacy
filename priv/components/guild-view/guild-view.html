@@ -169,7 +169,11 @@
             notifyingFullscreenCanceled: {
                 type: Boolean,
                 value: false
-            }
+            },
+            currentPageRef: {
+                type: Object,
+                observer: 'currentPageRefChanged'
+            },
         },
 
         observers: [
@@ -221,14 +225,15 @@
             return pages.length > 0 ? pages[0] : null;
         },
 
-        pageChanged: function(id, old) {
+        pageChanged: function(id) {
             // Debouncing to avoid dispatching twice - see Polymer issue
             // https://github.com/PolymerElements/app-route/issues/129
             this.debounce(id, function() {
                 if (id == "") {
                     this.redirectToDefaultPage();
                 } else {
-                    this.resetPage(id);
+                    this.currentPageRef = this.ensurePage(id);
+                    this.resetView();
                 }
             });
         },
@@ -243,11 +248,24 @@
             }
         },
 
-        resetPage: function(pageId) {
-            var page = this.$$("guild-view-page[page-id=" + pageId + "]");
-            if (page) {
-                page.ensureGenerated();
+        ensurePage: function(id) {
+            var page = this.pageForId(id);
+            page.ensureGenerated();
+            return page;
+        },
+
+        pageForId: function(id) {
+            return this.$$("guild-view-page[page-id=" + id + "]");
+        },
+
+        currentPageRefChanged: function(page, prev) {
+            page.selected(true);
+            if (prev) {
+                prev.selected(false);
             }
+        },
+
+        resetView: function() {
             document.body.scrollTop = document.documentElement.scrollTop = 0;
         },
 
