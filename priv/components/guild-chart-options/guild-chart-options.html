@@ -13,14 +13,26 @@
             min="0"
             max="1"
             step="0.01"
-            value="{{smoothing}}">
+            value="{{options.smoothing}}">
         </guild-smoothing-input>
       </option-element>
 
       <option-dropdown
           label="Horizontal axis"
-          value="{{xAxis}}"
-          items="[[xAxisOptions]]">
+          value="{{options.xType}}"
+          items="[[xTypeOptions]]">
+      </option-dropdown>
+
+      <option-dropdown
+          label="Vertical axis scale"
+          value="{{options.yScale}}"
+          items="[[yScaleOptions]]">
+      </option-dropdown>
+
+      <option-dropdown
+          label="Tooltip sort order"
+          value="{{options.tooltipSort}}"
+          items="[[tooltipSortOptions]]">
       </option-dropdown>
 
     </guild-component-options>
@@ -30,21 +42,33 @@
        is: "guild-chart-options",
 
        properties: {
-           smoothing: {
-               type: Number,
+           options: {
+               type: Object,
+               value: {},
                notify: true
            },
-           xAxis: {
-               type: String,
-               value: "step",
-               notify: true
-           },
-           xAxisOptions: {
+           xTypeOptions: {
                type: Array,
                value: [
                    { value: "wall_time", label: "Wall time" },
                    { value: "relative",  label: "Relative time" },
-                   { value: "step",      label: "Global step" },
+                   { value: "step",      label: "Global step" }
+               ]
+           },
+           yScaleOptions: {
+               type: Array,
+               value: [
+                   { value: "linear", label: "Linear" },
+                   { value: "log",  label: "Logarithmic" }
+               ]
+           },
+           tooltipSortOptions: {
+               type: Array,
+               value: [
+                   { value: "default",    label: "Default" },
+                   { value: "descending", label: "Large values first" },
+                   { value: "ascending",  label: "Small values first" },
+                   { value: "nearest",    label: "Values closest to the cursor" }
                ]
            }
        }

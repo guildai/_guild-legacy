@@ -9,20 +9,23 @@
     </style>
     <vz-line-chart
         id="chart"
-        x-type="[[xType]]"
+        x-type="[[options.xType]]"
+        y-scale-type="[[options.yScale]]"
         smoothing-enabled="[[smoothingEnabled]]"
-        smoothing-weight="[[smoothing]]">
+        smoothing-weight="[[options.smoothing]]"
+        tooltip-sorting-method="[[options.tooltipSort]]">
     </vz-line-chart>
   </template>
   <script>
    Polymer({
        properties: {
-           xType: String,
-           smoothing: Number,
+           options: {
+               type: Object
+           },
            smoothingEnabled: {
                type: Boolean,
-               computed: 'computeSmoothingEnabled(smoothing)'
-           }
+               computed: 'computeSmoothingEnabled(options.smoothing)'
+           },
        },
 
        computeSmoothingEnabled: function(smoothing) {

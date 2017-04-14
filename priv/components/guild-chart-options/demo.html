@@ -41,23 +41,27 @@
         </style>
         <paper-material>
           <div id="container">
-            <guild-chart-options
-                smoothing="{{smoothing}}"
-                x-axis="{{xAxis}}">
-            </guild-chart-options>
+            <guild-chart-options options="{{options}}"></guild-chart-options>
           </div>
         </paper-material>
         <table>
           <tr>
-            <th>Smoothing</th>
-            <td>[[smoothing]]</td>
+            <th>smoothing</th>
+            <td>[[options.smoothing]]</td>
           </tr>
           <tr>
-            <th>xAxis</th>
-            <td>[[xAxis]]</td>
+            <th>x-type</th>
+            <td>[[options.xType]]</td>
+          </tr>
+          <tr>
+            <th>y-scale</th>
+            <td>[[options.yScale]]</td>
+          </tr>
+          <tr>
+            <th>tooltip-sorting</th>
+            <td>[[options.tooltipSort]]</td>
           </tr>
         </table>
-        </div>
       </template>
       <script>
        HTMLImports.whenReady(function () {
@@ -65,8 +69,14 @@
                is: 'guild-chart-options-demo',
 
                properties: {
-                   smoothing: Number,
-                   xAxis: String
+                   options: {
+                       value: {
+                           smoothing: 0,
+                           xType: "step",
+                           yScale: "linear",
+                           tooltipSort: "default"
+                       }
+                   }
                }
            });
        });

@@ -23,17 +23,10 @@
         on-fullscreen="handleFullscreen"
         on-fullscreen-exit="handleFullscreenExit">
       <div class="actions">
-        <guild-chart-options
-            smoothing="{{smoothing}}"
-            x-axis="{{xAxis}}">
-        </guild-chart-option>
+        <guild-chart-options options="{{options}}"></guild-chart-option>
       </div>
       <div id="container">
-        <guild-line-chart
-            id="chart"
-            x-type="[[xAxis]]"
-            smoothing="[[smoothing]]">
-        </guild-line-chart>
+        <guild-line-chart id="chart" options="{{options}}"></guild-line-chart>
       </div>
     </guild-compare-component-panel>
   </template>
@@ -45,13 +38,14 @@
 
        properties: {
            title: String,
-           smoothing: {
-               type: Number,
-               value: 0
-           },
-           xAxis: {
-               type: String,
-               value: "relative"
+           options: {
+               type: Object,
+               value: {
+                   smoothing: 0,
+                   xType: "relative",
+                   yScale: "linear",
+                   tooltipSort: "default"
+               }
            }
        },
 
