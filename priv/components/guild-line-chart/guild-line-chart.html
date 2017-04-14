@@ -7,17 +7,23 @@
          display: flex;
      }
     </style>
-    <vz-line-chart
-        x-type="[[options.xType]]"
-        y-scale-type="[[options.yScale]]"
-        smoothing-enabled="[[smoothingEnabled]]"
-        smoothing-weight="[[options.smoothing]]"
-        tooltip-sorting-method="[[options.tooltipSort]]">
+    <template>
+      <vz-line-chart
+          x-type="[[options.xType]]"
+          y-scale-type="[[options.yScale]]"
+          smoothing-enabled="[[smoothingEnabled]]"
+          smoothing-weight="[[options.smoothing]]"
+          tooltip-sorting-method="[[options.tooltipSort]]">
+    </template>
     </vz-line-chart>
   </template>
   <script>
    Polymer({
        is: "guild-line-chart",
+
+       behaviors: [
+           Polymer.Templatizer
+       ],
 
        properties: {
            options: {
@@ -35,23 +41,33 @@
            }
        },
 
-       behaviors: [
-           Polymer.Templatizer
-       ],
-
        ready: function() {
-           this.initChart();
-           this.applyChartOps();
+           /* HACK This one weird trick somehow resolves a nagging
+              problem of initialzing charts from a secondary page -
+              i.e. from a page that's not the first page displayed for
+              a URL. The vz-line-chart components are sensitive to
+              context when initialized. Without this trick, charts
+              don't initialize and we get a 'zoomed out too far: could
+              not find suitable interval to display labels' from
+              plottable.js:751. */
+           window.setTimeout(function() {
+               this.cart = this.initChart();
+               this.applyChartOps(this.chart);
+           }.bind(this), 0);
        },
 
        initChart: function() {
-           this.chart = this.$$("vz-line-chart");
+           var template = this.$$("template");
+           this.templatize(template);
+           var instance = this.stamp();
+           Polymer.dom(this.root).appendChild(instance.root);
+           this.chart = instance._nodes[0];
        },
 
-       applyChartOps: function() {
+       applyChartOps: function(chart) {
            this.chartOps.forEach(function(op) {
-               op(this.chart);
-           }.bind(this));
+               op(chart);
+           });
            this.chartOps = [];
        },
 
