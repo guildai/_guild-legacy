@@ -32,7 +32,8 @@
      }
     </style>
     <paper-menu-button
-        horizontal-align="right">
+        horizontal-align="right"
+        on-paper-dropdown-close="closed">
       <paper-icon-button icon="more-vert" class="dropdown-trigger">
       </paper-icon-button>
       <div id="content" class="options dropdown-content">
@@ -47,6 +48,22 @@
        ready: function() {
            // Force to set this here because it defaults to true
            this.$$('paper-menu-button').restoreFocusOnClose = false;
+       },
+
+       closed: function(e) {
+           if (e.target == this.$$("paper-menu-button")) {
+               // Make sure we lose focus on close (setting
+               // restoreFocusOnClose to false doesn't seem to work in
+               // some cases)
+               this.blurButton();
+           }
+       },
+
+       blurButton: function() {
+           var button = this.$$("paper-icon-button");
+           window.setTimeout(function() {
+               button.blur();
+           }, 100);
        }
    });
   </script>
