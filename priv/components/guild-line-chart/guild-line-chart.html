@@ -18,6 +18,8 @@
   </template>
   <script>
    Polymer({
+       is: "guild-line-chart",
+
        properties: {
            options: {
                type: Object
@@ -26,6 +28,20 @@
                type: Boolean,
                computed: 'computeSmoothingEnabled(options.smoothing)'
            },
+           attachedChart: Object,
+           attachedChartOps: {
+               value: function() {
+                   return [];
+               }
+           }
+       },
+
+       attached: function() {
+           this.attachedChart = this.$.chart;
+           this.attachedChartOps.forEach(function(op) {
+               op(this.attachedChart);
+           }.bind(this));
+           this.attachedChartOps = [];
        },
 
        computeSmoothingEnabled: function(smoothing) {
@@ -33,11 +49,23 @@
        },
 
        setVisibleSeries: function(series) {
-           this.$.chart.setVisibleSeries(series);
+           this.attachedChartOp(function(chart) {
+               chart.setVisibleSeries(series);
+           });
        },
 
        setSeriesData: function(series, data) {
-           this.$.chart.setSeriesData(series, data);
+           this.attachedChartOp(function(chart) {
+               chart.setSeriesData(series, data);
+           });
+       },
+
+       attachedChartOp: function(op) {
+           if (this.attachedChart) {
+               op(this.attachedChart);
+           } else {
+               this.attachedChartOps.push(op);
+           }
        }
    });
   </script>
