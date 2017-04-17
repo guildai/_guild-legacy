@@ -1,0 +1,25 @@
+<dom-module id="datatable-col">
+  <template>
+  </template>
+  <script>
+   Polymer({
+       is: "datatable-col",
+
+       properties: {
+           title: String,
+           data: String,
+           sortAsc: Boolean,
+           sortDesc: Boolean,
+           sortOrder: Number
+       },
+
+       toDatatableCol: function() {
+           return {
+               title: Guild.DataTable.defaultColTitle(this.title),
+               data: this.data,
+               node: this
+           }
+       }
+   });
+  </script>
+</dom-module>

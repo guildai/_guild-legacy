@@ -1,0 +1,83 @@
+<dom-module id="datatable-styles">
+  <template>
+    <style>
+     /* General formatting */
+
+     table.dataTable thead th {
+         text-align: left;
+         border: none;
+     }
+
+     .dataTables_scrollHead {
+         color: rgba(0, 0, 0, 0.54);
+         border-bottom: 1px solid #eee !important;
+     }
+
+     .dataTables_scrollBody {
+         border-bottom: 1px solid #eee !important;
+     }
+
+     .dataTables_wrapper .dataTables_filter {
+         display: none;
+     }
+
+     table.dataTable thead th {
+         padding: 10px 10px;
+     }
+
+     table.dataTable tbody tr.highlight {
+         background-color: #f5f5f5;
+     }
+
+     /* Remove image from th */
+
+     table.dataTable thead th.sorting {
+         background-image: none;
+     }
+
+     table.dataTable thead th.sorting_asc {
+         background-image: none;
+     }
+
+     table.dataTable thead th.sorting_desc {
+         background-image: none;
+     }
+
+     table.dataTable thead th.sorting_asc_disabled {
+         background-image: none;
+     }
+
+     table.dataTable thead th.sorting_desc_disabled {
+         background-image: none;
+     }
+
+     /* Add image to .header-title (wraps title content) */
+
+     table.dataTable thead .header-title {
+         background-repeat: no-repeat;
+         background-position: center right;
+         padding-right: 20px;
+     }
+
+     table.dataTable thead .sorting .header-title {
+         background-image: url(../datatables.net-dt/images/sort_both.png);
+     }
+
+     table.dataTable thead .sorting_asc .header-title {
+         background-image: url(../datatables.net-dt/images/sort_asc.png);
+     }
+
+     table.dataTable thead .sorting_desc .header-title {
+         background-image: url(../datatables.net-dt/images/sort_desc.png);
+     }
+
+     table.dataTable thead .sorting_asc_disabled .header-title {
+         background-image: url(../datatables.net-dt/images/sort_asc_disabled.png);
+     }
+
+     table.dataTable thead .sorting_desc_disabled .header-title {
+         background-image: url(../datatables.net-dt/images/sort_desc_disabled.png);
+     }
+    </style>
+  </template>
+</dom-module>
