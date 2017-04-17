@@ -15,11 +15,11 @@ limitations under the License.
 -->
 
 <link rel="import" href="../guild-data/guild-data-listener.html">
+<link rel="import" href="../guild-filter-input/guild-filter-input.html">
 <link rel="import" href="../guild-styles/guild-styles.html">
-<link rel="import" href="../iron-icon/iron-icon.html">
-<link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-material/paper-material.html">
 <link rel="import" href="../paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../paper-toolbar/paper-toolbar.html">
 
 <link rel="import" href="compare-table-support.html">
 
@@ -29,6 +29,11 @@ limitations under the License.
     <style include="compare-table-styles"></style>
     <style>
      :host {
+         --paper-toolbar-background: transparent;
+         --paper-toolbar-height: 100%;
+         --paper-toolbar-content: {
+             padding: 0 10px 5px;
+         };
          --paper-toggle-button-checked-bar-color: var(--paper-green-200);
          --paper-toggle-button-checked-button-color: var(--paper-green-600);
      }
@@ -40,48 +45,14 @@ limitations under the License.
      #container {
          padding: 20px;
      }
-
-     .controls {
-         display: flex;
-         flex-direction: row;
-         flex-wrap: wrap;
-         justify-content: space-between;
-         align-items: center;
-         margin-top: -10px;
-         margin-bottom: 5px;
-     }
-
-     .actions {
-         margin-top: 10px;
-         margin-right: 10px;
-     }
-
-     #filter {
-         width: 20em;
-     }
-
-     #filter iron-icon {
-         margin-right: 5px;
-         color: var(--paper-input-container-color, --secondary-text-color);
-     }
     </style>
     <paper-material>
       <div id="container">
-        <div class="controls">
-          <paper-input
-              id="filter"
-              label="Filter"
-              no-label-float
-              type="search"
-              on-input="filter">
-            <iron-icon icon="search" prefix></iron-icon>
-          </paper-input>
-          <div class="actions">
-            <paper-toggle-button
-                checked="{{hideFailed}}"
-            >Hide failed runs</paper-toggle-button>
-          </div>
-        </div>
+        <paper-toolbar>
+          <guild-filter-input id="filter" on-input="filter"></guild-filter-input>
+          <span class="title"></span>
+          <paper-toggle-button checked="{{hideFailed}}">Hide failed runs</paper-toggle-button>
+        </paper-toolbar>
         <table
             id="table"
             class="hover row-border"
