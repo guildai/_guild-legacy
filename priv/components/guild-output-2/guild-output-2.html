@@ -1,0 +1,85 @@
+<!--
+Copyright 2016-2017 TensorHub, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../guild-component-panel/guild-component-panel.html">
+<link rel="import" href="../guild-data/guild-data-listener.html">
+<link rel="import" href="../guild-datatable/guild-datatable.html">
+<link rel="import" href="../guild-filter-input/guild-filter-input.html">
+<link rel="import" href="../paper-toolbar/paper-toolbar.html">
+
+<dom-module id="guild-output-2">
+  <template>
+    <style>
+     :host {
+         --paper-toolbar-background: transparent;
+         --paper-toolbar-height: 100%;
+         --paper-toolbar-content: {
+             padding: 0 10px 5px;
+         };
+     }
+    </style>
+    <guild-component-panel title="Output">
+      <paper-toolbar>
+        <guild-filter-input id="filter" on-input="filter"></guild-filter-input>
+      </paper-toolbar>
+      <guild-datatable id="table">
+        <datatable-col title="Time"></datatable-col>
+        <datatable-col title="Message"></datatable-col>
+      </guild-datatable>
+    </guild-component-panel>
+  </template>
+  <script>
+   Polymer({
+       is: "guild-output-2",
+
+       behaviors: [Guild.DataListener],
+
+       properties: {
+           dataSource: {
+               type: String,
+               value: "output",
+               readOnly: true
+           },
+           nextIndex: {
+               type: Number,
+               value: 0
+           }
+       },
+
+       handleData: function(data) {
+           var slice = data.slice(this.nextIndex);
+           this.$.table.addRows(this.formatItems(slice));
+           this.nextIndex = data.length;
+       },
+
+       formatItems: function(data) {
+           var formatTime = d3.time.format("%b %d %H:%M:%S.%L");
+           return data.map(function(item, index) {
+               return {
+                   index: index,
+                   time: formatTime(new Date(item[0])),
+                   stream: item[1],
+                   message: item[2]
+               }
+           });
+       },
+
+       filter: function(e) {
+           console.log(e);
+       }
+   });
+  </script>
+</dom-module>
