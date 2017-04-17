@@ -113,7 +113,7 @@ limitations under the License.
        },
 
        searchInputElement: function() {
-           if (this.cachedSearchInput == undefined) {
+           if (this.cachedSearchInput === undefined) {
                this.cachedSearchInput = this.$$("input[type='search']");
            }
            return this.cachedSearchInput;
