@@ -14,13 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<dom-module id="guild-view-overview">
-  <template>
-    This is the overview page!
-  </template>
+<link rel="import" href="../guild-data/guild-data-listener.html">
+
+<dom-module id="guild-env-data">
   <script>
    Polymer({
-       is: "guild-view-overview"
+       is: "guild-env-data",
+
+       behaviors: [Guild.DataListener],
+
+       properties: {
+           data: {
+               type: Object,
+               notify: true
+           }
+       },
+
+       handleData: function(data) {
+           this.data = data;
+       }
    });
   </script>
 </dom-module>

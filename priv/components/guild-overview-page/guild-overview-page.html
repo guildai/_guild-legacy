@@ -14,13 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<dom-module id="guild-view-compare">
+<link rel="import" href="../guild-run-select-page-header/guild-run-select-page-header.html">
+
+<dom-module id="guild-overview-page">
   <template>
-    This is the compare page!
+    <div class="container">
+      <div class="row">
+        <div class="col-12">
+          <guild-run-select-page-header env="{{env}}"></guild-run-select-page-header>
+        </div>
+      </div>
+    </div>
   </template>
   <script>
    Polymer({
-       is: "guild-view-compare"
+       is: "guild-overview-page",
+
+       properties: {
+           env: Object
+       }
    });
   </script>
 </dom-module>

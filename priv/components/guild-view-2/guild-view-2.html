@@ -15,34 +15,36 @@ limitations under the License.
 -->
 
 <link rel="import" href="../app-route/app-location.html">
+<link rel="import" href="../guild-compare-page/guild-compare-page.html">
+<link rel="import" href="../guild-env/guild-env.html">
+<link rel="import" href="../guild-overview-page/guild-overview-page.html">
+<link rel="import" href="../guild-tensorboard-page/guild-tensorboard-page.html">
 
-<link rel="import" href="guild-view-route.html">
 <link rel="import" href="guild-view-app-layout.html">
 <link rel="import" href="guild-view-page.html">
-<link rel="import" href="guild-view-overview.html">
-<link rel="import" href="guild-view-compare.html">
-<link rel="import" href="guild-view-tensorboard.html">
+<link rel="import" href="guild-view-route.html">
 
 <dom-module id="guild-view-2">
   <template>
 
     <app-location route="{{route}}"></app-location>
-    <guild-view-route route="{{route}}" selected="{{selected}}"></guild-view-route>
+    <guild-view-route route="{{route}}" selected="{{page}}"></guild-view-route>
+    <guild-env env="{{env}}"></guild-env>
 
-    <guild-view-app-layout selected="{{selected}}">
+    <guild-view-app-layout selected="{{page}}">
       <guild-view-page id="overview" label="Overview" icon="apps">
         <template>
-          <guild-view-overview></guild-view-overview>
+          <guild-overview-page project="{{project}}"></guild-overview-page>
         </template>
       </guild-view-page>
       <guild-view-page id="compare" label="Compare" icon="av:playlist-add-check">
         <template>
-          <guild-view-compare></guild-view-compare>
+          <guild-compare-page></guild-compare-page>
         </template>
       </guild-view-page>
       <guild-view-page id="tensorboard" label="TensorBoard" icon="timeline">
         <template>
-          <guild-view-tensorboard></guild-view-tensorboard>
+          <guild-tensorboard-page></guild-tensorboard-page>
         </template>
       </guild-view-page>
       <guild-view-404 class="not-found" path="[[route.path]]"></guild-view-404>
@@ -55,7 +57,8 @@ limitations under the License.
 
        properties: {
            route: Object,
-           selected: String
+           page: String,
+           env: Object
        }
    });
   </script>

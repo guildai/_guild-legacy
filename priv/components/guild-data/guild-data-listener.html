@@ -23,24 +23,18 @@ limitations under the License.
  Guild.DataListener = {
 
      properties: {
-         env: Object,
          dataSource: String,
          dataAttribute: String,
          dataReduce: String,
          dataFormat: String,
-         dataFetchInterval: Number,
-         dataFetchDisabled: {
-             type: Boolean,
-             value: false
+         dataFetchInterval: {
+             type: Number,
+             value: 0
          },
          active: {
              type: Boolean,
              value: true,
              observer: 'activeChanged'
-         },
-         canFetch: {
-             type: Boolean,
-             computed: 'computeCanFetch(active, dataFetchDisabled)'
          },
          _pendingFetch: {
              type: Object,
@@ -49,36 +43,26 @@ limitations under the License.
      },
 
      ready: function() {
-         if (this.dataFetchInterval == undefined) {
-             this.dataFetchInterval = this.env.settings.refreshInterval || 0;
-         }
          this.scheduleFetch(0);
      },
 
      scheduleFetch: function(whenSeconds) {
-         if (this.dataSource && this.canFetch) {
+         if (this.dataSource && this.active) {
              var url = this.dataFetchUrl();
              var handler = this.handleFetchResult.bind(this);
              this.cancelPendingFetch();
-              this._pendingFetch =
+             this._pendingFetch =
                  Guild.Data.scheduleFetch(url, handler, whenSeconds * 1000);
          }
      },
 
-     computeCanFetch: function(active, fetchDisabled) {
-         return active && !fetchDisabled;
-     },
-
      dataFetchUrl: function() {
-         var base = "/data/" + this.dataSource;
-         var runParam = "run=" + this.env.runId;
-         return base.indexOf("?") == -1
-              ? base + "?" + runParam
-              : base + "&" + runParam;
+         return "/data/" + this.dataSource;
      },
 
      handleFetchResult: function(result) {
          if (result != null) {
+             this.cancelPendingFetch();
              var data = this.maybeReduce(result);
              this.handleData.bind(this)(data);
          }
@@ -93,14 +77,9 @@ limitations under the License.
      },
 
      maybeScheduleNextFetch: function() {
-         var interval = this.dataFetchInterval;
-         if (interval > 0 && this.repeatData.bind(this)()) {
-             this.scheduleFetch(interval);
+         if (this.dataFetchInterval > 0 && !this._pendingFetch) {
+             this.scheduleFetch(this.dataFetchInterval);
          }
-     },
-
-     repeatData: function() {
-         return false;
      },
 
      maybeReduce: function(data) {
