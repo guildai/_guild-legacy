@@ -23,9 +23,11 @@ limitations under the License.
 
 <link rel="import" href="guild-view-app-menu.html">
 <link rel="import" href="guild-view-app-toolbar.html">
+<link rel="import" href="guild-view-404.html">
 
 <dom-module id="guild-view-app-layout">
   <template>
+
     <app-drawer-layout narrow="{{narrow}}">
       <app-drawer hidden$="[[!narrow]]">
         <guild-view-app-menu
@@ -45,27 +47,21 @@ limitations under the License.
           </guild-view-app-toolbar>
         </app-header>
 
-        <iron-pages selected="[[selected]]" attr-for-selected="page-id">
-          <template id="ugh" is="dom-repeat" items="[[pages]]" as="page">
+        <iron-pages
+            selected="[[selected]]"
+            attr-for-selected="page-id"
+            fallback-selection="404">
+          <template is="dom-repeat" items="[[pages]]" as="page">
             <div page-id$="[[page.id]]"></div>
           </template>
+          <div page-id="404"><content select=".not-found"></content></div>
         </iron-pages>
 
       </app-header-layout>
     </app-drawer-layout>
 
-    <!-- ============================ debug ============================ -->
-
-    <p>Pages:</p>
-    <ul>
-      <template is="dom-repeat" items="[[pages]]" as="page">
-        <li>[[page.label]]</li>
-      </template>
-    </ul>
-    <p>Narrow: [[narrow]]</p>
-    <p>Selected: [[selected]]</p>
-
     <content select="guild-view-page"></content>
+
   </template>
   <script>
    Polymer({
@@ -74,7 +70,10 @@ limitations under the License.
        properties: {
            pages: Array,
            containers: Array,
-           selected: String,
+           selected: {
+               type: String,
+               notify: true
+           },
            narrow: Boolean
        },
 
@@ -116,10 +115,9 @@ limitations under the License.
 
        ensureInstance: function(selected, containers) {
            var container = this.containerForId(selected);
-           if (container && container.children.length == 0) {
+           if (container && !this.util.containerHasInstance(container)) {
                var page = this.pageForId(selected);
                if (page) {
-                   console.log("EXPENSIVE!!!!!");
                    var instance = page.stamp();
                    container.appendChild(instance.root);
                }
@@ -148,7 +146,12 @@ limitations under the License.
                });
            };
 
+           var containerHasInstance = function(c) {
+               return c.children.length > 0;
+           };
+
            this.containersChanged = containersChanged;
+           this.containerHasInstance = containerHasInstance;
        }
    });
   </script>

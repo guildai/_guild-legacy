@@ -15,8 +15,8 @@ limitations under the License.
 -->
 
 <link rel="import" href="../app-route/app-location.html">
-<link rel="import" href="../app-route/app-route.html">
 
+<link rel="import" href="guild-view-route.html">
 <link rel="import" href="guild-view-app-layout.html">
 <link rel="import" href="guild-view-page.html">
 <link rel="import" href="guild-view-overview.html">
@@ -27,14 +27,9 @@ limitations under the License.
   <template>
 
     <app-location route="{{route}}"></app-location>
-    <app-route
-        route="{{route}}"
-        pattern="/:id"
-        data="{{currentPage}}"
-        query-params="{{queryParams}}"
-        tail="{{routeTail}}"></app-route>
+    <guild-view-route route="{{route}}" selected="{{selected}}"></guild-view-route>
 
-    <guild-view-app-layout selected="overview">
+    <guild-view-app-layout selected="{{selected}}">
       <guild-view-page id="overview" label="Overview" icon="apps">
         <template>
           <guild-view-overview></guild-view-overview>
@@ -50,10 +45,8 @@ limitations under the License.
           <guild-view-tensorboard></guild-view-tensorboard>
         </template>
       </guild-view-page>
+      <guild-view-404 class="not-found" path="[[route.path]]"></guild-view-404>
     </guild-view-app-layout>
-
-    <p>Route:</p>
-    <pre>[[delme(route)]]</pre>
 
   </template>
   <script>
@@ -61,11 +54,8 @@ limitations under the License.
        is: "guild-view-2",
 
        properties: {
-           route: Object
-       },
-
-       delme: function(route) {
-           return JSON.stringify(route);
+           route: Object,
+           selected: String
        }
    });
   </script>

@@ -37,6 +37,10 @@ limitations under the License.
          border-bottom: 1px solid var(--toolbar-text-accent-color);
      }
 
+     app-toolbar.narrow {
+         padding-left: 10px;
+     }
+
      paper-tabs {
          color: var(--toolbar-text-color);
          margin-left: 20px;
@@ -55,7 +59,7 @@ limitations under the License.
          margin-right: 5px;
      }
     </style>
-    <app-toolbar>
+    <app-toolbar class$="[[toolbarClass(narrow)]]">
       <content></content>
       <paper-tabs hidden$="[[narrow]]" selected="{{selected}}" attr-for-selected="page-id">
         <template is="dom-repeat" items="[[pages]]" as="page">
@@ -78,6 +82,10 @@ limitations under the License.
                notify: true
            },
            narrow: Boolean
+       },
+
+       toolbarClass: function(narrow) {
+           return narrow ? "narrow" : "";
        }
    });
   </script>
