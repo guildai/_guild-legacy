@@ -1,0 +1,72 @@
+<!--
+Copyright 2016-2017 TensorHub, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../app-route/app-location.html">
+<link rel="import" href="../app-route/app-route.html">
+
+<link rel="import" href="guild-view-app-layout.html">
+<link rel="import" href="guild-view-page.html">
+<link rel="import" href="guild-view-overview.html">
+<link rel="import" href="guild-view-compare.html">
+<link rel="import" href="guild-view-tensorboard.html">
+
+<dom-module id="guild-view-2">
+  <template>
+
+    <app-location route="{{route}}"></app-location>
+    <app-route
+        route="{{route}}"
+        pattern="/:id"
+        data="{{currentPage}}"
+        query-params="{{queryParams}}"
+        tail="{{routeTail}}"></app-route>
+
+    <guild-view-app-layout selected="overview">
+      <guild-view-page id="overview" label="Overview" icon="apps">
+        <template>
+          <guild-view-overview></guild-view-overview>
+        </template>
+      </guild-view-page>
+      <guild-view-page id="compare" label="Compare" icon="av:playlist-add-check">
+        <template>
+          <guild-view-compare></guild-view-compare>
+        </template>
+      </guild-view-page>
+      <guild-view-page id="tensorboard" label="TensorBoard" icon="timeline">
+        <template>
+          <guild-view-tensorboard></guild-view-tensorboard>
+        </template>
+      </guild-view-page>
+    </guild-view-app-layout>
+
+    <p>Route:</p>
+    <pre>[[delme(route)]]</pre>
+
+  </template>
+  <script>
+   Polymer({
+       is: "guild-view-2",
+
+       properties: {
+           route: Object
+       },
+
+       delme: function(route) {
+           return JSON.stringify(route);
+       }
+   });
+  </script>
+</dom-module>
