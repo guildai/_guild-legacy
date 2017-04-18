@@ -37,11 +37,7 @@ limitations under the License.
        behaviors: [Polymer.Templatizer],
 
        ready: function() {
-           this.maybeTemplatize();
-       },
-
-       maybeTemplatize: function() {
-           var template = Polymer.dom(this).querySelector("template");
+           var template = this.$$("template");
            if (template) {
                this.templatize(template);
                this.renderDisplay =
