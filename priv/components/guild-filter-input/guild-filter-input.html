@@ -33,7 +33,8 @@ limitations under the License.
     <paper-input
         label="[[label]]"
         no-label-float
-        type="search">
+        type="search"
+        value="{{value}}">
       <iron-icon icon="search" prefix></iron-icon>
     </paper-input>
   </template>
@@ -45,6 +46,11 @@ limitations under the License.
            label: {
                type: String,
                value: "Filter"
+           },
+           value: {
+               type: String,
+               value: "",
+               notify: true
            }
        }
    });

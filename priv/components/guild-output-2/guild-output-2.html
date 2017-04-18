@@ -29,15 +29,30 @@ limitations under the License.
          --paper-toolbar-content: {
              padding: 0 10px 5px;
          };
+         --guild-datatable-td: {
+             padding: 14px 10px;
+             line-height: 18px;
+             vertical-align: top;
+         }
+     }
+
+     span.time {
+         white-space: nowrap;
      }
     </style>
     <guild-component-panel title="Output">
       <paper-toolbar>
-        <guild-filter-input id="filter" on-input="filter"></guild-filter-input>
+        <guild-filter-input id="filter" value="{{filter}}"></guild-filter-input>
       </paper-toolbar>
-      <guild-datatable id="table">
-        <datatable-col title="Time"></datatable-col>
-        <datatable-col title="Message"></datatable-col>
+      <guild-datatable
+          id="table"
+          height="320px"
+          item-name-plural="events"
+          filter="[[filter]]">
+        <datatable-col title="Time" sort="index" filter="time">
+          <template><span class="time">[[time]]</span></template>
+        </datatable-col>
+        <datatable-col title="Message" data="message"></datatable-col>
       </guild-datatable>
     </guild-component-panel>
   </template>
@@ -48,6 +63,7 @@ limitations under the License.
        behaviors: [Guild.DataListener],
 
        properties: {
+           filter: String,
            dataSource: {
                type: String,
                value: "output",
@@ -63,6 +79,10 @@ limitations under the License.
            var slice = data.slice(this.nextIndex);
            this.$.table.addRows(this.formatItems(slice));
            this.nextIndex = data.length;
+       },
+
+       repeatData: function() {
+           return Guild.Run.isRunning(this.env.run);
        },
 
        formatItems: function(data) {

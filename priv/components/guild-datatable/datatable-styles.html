@@ -23,10 +23,15 @@
 
      table.dataTable thead th {
          padding: 10px 10px;
+         @apply --guild-datatable-th;
      }
 
      table.dataTable tbody tr.highlight {
          background-color: #f5f5f5;
+     }
+
+     table.dataTable tbody td {
+         @apply --guild-datatable-td;
      }
 
      /* Remove image from th */

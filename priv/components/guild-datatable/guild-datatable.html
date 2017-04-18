@@ -40,25 +40,29 @@ limitations under the License.
        is: "guild-datatable",
 
        properties: {
+           height: String,
+           itemNamePlural: String,
+           filter: {
+               type: String,
+               observer: "filterChanged"
+           },
            dt: Object,
            cachedDtOps: {
                type: Array,
                value: function() {
                    return []
                }
-           }
+           },
+           searchInput: Object
        },
 
-       created: function() {
-           Polymer.dom(this).observeNodes(function(info) {
-               if (this.dt === undefined) {
-                   var dt = this.initDatatable();
-                   this.applyCachedDtOps(dt);
-                   this.dt = dt;
-               } else {
-                   throw ["unsupported mods", info]
-               }
-           });
+       attached: function() {
+           if (this.dt === undefined) {
+               var dt = this.initDatatable();
+               this.initSearchInput();
+               this.applyCachedDtOps(dt);
+               this.dt = dt;
+           }
        },
 
        ready: function() {
@@ -66,12 +70,8 @@ limitations under the License.
        },
 
        initDatatable: function() {
-           var tableOpts = {
-               height: "250px"
-           };
-           var dt = Guild.DataTable.init(this.$.table, this.columns(), tableOpts);
-           dt.on("search.dt", this.handleSearch.bind(this));
-           return dt;
+           var opts = this;
+           return Guild.DataTable.init(this.$.table, this.columns(), opts);
        },
 
        columns: function() {
@@ -81,8 +81,9 @@ limitations under the License.
            });
        },
 
-       handleSearch: function(e) {
-           console.log(e);
+       initSearchInput: function() {
+           this.searchInput = this.$$("input[type='search']");
+           this.filterChanged(this.filter);
        },
 
        addRows: function(rows) {
@@ -104,6 +105,14 @@ limitations under the License.
                op(dt);
            });
            this.cachedDtOps = [];
+       },
+
+       filterChanged: function(val) {
+           // Use datatables built-in search input to filter
+           if (this.searchInput) {
+               this.searchInput.value = val;
+               this.searchInput.dispatchEvent(new Event("input"));
+           }
        }
    });
   </script>

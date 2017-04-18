@@ -19,6 +19,7 @@ limitations under the License.
     <title>guild-checkbox demo</title>
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
     <link rel="import" href="../polymer/polymer.html">
+    <link rel="import" href="../guild-filter-input/guild-filter-input.html">
     <link rel="import" href="guild-datatable.html">
     <style>
      body {
@@ -30,10 +31,46 @@ limitations under the License.
   <body>
     <dom-module id="guild-datatable-demo">
       <template>
-        <guild-datatable>
-          <datatable-col title="Name" data="name"></datatable-col>
-          <datatable-col title="City" data="city" sort-asc sort-order="0"></datatable-col>
-          <datatable-col title="Age" data="age" sort-desc sort-order="1"></datatable-col>
+        <style>
+         :host {
+             --guild-datatable-th: {
+                 padding: 20px 10px;
+             };
+
+             --guild-datatable-td: {
+                 padding: 20px 10px;
+             }
+         }
+        </style>
+        <p>Data below is loaded in stages to simulate incremantal adds.</p>
+        <guild-filter-input value="{{filter}}"></guild-filter-input>
+        <guild-datatable item-name-plural="people" filter="[[filter]]">
+          <datatable-col
+              title="Name"
+              data="name">
+          </datatable-col>
+          <datatable-col
+              title="City"
+              data="city"
+              sort-asc
+              sort-order="0">
+            <template>
+              <a href="https://en.wikipedia.org/wiki/[[city]]">[[city]]</a>
+            </template>
+          </datatable-col>
+          <datatable-col
+              title="Age"
+              data="age"
+              sort-desc
+              sort-order="1">
+            <template>[[age]] years old</template>
+          </datatable-col>
+          <datatable-col
+              title="Index"
+              data="index"
+              display="indexDesc"
+              filter="indexDesc">
+          </datatable-col>
         </guild-datatable>
       </template>
       <script>
@@ -41,33 +78,47 @@ limitations under the License.
            {
                name: "Bob Martin",
                age: 22,
-               city: "Vancouver"
+               city: "Vancouver",
+               index: 1,
+               indexDesc: "one"
            },
            {
                name: "Shirley Maclaine",
                age: 33,
-               city: "Washington"
+               city: "Washington",
+               index: 2,
+               indexDesc: "two"
            },
            {
                name: "Doug Adams",
                age: 44,
-               city: "Akron"
+               city: "Akron",
+               index: 3,
+               indexDesc: "three"
            },
            {
                name: "Mary Giles",
                age: 55,
-               city: "Des Moines"
+               city: "Des Moines",
+               index: 4,
+               indexDesc: "four"
            },
            {
                name: "Sandra O'Connor",
                age: 66,
-               city: "Washington"
+               city: "Washington",
+               index: 5,
+               indexDesc: "five"
            }
        ];
 
        HTMLImports.whenReady(function () {
            Polymer({
                is: 'guild-datatable-demo',
+
+               properties: {
+                   filter: String
+               },
 
                ready: function() {
                    var table = this.$$("guild-datatable");

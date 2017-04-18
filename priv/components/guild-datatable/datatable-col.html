@@ -8,17 +8,44 @@
        properties: {
            title: String,
            data: String,
+           type: String,
+           display: String,
+           filter: String,
+           sort: String,
            sortAsc: Boolean,
            sortDesc: Boolean,
-           sortOrder: Number
+           sortOrder: Number,
+           renderDisplay: Object
+       },
+
+       behaviors: [Polymer.Templatizer],
+
+       ready: function() {
+           this.maybeTemplatize();
+       },
+
+       maybeTemplatize: function() {
+           var template = Polymer.dom(this).querySelector("template");
+           if (template) {
+               this.templatize(template);
+               this.renderDisplay =
+                   Guild.DataTable.templateRenderer(this, "display")
+           }
        },
 
        toDatatableCol: function() {
            return {
                title: Guild.DataTable.defaultColTitle(this.title),
-               data: this.data,
+               data: null,
+               render: {
+                   display: this.renderDisplay || this.display,
+                   filter: this.filter,
+                   sort: this.sort,
+                   type: this.type || this.sort,
+                   "_": this.data
+               },
                node: this
-           }
+           };
        }
    });
   </script>

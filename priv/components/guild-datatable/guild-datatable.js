@@ -22,12 +22,12 @@ Guild.DataTable = new function() {
     var init = function(table, columns, options) {
         return jQuery(table).DataTable({
             data: [],
-            __rowId: (options && options.rowId) || null,
             columns: columns,
             order: tableOrderOption(columns),
             scrollY: (options && options.height) || DEFAULT_HEIGHT,
             scrollCollapse: true,
             paging: false,
+            deferRender: true,
             language: tableLanguageOption(options),
             dom: "<'row'<'col-12'f>>"
                 + "<'row'<'col-12'tr>>"
@@ -46,12 +46,11 @@ Guild.DataTable = new function() {
                 order[pos] = [index, "desc"];
             }
         });
-        console.log([columns, order]);
         return order.length > 0 ? order : undefined;
     };
 
     var tableLanguageOption = function(options) {
-        var itemNamePlural = (options && options.itemNanePlural) || "items";
+        var itemNamePlural = (options && options.itemNamePlural) || "items";
         return {
             info: "_TOTAL_ " + itemNamePlural,
             infoFiltered: " (filtered from _MAX_)",
@@ -63,14 +62,34 @@ Guild.DataTable = new function() {
 
     var addRows = function(dt, rows) {
         var added = dt.rows.add(rows);
-        added.draw();
+        added.draw(false);
     };
 
     var defaultColTitle = function(title) {
         return "<span class='header-title'>" + title + "</span>";
     };
 
+    var templateRenderer = function(templatizer, renderType) {
+        return function(value, type, data) {
+            if (type == renderType) {
+                var instance = templatizer.stamp(data);
+                return fragmentHtml(instance.root);
+            } else {
+                return value;
+            }
+        };
+    };
+
+    var fragmentHtml = function(fragment) {
+        var val = "";
+        fragment.childNodes.forEach(function(node) {
+            val += node.outerHTML || node.textContent;
+        });
+        return val;
+    };
+
     this.init = init;
     this.addRows = addRows;
     this.defaultColTitle = defaultColTitle;
+    this.templateRenderer = templateRenderer;
 };
