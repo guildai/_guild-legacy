@@ -14,14 +14,52 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+<link rel="import" href="../guild-attrs/guild-attrs.html">
+<link rel="import" href="../guild-field/guild-field.html">
+<link rel="import" href="../guild-flags/guild-flags.html">
+<link rel="import" href="../guild-imports/bootstrap-grid.html">
 <link rel="import" href="../guild-run-select-page-header/guild-run-select-page-header.html">
 
 <dom-module id="guild-overview-page">
   <template>
-    <div class="container">
+    <style>
+     guild-run-select-page-header {
+         flex: 1;
+         margin-bottom: 20px;
+     }
+
+     .component {
+         margin-bottom: 20px;
+     }
+    </style>
+
+    <div class="container-fluid">
       <div class="row">
-        <div class="col-12">
-          <guild-run-select-page-header env="{{env}}"></guild-run-select-page-header>
+        <guild-run-select-page-header env="{{env}}"></guild-run-select-page-header>
+      </div>
+      <div class="row">
+        <div class="col-lg-8 col-xl-9">
+          <div class="row">
+            <template is="dom-repeat" items="[[viewdef.fields]]" as="field">
+              <div class="component col-sm-6 col-xl-4 col-xxl-3">
+                <guild-field env="[[env]]" field="[[field]]"></guild-field>
+              </div>
+            </template>
+          </div>
+          <div class="row">
+            Series charts here
+          </div>
+          <div class="row">
+            Output here
+          </div>
+        </div>
+        <div class="col-lg-4 col-xl-3">
+          <div class="component">
+            <guild-flags env="[[env]]"></guild-flags>
+          </div>
+          <div class="component">
+            <guild-attrs env="[[env]]"></guild-attrs>
+          </div>
         </div>
       </div>
     </div>
@@ -31,7 +69,8 @@ limitations under the License.
        is: "guild-overview-page",
 
        properties: {
-           env: Object
+           env: Object,
+           viewdef: Object
        }
    });
   </script>

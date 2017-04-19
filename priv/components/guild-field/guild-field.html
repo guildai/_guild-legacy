@@ -14,37 +14,43 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../guild-data/guild-data-listener.html">
-<link rel="import" href="../guild-run/guild-run.html">
+<link rel="import" href="../guild-run/guild-run-data-listener.html">
 <link rel="import" href="../vz-field/vz-field.html">
 
 <dom-module id="guild-field">
   <template>
-    <vz-field label="[[label]]" value="[[value]]" color="[[color]]" icon="[[icon]]"></vz-field>
+    <guild-run-data-listener
+        env="[[env]]"
+        run-data-source="[[field.source]]"
+        repeat-while-running
+        data-reduce="[[field.reduce]]"
+        data-format="[[field.format]]"
+        formatted-value="{{value}}"
+        formatted-default="--"
+    </guild-run-data-listener>
+    <vz-field
+        label="[[field.label]]"
+        value="[[value]]"
+        color="[[field.color]]"
+        icon="[[mapIcon(field.icon)]]">
+    </vz-field>
   </template>
   <script>
    Polymer({
        is: "guild-field",
 
-       behaviors: [Guild.DataListener],
-
        properties: {
-           label: String,
-           color: String,
-           icon: String,
-           value: {
-               type: String,
-               readOnly: true,
-               value: "--"
-           }
+           value: Object
        },
 
-       handleData: function(data) {
-           this._setValue(this.formatDataValue(data, "--"));
-       },
-
-       repeatData: function() {
-           return Guild.Run.isRunning(this.env.run);
+       mapIcon: function(icon) {
+           var map = {
+               "accuracy": "maps:my-location",
+               "steps": "av:repeat",
+               "time": "device:access-time",
+               "loss": "av:shuffle"
+           };
+           return map[icon] || icon;
        }
    });
   </script>

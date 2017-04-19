@@ -19,6 +19,8 @@ limitations under the License.
 
 <link rel="import" href="../guild-compare-page/guild-compare-page.html">
 <link rel="import" href="../guild-overview-page/guild-overview-page.html">
+<link rel="import" href="../guild-run/guild-run.html">
+<link rel="import" href="../guild-run-viewdef/guild-run-viewdef.html">
 <link rel="import" href="../guild-tensorboard-page/guild-tensorboard-page.html">
 
 <link rel="import" href="guild-view-app-layout.html">
@@ -31,11 +33,12 @@ limitations under the License.
     <app-location route="{{route}}"></app-location>
     <guild-view-route route="{{route}}" selected="{{page}}"></guild-view-route>
     <guild-env env="{{env}}" route="{{route}}"></guild-env>
+    <guild-run-viewdef env="[[env]]" viewdef="{{viewdef}}"></guild-run-viewdef>
 
     <guild-view-app-layout selected="{{page}}">
       <guild-view-page id="overview" label="Overview" icon="apps" env="{{env}}">
         <template>
-          <guild-overview-page env="{{env}}"></guild-overview-page>
+          <guild-overview-page env="{{env}}" viewdef="[[viewdef]]"></guild-overview-page>
         </template>
       </guild-view-page>
       <guild-view-page id="compare" label="Compare" icon="av:playlist-add-check" env="[[env]]">

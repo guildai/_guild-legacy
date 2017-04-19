@@ -22,8 +22,13 @@
 
 viewdef(Model, Project) ->
     {ok, ViewSection} = view_section(Model, Project),
+    Fields = fields(ViewSection, Model, Project),
+    Series = series(ViewSection, Model, Project),
+    Compare = compare_fields(ViewSection, Project),
     #{
-       pages => pages(ViewSection, Model, Project)
+       fields => proplists_to_maps(Fields),
+       series => proplists_to_maps(Series),
+       compare => proplists_to_maps(Compare)
      }.
 
 view_section(Model, Project) ->
@@ -40,77 +45,17 @@ model_view_section(_Section, _Project) ->
 project_view_section(Project) ->
     guild_project:section(Project, ["view"]).
 
-%% ===================================================================
-%% Pages
-%% ===================================================================
+proplists_to_maps(Ps) ->
+    [proplist_to_map(P) || P <- Ps].
 
-pages(ViewSection, Model, Project) ->
-    default_pages(ViewSection, Model, Project).
-
-default_pages(ViewSection, Model, Project) ->
-    [#{id     => <<"overview">>,
-       label  => <<"Overview">>,
-       icon   => <<"apps">>,
-       layout => overview_layout(ViewSection, Model, Project)
-      },
-     #{id     => <<"compare">>,
-       label  => <<"Compare">>,
-       icon   => <<"av:playlist-add-check">>,
-       layout => compare_layout(ViewSection, Model, Project)
-     },
-     #{id     => <<"tensorboard">>,
-       label  => <<"TensorBoard">>,
-       icon   => <<"timeline">>,
-       layout => tensorboard_layout()
-      }
-    ].
-
-%% ===================================================================
-%% Overview layout
-%% ===================================================================
-
-overview_layout(ViewSection, Model, Project) ->
-    container(
-      [row(
-         [col(
-            <<"col-12">>,
-            [component(<<"guild-run-select-page-header">>)])]),
-       row(
-         [col(
-            <<"col-lg-8 col-xl-9">>,
-            [row(field_cols(ViewSection, Model, Project)),
-             row(chart_cols(ViewSection, Model, Project)),
-             component(<<"guild-output">>)]),
-          col(
-            <<"col-lg-4 col-xl-3">>,
-            [component(<<"guild-flags">>),
-             component(<<"guild-attrs">>)])])]).
+proplist_to_map(P) ->
+    BinVals = [{iolist_to_binary(K), iolist_to_binary(V)} || {K, V} <- P],
+    %% Reverse list to preseve last added as map vals
+    maps:from_list(lists:reverse(BinVals)).
 
 %% ===================================================================
 %% Fields
 %% ===================================================================
-
-field_cols(ViewSection, Model, Project) ->
-    [field_col(Field) || Field <- fields(ViewSection, Model, Project)].
-
-field_col(Field) ->
-    P = fun(Name) -> binary_prop(Name, Field) end,
-    col(
-      <<"col-12 col-sm-6 col-xl-4 col-xxl-3">>,
-      [component(
-         <<"guild-field">>,
-         #{label         => P("label"),
-           'data-source' => P("source"),
-           'data-reduce' => P("reduce"),
-           'data-format' => P("format"),
-           color         => P("color"),
-           icon          => icon(P("icon"))})]).
-
-icon(<<"accuracy">>) -> <<"maps:my-location">>;
-icon(<<"steps">>)    -> <<"av:repeat">>;
-icon(<<"time">>)     -> <<"device:access-time">>;
-icon(<<"loss">>)     -> <<"av:shuffle">>;
-icon(Value)          -> Value.
 
 fields(ViewSection, Model, Project) ->
     Lookup = fields_lookup(Model),
@@ -148,43 +93,15 @@ apply_project_field(Name, Project, BaseAttrs) ->
     end.
 
 %% ===================================================================
-%% Charts
-%% ===================================================================
-
-chart_cols(ViewSection, Model, Project) ->
-    {Primary, Secondary} = series(ViewSection, Model, Project),
-    PrimaryCols = [chart_col(S, primary) || S <- Primary],
-    SecondaryCols = [chart_col(S, secondary) || S <- Secondary],
-    PrimaryCols ++ SecondaryCols.
-
-chart_col(Series, Display) ->
-    P = fun(Name) -> binary_prop(Name, Series) end,
-    col(
-      classes_for_chart_display(Display),
-      [component(
-         <<"guild-chart">>,
-         #{title => P("title"),
-           'data-source' => P("source"),
-           label => P("label"),
-           format => P("format")})]).
-
-classes_for_chart_display(primary) -> <<"col-12">>;
-classes_for_chart_display(secondary) -> <<"col-12 col-xl-6">>.
-
-%% ===================================================================
 %% Series
 %% ===================================================================
 
 series(ViewSection, Model, Project) ->
     Lookup = series_lookup(Model),
-    Attr = fun(Name) -> guild_project:section_attr(ViewSection, Name) end,
-    case Attr("series") of
-        {ok, _}=A ->
-            {series_(A, Project, Lookup), []};
-        error ->
-            {series_(Attr("series-a"), Project, Lookup),
-             series_(Attr("series-b"), Project, Lookup)}
-        end.
+    case guild_project:section_attr(ViewSection, "series") of
+        {ok, Series} -> series_(Series, Project, Lookup);
+        error -> []
+    end.
 
 series_lookup(Model) ->
     merge_lookups(
@@ -198,11 +115,9 @@ runtime_series_lookup(Model) ->
     Name = model_runtime(Model) ++ "-series",
     read_lookup(lookup_path(Name)).
 
-series_({ok, Raw}, Project, Lookup) ->
+series_(Raw, Project, Lookup) ->
     Names = parse_names(Raw),
-    [resolve_series(Name, Project, Lookup) || Name <- Names];
-series_(error, _Project, _Lookup) ->
-    [].
+    [resolve_series(Name, Project, Lookup) || Name <- Names].
 
 resolve_series(Name, Project, Lookup) ->
     BaseAttrs = [{"name", Name}|lookup_defaults(Name, Lookup)],
@@ -215,14 +130,6 @@ apply_project_series(Name, Project, BaseAttrs) ->
         error ->
             BaseAttrs
     end.
-
-%% ===================================================================
-%% Compare layout
-%% ===================================================================
-
-compare_layout(ViewSection, _Model, Project) ->
-    Fields = compare_fields(ViewSection, Project),
-    component(<<"guild-compare-page">>, [], #{fields => Fields}).
 
 %% ===================================================================
 %% Compare fields
@@ -263,7 +170,7 @@ fields_lookup_for_runtime(Runtime) ->
 compare_field(Name, Project, [Lookup|ExtraLookups]) ->
     Field = resolve_field(Name, Project, Lookup),
     ExtraSources = field_extra_sources(Name, ExtraLookups),
-    field_to_map(apply_extra_sources(Field, ExtraSources)).
+    apply_extra_sources(Field, ExtraSources).
 
 field_extra_sources(Name, Lookups) ->
     field_extra_sources_acc(Name, Lookups, sets:new()).
@@ -284,44 +191,8 @@ apply_extra_sources(Field, SourcesSet) ->
     Sources = sets:to_list(maybe_apply_field_source(Field, SourcesSet)),
     [{"sources", Sources}|Field].
 
-field_to_map(Field) ->
-    maps:from_list(
-      [{list_to_binary(Name), list_to_binary(Val)}
-       || {Name, Val} <- Field]).
-
 %% ===================================================================
-%% TensorBoard layout
-%% ===================================================================
-
-tensorboard_layout() -> component(<<"guild-tf-page">>).
-
-%% ===================================================================
-%% Layout helpers
-%% ===================================================================
-
-container(Items) ->
-    #{type => container, items => Items}.
-
-row(Items) ->
-    #{type => row, items => Items}.
-
-col(Classes, Items) ->
-    #{type => col, classes => Classes, items => Items}.
-
-component(Name) ->
-    component(Name, [], #{}).
-
-component(Name, Attrs) ->
-    component(Name, Attrs, #{}).
-
-component(Name, Attrs, Config) ->
-    #{type => component,
-      name => Name,
-      attrs => Attrs,
-      config => Config}.
-
-%% ===================================================================
-%% Shared
+%% Helpers
 %% ===================================================================
 
 merge_lookups([Working, Next|Rest]) ->
@@ -368,6 +239,3 @@ lookup_defaults(FieldName, Lookup) ->
      || {AttrName, Val} <- proplists:get_value(FieldName, Lookup, [])].
 
 merge_attrs(P1, P2) -> P1 ++ P2.
-
-binary_prop(Name, Props) ->
-    iolist_to_binary(proplists:get_value(Name, Props, <<>>)).

@@ -14,9 +14,8 @@
 
 -module(guild_view).
 
--export([start_link/2, app_page_env/2, project_summary/1,
-         formatted_runs/1, resolve_run/2, all_runs/1, settings/1,
-         viewdef/2]).
+-export([start_link/2, project_summary/1, formatted_runs/1,
+         resolve_run/2, all_runs/1, settings/1, viewdef/2]).
 
 -export([handle_msg/3]).
 
@@ -44,9 +43,6 @@ init_state(Project, Settings) ->
 %% API
 %% ===================================================================
 
-app_page_env(View, Run) ->
-    e2_service:call(View, {fun app_page_env_/2, [Run]}).
-
 project_summary(View) ->
     e2_service:call(View, {fun project_summary_/1, []}).
 
@@ -71,19 +67,6 @@ viewdef(View, Run) ->
 
 handle_msg({F, A}, _From, State) ->
     {reply, apply(F, A ++ [State]), State}.
-
-%% ===================================================================
-%% App page env
-%% ===================================================================
-
-app_page_env_(Run, State) ->
-    Project = load_project(State),
-    {ok, Model} = guild_project_util:run_model(Run, Project),
-    #{
-       viewdef => guild_view_viewdef:viewdef(Model, Project),
-       project => project_attrs(Project),
-       settings => settings_(State)
-     }.
 
 %% ===================================================================
 %% Project summary

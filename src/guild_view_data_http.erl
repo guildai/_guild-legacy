@@ -48,6 +48,8 @@ app("GET", {"/data/settings", _, _}, View, _) ->
     handle_settings(View);
 app("GET", {"/data/project", _, _}, View, _) ->
     handle_project(View);
+app("GET", {"/data/viewdef", _, Params}, View, _) ->
+    handle_viewdef(View, Params);
 app("GET", {"/data/tf/" ++ Path, Qs, _}, _View, Settings) ->
     handle_tf_data(Path, Qs, Settings);
 app(_, _, _, _) ->
@@ -195,6 +197,15 @@ handle_settings(View) ->
 handle_project(View) ->
     ProjectSummary = guild_view:project_summary(View),
     guild_http:ok_json(guild_json:encode(ProjectSummary)).
+
+%% ===================================================================
+%% Viewdef
+%% ===================================================================
+
+handle_viewdef(View, Params) ->
+    Run = run_for_params(Params, View),
+    Viewdef = guild_view:viewdef(View, Run),
+    guild_http:ok_json(guild_json:encode(Viewdef)).
 
 %% ===================================================================
 %% TensorFlow data
