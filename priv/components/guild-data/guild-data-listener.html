@@ -90,7 +90,7 @@ limitations under the License.
          // stub to be overridden by host
      },
 
-     formatDataValue: function(data, defaultValue) {
+     formatData: function(data, defaultValue) {
          var val = this.dataValue(data);
          if (val != undefined) {
              return Guild.Util.tryFormat(val, this.dataFormat);
