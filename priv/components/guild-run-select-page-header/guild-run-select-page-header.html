@@ -21,20 +21,26 @@ limitations under the License.
 <dom-module id="guild-run-select-page-header">
   <template>
     <style>
-      .content {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          flex: 1;
-      }
+     :host {
+         --paper-input-container: {
+             padding: 0;
+         };
+     }
+
+     guild-run-select {
+         flex: 1;
+         margin: 5px 0;
+     }
+
+     guild-run-status {
+         margin: 5px 0;
+     }
     </style>
     <guild-page-header
         title="[[env.project.title]]"
         title-tooltip="[[env.project.description]]">
-      <div class="content">
-        <guild-run-select env="{{env}}"></guild-run-select>
-        <guild-run-status env="[[env]]"></guild-run-status>
-      </div>
+      <guild-run-select env="{{env}}"></guild-run-select>
+      <guild-run-status env="[[env]]"></guild-run-status>
     </guild-page-header>
   </template>
   <script>
