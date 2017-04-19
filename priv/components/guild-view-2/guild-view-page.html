@@ -24,16 +24,47 @@ limitations under the License.
        properties: {
            id: String,
            label: String,
-           icon: String
+           icon: String,
+           env: Object,
+           instance: Object
        },
 
-       created: function() {
+       ready: function() {
            var template = this.$$("template");
            if (!template) {
                throw ["guild-view-page must provide a template", this];
            }
            this.templatize(template);
+       },
+
+       initialize: function() {
+           if (this.instance) {
+               throw ["already initialized", this, this.instance];
+           }
+           this.instance = this.stamp();
+           Polymer.dom(this.root).appendChild(this.instance.root);
+       },
+
+       _forwardParentPath: function(path, value) {
+           if (this.instance) {
+               this.instance.set(path, value);
+           }
+       },
+
+       _forwardParentProp: function(prop, value) {
+           if (this.instance) {
+               this.instance[prop] = value;
+           }
+       },
+
+       _forwardInstanceProp: function(inst, prop, value) {
+           // TODO move up to host, but what?
+       },
+
+       _forwardInstancePath: function(inst, path, value) {
+           // TODO move up to host, but what?
        }
+
    });
   </script>
 </dom-module>

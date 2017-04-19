@@ -118,8 +118,8 @@ limitations under the License.
            if (container && !this.util.containerHasInstance(container)) {
                var page = this.pageForId(selected);
                if (page) {
-                   var instance = page.stamp();
-                   container.appendChild(instance.root);
+                   page.initialize();
+                   container.appendChild(page);
                }
            }
        },

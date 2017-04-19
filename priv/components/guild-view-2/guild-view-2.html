@@ -32,22 +32,22 @@ limitations under the License.
     <guild-view-route route="{{route}}" selected="{{page}}"></guild-view-route>
     <guild-env env="{{env}}"></guild-env>
 
-    <guild-view-app-layout selected="{{page}}">
-      <guild-view-page id="overview" label="Overview" icon="apps">
+    <guild-view-app-layout selected="{{page}}" env="[[env]]">
+      <guild-view-page id="overview" label="Overview" icon="apps" env="[[env]]">
         <template>
-          <guild-overview-page env="{{env}}"></guild-overview-page>
+          <guild-overview-page env="[[env]]"></guild-overview-page>
         </template>
       </guild-view-page>
-      <guild-view-page id="compare" label="Compare" icon="av:playlist-add-check">
+      <guild-view-page id="compare" label="Compare" icon="av:playlist-add-check" env="[[env]]">
         <template>
           <div>TODO: compare page</div>
-          <!-- <guild-compare-page></guild-compare-page> -->
+          <!-- <guild-compare-page env="[[env]]"></guild-compare-page> -->
         </template>
       </guild-view-page>
-      <guild-view-page id="tensorboard" label="TensorBoard" icon="timeline">
+      <guild-view-page id="tensorboard" label="TensorBoard" icon="timeline" env="[[env]]">
         <template>
           <div>TODO: TensorBoard page</div>
-          <!-- <guild-tensorboard-page></guild-tensorboard-page> -->
+          <!-- <guild-tensorboard-page env="[[env]]"></guild-tensorboard-page> -->
         </template>
       </guild-view-page>
       <guild-view-404 class="not-found" path="[[route.path]]"></guild-view-404>
