@@ -64,7 +64,20 @@ limitations under the License.
        properties: {
            route: Object,
            page: String,
-           env: Object
+           env: Object,
+           viewdef: Object
+       },
+
+       observers: [
+           "setTitle(env.project)"
+       ],
+
+       setTitle: function(project) {
+           if (project.title) {
+               document.title = project.title + " - Guild View";
+           } else {
+               document.title = "Guild View";
+           }
        }
    });
   </script>
