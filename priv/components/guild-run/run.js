@@ -74,12 +74,9 @@ Guild.Run = new function() {
     };
 
     var runForId = function(runId, runs) {
-        for (var i = 0; i < runs.length; i++) {
-            if (runs[i].id == runId) {
-                return runs[i];
-            }
-        }
-        return null;
+        return runs.find(function(run) {
+            return run.id == runId;
+        });
     };
 
     var isRunning = function(run) {
