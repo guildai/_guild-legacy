@@ -46,10 +46,46 @@ limitations under the License.
                    return {
                        settings: {},
                        project: {},
-                       runs: []
+                       runs: [],
+                       selectedRun: null
                    }
                }
+           },
+           route: {
+               type: Object,
+               notify: true
            }
+       },
+
+       observers: [
+           "runsChanged(env.runs, route)",
+           "selectedRunChanged(env.selectedRun, route)"
+       ],
+
+       runsChanged: function(runs, route) {
+           this.set("env.selectedRun", this.selectedRun(runs, route))
+       },
+
+       selectedRun: function(runs, route) {
+           var runId = route.__queryParams.run;
+           if (runId) {
+               return parseInt(runId) || undefined;
+           } else {
+               return runs.length > 0 ? runs[0].id : undefined;
+           }
+       },
+
+       selectedRunChanged: function(selected, route) {
+           var params = this.util.applyRunParam(selected, route.__queryParams);
+           this.set("route.__queryParams", params);
+       },
+
+       util: new function() {
+
+           this.applyRunParam = function(runId, params) {
+               var base = Object.assign({}, params);
+               return Object.assign(base, {"run": runId.toString()});
+           };
        }
    });
   </script>

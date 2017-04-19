@@ -26,7 +26,15 @@ limitations under the License.
            label: String,
            icon: String,
            env: Object,
-           instance: Object
+           instance: Object,
+           mutablePaths: {
+               type: Object,
+               value: function() {
+                   return new Set([
+                       "env.selectedRun"
+                   ]);
+               }
+           }
        },
 
        ready: function() {
@@ -58,11 +66,14 @@ limitations under the License.
        },
 
        _forwardInstanceProp: function(inst, prop, value) {
+           console.log("*** _forwardInstanceProp", inst, prop, value);
            // TODO move up to host, but what?
        },
 
        _forwardInstancePath: function(inst, path, value) {
-           // TODO move up to host, but what?
+           if (this.mutablePaths.has(path)) {
+               this.set(path, value);
+           }
        }
 
    });

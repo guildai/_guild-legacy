@@ -44,7 +44,7 @@ limitations under the License.
     </style>
 
     <paper-dropdown-menu-light id="dropdown" label="Active run" no-animations>
-      <paper-listbox class="dropdown-content" __selected="{{selected}}" selected="0">
+      <paper-listbox class="dropdown-content" selected="{{selected}}">
         <template is="dom-repeat" items="[[env.runs]]" as="run">
           <guild-run-select-item run="[[run]]"></guild-run-select-item>
         </template>
@@ -57,11 +57,28 @@ limitations under the License.
        is: "guild-run-select",
 
        properties: {
-           env: Object,
-           selected: {
-               type: Number,
-               __observer: 'handleRunSelected'
+           env: {
+               type: Object,
+               ___notify: true
+           },
+           selected: Number
+       },
+
+       observers: [
+           "selectedChanged(selected)",
+           "envChanged(env.selectedRun, env.runs)"
+       ],
+
+       selectedChanged: function(selected) {
+           if (selected >= 0) {
+               this.set("env.selectedRun", this.env.runs[selected].id);
            }
+       },
+
+       envChanged: function(selected, runs) {
+           this.selected = runs.findIndex(function(run) {
+               return run.id == selected;
+           });
        },
 
        handleRuns: function(runs) {

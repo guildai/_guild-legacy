@@ -30,12 +30,12 @@ limitations under the License.
 
     <app-location route="{{route}}"></app-location>
     <guild-view-route route="{{route}}" selected="{{page}}"></guild-view-route>
-    <guild-env env="{{env}}"></guild-env>
+    <guild-env env="{{env}}" route="{{route}}"></guild-env>
 
-    <guild-view-app-layout selected="{{page}}" env="[[env]]">
-      <guild-view-page id="overview" label="Overview" icon="apps" env="[[env]]">
+    <guild-view-app-layout selected="{{page}}">
+      <guild-view-page id="overview" label="Overview" icon="apps" env="{{env}}">
         <template>
-          <guild-overview-page env="[[env]]"></guild-overview-page>
+          <guild-overview-page env="{{env}}"></guild-overview-page>
         </template>
       </guild-view-page>
       <guild-view-page id="compare" label="Compare" icon="av:playlist-add-check" env="[[env]]">
