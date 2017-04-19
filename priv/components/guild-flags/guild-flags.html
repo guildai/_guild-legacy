@@ -15,31 +15,26 @@ limitations under the License.
 -->
 
 <link rel="import" href="../guild-component-panel/guild-component-panel.html">
-<link rel="import" href="../guild-data/guild-data-listener.html">
+<link rel="import" href="../guild-run/guild-run-data-listener.html">
 <link rel="import" href="../vz-keyval-table/vz-keyval-table.html">
 
 <dom-module id="guild-flags">
   <template>
+    <guild-run-data-listener
+        env="[[env]]"
+        run-data-source="flags"
+        data="{{data}}"
+    </guild-run-data-listener>
     <guild-component-panel title="Flags">
-      <vz-keyval-table id="table"></vz-keyval-table>
+      <vz-keyval-table data="[[data]]"></vz-keyval-table>
     </guild-component-panel>
   </template>
   <script>
    Polymer({
        is: "guild-flags",
 
-       behaviors: [Guild.DataListener],
-
        properties: {
-           dataSource: {
-               type: String,
-               value: "flags",
-               readOnly: true
-           }
-       },
-
-       handleData: function(data) {
-           this.$.table.object = data;
+           data: Object
        }
    });
   </script>

@@ -43,18 +43,20 @@ limitations under the License.
        is: "vz-keyval-table",
 
        properties: {
-           object: Object,
+           data: Object,
            keyvals: {
                type: Array,
-               computed: 'computeKeyvals(object)'
+               computed: 'computeKeyvals(data)'
            }
        },
 
-       computeKeyvals: function(object) {
-           return Object.keys(object).map(function(key) {
+       computeKeyvals: function(data) {
+           var keys = Object.keys(data);
+           keys.sort();
+           return keys.map(function(key) {
                return {
                    "key": key,
-                   "value": object[key]
+                   "value": data[key]
                }
            });
        }
