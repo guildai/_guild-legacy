@@ -136,7 +136,7 @@ limitations under the License.
 
        util: new function() {
 
-           var containersChanged = function(a, b) {
+           this.containersChanged = function(a, b) {
                return containerPageIds(a).join() != containerPageIds(b).join();
            };
 
@@ -146,12 +146,9 @@ limitations under the License.
                });
            };
 
-           var containerHasInstance = function(c) {
+           this.containerHasInstance = function(c) {
                return c.children.length > 0;
            };
-
-           this.containersChanged = containersChanged;
-           this.containerHasInstance = containerHasInstance;
        }
    });
   </script>
