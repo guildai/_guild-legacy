@@ -44,6 +44,10 @@ app("GET", {"/data/compare", _, Params}, View, _) ->
     handle_compare(View, Params);
 app("GET", {"/data/sources", _, _}, View, _) ->
     handle_sources(View);
+app("GET", {"/data/settings", _, _}, View, _) ->
+    handle_settings(View);
+app("GET", {"/data/project", _, _}, View, _) ->
+    handle_project(View);
 app("GET", {"/data/tf/" ++ Path, Qs, _}, _View, Settings) ->
     handle_tf_data(Path, Qs, Settings);
 app(_, _, _, _) ->
@@ -175,6 +179,22 @@ sources_for_series_keys(Keys) ->
 format_series_keys(Keys) ->
     Sorted = lists:sort(Keys),
     [<<"series/", Key/binary>> || Key <- Sorted].
+
+%% ===================================================================
+%% Settings
+%% ===================================================================
+
+handle_settings(View) ->
+    Settings = guild_view:settings(View),
+    guild_http:ok_json(guild_json:encode(Settings)).
+
+%% ===================================================================
+%% Project
+%% ===================================================================
+
+handle_project(View) ->
+    ProjectSummary = guild_view:project_summary(View),
+    guild_http:ok_json(guild_json:encode(ProjectSummary)).
 
 %% ===================================================================
 %% TensorFlow data

@@ -16,7 +16,7 @@
 
 -export([start_server/3, stop_server/0, run_for_params/2]).
 
--export([handle_app_page/2]).
+-export([handle_app_page/1]).
 
 -export([init/1, handle_msg/3]).
 
@@ -52,7 +52,7 @@ routes(View) ->
        {{starts_with, "/components/"}, components_handler()},
        {{starts_with, "/data/"},       data_handler(View)},
        {"/bye",                        bye_handler()},
-       {'_',                           app_page_handler(View)}]).
+       {'_',                           app_page_handler()}]).
 
 static_handler() ->
     psycho_static:create_app(guild_app:priv_dir()).
@@ -87,47 +87,26 @@ log_middleware() ->
 %% App page handler
 %% ===================================================================
 
-app_page_handler(View) ->
-    psycho_util:dispatch_app(
-      {?MODULE, handle_app_page},
-      [parsed_path, View]).
+app_page_handler() ->
+    psycho_util:dispatch_app({?MODULE, handle_app_page}, [parsed_path]).
 
-handle_app_page({"/", QS, Params}, View) ->
-    handle_index_page(Params, QS, View);
-handle_app_page({_, _, Params}, View) ->
-    handle_other_page(Params, View).
+handle_app_page({"/", QS, _}) ->
+    handle_index_page(QS);
+handle_app_page(_) ->
+    handle_app_page().
 
-handle_index_page(Params, QS, View) ->
-    Run = run_for_params(Params, View),
-    Viewdef = guild_view:viewdef(View, Run),
-    guild_http:redirect(viewdef_page1_path(Viewdef, QS)).
+handle_index_page(QS) ->
+    guild_http:redirect(viewdef_page1_path(QS)).
 
-viewdef_page1_path(#{pages:=[#{id:=PageId}|_]}, QS) ->
-    ["/", PageId, maybe_qs(QS)].
+viewdef_page1_path(QS) ->
+    ["/overview", maybe_qs(QS)].
 
 maybe_qs("") -> "";
 maybe_qs(QS) -> ["?", QS].
 
-handle_other_page(Params, View) ->
-    Run = run_for_params(Params, View),
-    Vars = app_page_vars(View, Run),
-    Page = guild_dtl:render(guild_view_index_page, Vars),
+handle_app_page() ->
+    Page = guild_dtl:render(guild_view_index_page, []),
     guild_http:ok_html(Page).
-
-app_page_vars(View, Run) ->
-    Env = app_page_env(View, Run),
-    #{env => guild_json:encode(Env),
-      page_title => page_title(Env)}.
-
-app_page_env(View, Run) ->
-    Env0 = guild_view:app_page_env(View, Run),
-    apply_run_id(Env0, Run).
-
-apply_run_id(Env, Run) ->
-    maps:put('runId', guild_run:id(Run), Env).
-
-page_title(#{project:=#{title:=ProjectTitle}}) ->
-    [ProjectTitle, " - Guild View"].
 
 %% ===================================================================
 %% Helpers
