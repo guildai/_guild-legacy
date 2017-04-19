@@ -15,8 +15,9 @@ limitations under the License.
 -->
 
 <link rel="import" href="../app-route/app-location.html">
-<link rel="import" href="../guild-compare-page/guild-compare-page.html">
 <link rel="import" href="../guild-env/guild-env.html">
+
+<link rel="import" href="../guild-compare-page/guild-compare-page.html">
 <link rel="import" href="../guild-overview-page/guild-overview-page.html">
 <link rel="import" href="../guild-tensorboard-page/guild-tensorboard-page.html">
 
@@ -34,17 +35,19 @@ limitations under the License.
     <guild-view-app-layout selected="{{page}}">
       <guild-view-page id="overview" label="Overview" icon="apps">
         <template>
-          <guild-overview-page project="{{project}}"></guild-overview-page>
+          <guild-overview-page env="{{env}}"></guild-overview-page>
         </template>
       </guild-view-page>
       <guild-view-page id="compare" label="Compare" icon="av:playlist-add-check">
         <template>
-          <guild-compare-page></guild-compare-page>
+          <div>TODO: compare page</div>
+          <!-- <guild-compare-page></guild-compare-page> -->
         </template>
       </guild-view-page>
       <guild-view-page id="tensorboard" label="TensorBoard" icon="timeline">
         <template>
-          <guild-tensorboard-page></guild-tensorboard-page>
+          <div>TODO: TensorBoard page</div>
+          <!-- <guild-tensorboard-page></guild-tensorboard-page> -->
         </template>
       </guild-view-page>
       <guild-view-404 class="not-found" path="[[route.path]]"></guild-view-404>

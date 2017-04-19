@@ -21,17 +21,15 @@ limitations under the License.
 <dom-module id="guild-run-select-page-header">
   <template>
     <style>
-     :host {
-         display: flex;
-         flex-direction: row;
-         flex-wrap: wrap;
-         align-items: center;
-         justify-content: space-between;
+     #a {
+         flex: 1;
      }
     </style>
     <guild-page-header
-        title="[[project.title]]"
-        title-tooltip="[[project.description]]">
+        title="[[env.project.title]]"
+        title-tooltip="[[env.project.description]]">
+      <div id="a">TODO: run selector</div>
+      <div>TODO: run status</div>
       <!-- <guild-run-select env="[[env]]"></guild-run-select>
            <guild-run-status env="[[env]]"></guild-run-status> -->
     </guild-page-header>
@@ -41,7 +39,7 @@ limitations under the License.
        is: "guild-run-select-page-header",
 
        properties: {
-           project: Object
+           env: Object
        }
    });
   </script>

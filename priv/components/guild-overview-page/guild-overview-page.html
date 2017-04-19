@@ -31,7 +31,16 @@ limitations under the License.
        is: "guild-overview-page",
 
        properties: {
-           env: Object
+           env: {
+               value: function() {
+                   return {
+                       project: {
+                           title: "Sample project title",
+                           description: "Sample project description"
+                       }
+                   }
+               }
+           }
        }
    });
   </script>
