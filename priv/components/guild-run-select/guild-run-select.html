@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../guild-event/guild-event.html">
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu-light.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
 
@@ -44,20 +43,14 @@ limitations under the License.
      }
     </style>
 
-    <div>
-      <!-- Because we change window location on dropdown select, disabling
-           both animations and ink (ripple effect) as they are interrupted
-           in mid-stream. We could wait for the ripple to complete (transition
-           event) but it complicates an otherwise simple mechanism.
-         -->
-      <paper-dropdown-menu-light id="dropdown" label="Active run" no-animations noink>
-        <paper-listbox class="dropdown-content" selected="{{selected}}">
-          <template is="dom-repeat" items="[[runs]]" as="run">
-            <guild-run-select-item run="[[run]]"></guild-run-select-item>
-          </template>
-        </paper-listbox>
-      </paper-dropdown-menu-light>
-    </div>
+    <paper-dropdown-menu-light id="dropdown" label="Active run" no-animations>
+      <paper-listbox class="dropdown-content" __selected="{{selected}}" selected="0">
+        <template is="dom-repeat" items="[[env.runs]]" as="run">
+          <guild-run-select-item run="[[run]]"></guild-run-select-item>
+        </template>
+      </paper-listbox>
+    </paper-dropdown-menu-light>
+
   </template>
   <script>
    Polymer({
@@ -65,19 +58,10 @@ limitations under the License.
 
        properties: {
            env: Object,
-           runs: Array,
            selected: {
                type: Number,
-               observer: 'handleRunSelected'
+               __observer: 'handleRunSelected'
            }
-       },
-
-       ready: function() {
-           Guild.Event.register(
-               "env-runs-changed",
-               this.handleRuns.bind(this),
-               this.env);
-           this.handleRuns(this.env.runs);
        },
 
        handleRuns: function(runs) {
