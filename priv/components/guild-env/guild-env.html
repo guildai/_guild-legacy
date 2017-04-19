@@ -14,23 +14,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="guild-env-data.html">
+<link rel="import" href="../guild-data/guild-data-listener.html">
 
 <dom-module id="guild-env">
   <template>
-    <guild-env-data
+    <guild-data-listener
         data-source="settings"
         data="{{env.settings}}">
-    </guild-env-data>
-    <guild-env-data
+    </guild-data-listener>
+    <guild-data-listener
         data-source="project"
         data="{{env.project}}">
-    </guild-env-data>
-    <guild-env-data
+    </guild-data-listener>
+    <guild-data-listener
         data-source="runs"
         data-fetch-interval="[[env.settings.refreshInterval]]"
         data="{{env.runs}}">
-    </guild-env-data>
+    </guild-data-listener>
   </template>
   <script>
    Polymer({

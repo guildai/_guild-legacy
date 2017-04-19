@@ -118,3 +118,25 @@ limitations under the License.
      }
  };
 </script>
+
+
+<dom-module id="guild-data-listener">
+  <script>
+   Polymer({
+       is: "guild-data-listener",
+
+       behaviors: [Guild.DataListener],
+
+       properties: {
+           data: {
+               type: Object,
+               notify: true
+           }
+       },
+
+       handleData: function(data) {
+           this.data = data;
+       }
+   });
+  </script>
+</dom-module>
