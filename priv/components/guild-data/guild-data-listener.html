@@ -41,10 +41,6 @@ limitations under the License.
          }
      },
 
-     ready: function() {
-         this.scheduleFetch(0);
-     },
-
      scheduleFetch: function(whenSeconds) {
          if (this.dataSource && this.active) {
              var url = this.dataFetchUrl();
