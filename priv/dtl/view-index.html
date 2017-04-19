@@ -19,10 +19,10 @@ limitations under the License.
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-    <title>{{page_title}}</title>
+    <title>Guild View</title>
     <script src="/components/webcomponentsjs/webcomponents-lite.min.js"></script>
     <link rel="icon" href="/assets/images/favicon.ico">
-    <link rel="import" href="/components/guild-view/guild-view.html">
+    <link rel="import" href="/components/guild-view-2/guild-view-2.html">
     <style>
      html, body {
          margin: 0;
@@ -35,22 +35,6 @@ limitations under the License.
     </style>
   </head>
   <body>
-    <dom-module id="guild-view-app">
-      <template>
-        <guild-view env="[[env]]"></guild-view>
-      </template>
-      <script>
-       Polymer({
-           is: "guild-view-app",
-           properties: {
-               env: {
-                   type: Object,
-                   value: {% autoescape off %}{{env}}{% endautoescape %}
-               }
-           }
-       });
-      </script>
-    </dom-module>
-    <guild-view-app></guild-view-app>
+    <guild-view-2></guild-view-2>
   </body>
 </html>
