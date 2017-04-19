@@ -69,14 +69,16 @@ limitations under the License.
        selectedRun: function(runs, route) {
            var runId = route.__queryParams.run;
            if (runId) {
-               return parseInt(runId) || undefined;
+               return parseInt(runId) || null;
            } else {
-               return runs.length > 0 ? runs[0].id : undefined;
+               return runs.length > 0 ? runs[0].id : null;
            }
        },
 
        selectedRunChanged: function(selected, route) {
-           var params = this.util.applyRunParam(selected, route.__queryParams);
+           var params = selected
+                      ? this.util.applyRunParam(selected, route.__queryParams)
+                      : this.util.deleteRunParam(route.__queryParams);
            this.set("route.__queryParams", params);
        },
 
@@ -85,6 +87,12 @@ limitations under the License.
            this.applyRunParam = function(runId, params) {
                var base = Object.assign({}, params);
                return Object.assign(base, {"run": runId.toString()});
+           };
+
+           this.deleteRunParam = function(params) {
+               var base = Object.assign({}, params);
+               delete base["run"];
+               return base;
            };
        }
    });

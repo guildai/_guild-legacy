@@ -14,16 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu-light.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
 
 <link rel="import" href="guild-run-select-item.html">
+<link rel="import" href="guild-run-select-error.html">
 
 <dom-module id="guild-run-select">
   <template>
     <style>
      paper-dropdown-menu-light {
          width: auto;
+         min-width: 200px;
          --paper-dropdown-menu-input: {
              border-bottom: none;
          }
@@ -43,13 +45,19 @@ limitations under the License.
      }
     </style>
 
-    <paper-dropdown-menu-light id="dropdown" label="Active run" no-animations>
-      <paper-listbox class="dropdown-content" selected="{{selected}}">
-        <template is="dom-repeat" items="[[env.runs]]" as="run">
-          <guild-run-select-item run="[[run]]"></guild-run-select-item>
-        </template>
-      </paper-listbox>
-    </paper-dropdown-menu-light>
+    <template is="dom-if" if="[[isSelected(selected)]]">
+      <paper-dropdown-menu label="Active run" no-animations>
+        <paper-listbox class="dropdown-content" selected="{{selected}}">
+          <template is="dom-repeat" items="[[env.runs]]" as="run">
+            <guild-run-select-item run="[[run]]"></guild-run-select-item>
+          </template>
+        </paper-listbox>
+      </paper-dropdown-menu>
+    </template>
+
+    <template is="dom-if" if="[[!isSelected(selected)]]">
+      <guild-run-select-error env="[[env]]" selected="{{selected}}"></guild-run-select-error>
+    </template>
 
   </template>
   <script>
@@ -78,36 +86,8 @@ limitations under the License.
            });
        },
 
-       handleRuns: function(runs) {
-           this.runs = runs;
-           this.selected = this.selectedRunIndex();
-           this.maybeNotifyRunChanged();
-       },
-
-       selectedRunIndex: function() {
-           for (var i = 0; i < this.runs.length; i++) {
-               if (this.runs[i].id == this.env.runId) {
-                   return i;
-               }
-           }
-           return -1;
-       },
-
-       handleRunSelected: function(index, previous) {
-           if (previous != undefined) {
-               this.maybeNotifyRunChanged();
-           }
-       },
-
-       maybeNotifyRunChanged: function() {
-           if (this.runs && this.selected != -1) {
-               var selected = this.runs[this.selected];
-               if (selected.id != this.env.runId) {
-                   Guild.Event.notify("run-selected", selected, this.env);
-               }
-           } else {
-               Guild.Event.notify("run-selected", null, this.env);
-           }
+       isSelected: function(selected) {
+           return selected >= 0;
        }
    });
   </script>
