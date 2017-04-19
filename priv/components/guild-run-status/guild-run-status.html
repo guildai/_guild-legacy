@@ -22,59 +22,53 @@ limitations under the License.
   <template>
     <style include="guild-run-status-styles"></style>
     <style>
-     #status {
+     :host {
          display: flex;
          flex-direction: row;
          align-items: center;
 
      }
+
      #icon {
          display: flex;
          align-items: center;
      }
+
      fa-awesome {
          --fa-awesome-icon-width: 26px;
          --fa-awesome-icon-height: auto;
          margin-right: 0.6em;
      }
+
      #label {
          font-size: 24px;
      }
     </style>
-    <div id="status">
-      <div id="icon">
-        <fa-awesome
-            class$="[[status.iconClass]]"
-            spin$="[[status.spin]]"
-            icon="[[status.icon]]">
-        </fa-awesome>
-      </div>
-      <div id="label">[[status.label]]</div>
+    <div id="icon">
+      <fa-awesome
+          class$="[[status.iconClass]]"
+          spin$="[[status.spin]]"
+          icon="[[status.icon]]">
+      </fa-awesome>
     </div>
+    <div id="label">[[status.label]]</div>
   </template>
+
   <script>
    Polymer({
        is: "guild-run-status",
 
        properties: {
            env: Object,
-           status: Object
+           status: {
+               type: Object,
+               computed: "computeStatus(env.selectedRun, env.runs)"
+           }
        },
 
-       ready: function() {
-           Guild.Event.register(
-               "env-run-changed",
-               this.handleRun.bind(this),
-               this.env);
-           this.handleRun(this.env.run);
-       },
-
-       handleRun: function(run) {
-           this.status = Guild.Run.runStatus(run);
-       },
-
-       repeatRuns: function() {
-           return Guild.Run.isRunning(this.run);
+       computeStatus: function(selected, runs) {
+           var run = Guild.Run.runForId(selected, runs);
+           return run ? Guild.Run.runStatus(run) : {};
        }
    });
   </script>
