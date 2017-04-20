@@ -18,6 +18,15 @@ limitations under the License.
 
 <dom-module id="guild-checkbox">
   <template>
+    <style>
+     :host[aria-checked=mixed] {
+
+         /* HACK The use of important here works around an issue where
+           additional styles are added to the checkbox container,
+           overriding this setting. */
+         --paper-checkbox-unchecked-background-color: #d6d6d6 !important;
+     }
+    </style>
     <paper-checkbox
         id="cb"
         checked="[[cbChecked]]"
@@ -34,7 +43,8 @@ limitations under the License.
            ariaChecked: {
                type: String,
                observer: 'ariaCheckedChanged',
-               notify: true
+               notify: true,
+               reflectToAttribute: true
            },
            disabled: Boolean,
            noink: Boolean,
@@ -44,12 +54,12 @@ limitations under the License.
            }
        },
 
-       computeCbChecked: function(ariaChecked) {
-           return ariaChecked == "true";
+       attached: function() {
+           this.updateStyles();
        },
 
-       attached: function() {
-           this.refreshMixedStyle();
+       computeCbChecked: function(ariaChecked) {
+           return ariaChecked == "true";
        },
 
        checkedChanged: function() {
@@ -57,14 +67,6 @@ limitations under the License.
        },
 
        ariaCheckedChanged: function(val, old) {
-           if ((val == "mixed" && old != undefined) || old == "mixed") {
-               this.refreshMixedStyle();
-           }
-       },
-
-       refreshMixedStyle: function() {
-           var bg = this.ariaChecked == "mixed" ? "#d6d6d6": "transparent";
-           this.customStyle["--paper-checkbox-unchecked-background-color"] = bg;
            this.updateStyles();
        }
    });
