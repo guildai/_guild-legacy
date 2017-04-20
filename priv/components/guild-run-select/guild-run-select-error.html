@@ -27,21 +27,24 @@ limitations under the License.
          display: flex;
          align-items: center;
      }
+
      fa-awesome {
          margin-right: 4px;
      }
+
      .tooltip {
          border-bottom: 1px dashed #aaa;
      }
     </style>
-    <template is="dom-if" if="[[env.runs.length]]">
+
+    <template is="dom-if" if="[[runRequested(env.selectedRun)]]">
       The <span class="tooltip">selected
       run<paper-tooltip animation-delay="250" offset="5">run ID [[env.selectedRun]]</paper-tooltip></span>
       no longer exists
-      <paper-button on-tap="refresh">Refresh</paper-button>
+      <paper-button on-tap="next">View next</paper-button>
     </template>
 
-    <template is="dom-if" if="[[!env.runs.length]]">
+    <template is="dom-if" if="[[waitingForRuns(env.selectedRun, env.runs)]]">
       <div>There are currently no runs for this project</div>
       <div class="waiting">
         <fa-awesome icon="fa:circle-o-notch" spin size="14"></fa-awesome>
@@ -54,15 +57,30 @@ limitations under the License.
        is: "guild-run-select-error",
 
        properties: {
-           env: Object,
+           env: {
+               type: Object,
+               notify: true
+           },
            selected: {
                type: Number,
                notify: true
            }
        },
 
-       refresh: function() {
-           this.selected = 0;
+       runRequested: function(selected) {
+           return Boolean(selected);
+       },
+
+       waitingForRuns: function(selected, runs) {
+           return !selected && runs.length == 0;
+       },
+
+       next: function() {
+           if (this.env.runs.length > 0) {
+               this.selected = 0;
+           } else {
+               this.set("env.selectedRun", null);
+           }
        }
    });
   </script>
