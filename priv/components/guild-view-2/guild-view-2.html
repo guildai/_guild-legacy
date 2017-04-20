@@ -24,6 +24,7 @@ limitations under the License.
 <link rel="import" href="../guild-tensorboard-page/guild-tensorboard-page.html">
 
 <link rel="import" href="guild-view-app-layout.html">
+<link rel="import" href="guild-view-fullscreen.html">
 <link rel="import" href="guild-view-page.html">
 <link rel="import" href="guild-view-route.html">
 <link rel="import" href="guild-view-styles.html">
@@ -36,6 +37,8 @@ limitations under the License.
     <guild-view-route route="{{route}}" selected="{{page}}"></guild-view-route>
     <guild-env env="{{env}}" route="{{route}}"></guild-env>
     <guild-run-viewdef env="[[env]]" viewdef="{{viewdef}}"></guild-run-viewdef>
+
+    <guild-view-fullscreen></guild-view-fullscreen>
 
     <guild-view-app-layout selected="{{page}}">
       <guild-view-page id="overview" label="Overview" icon="apps" env="{{env}}">
@@ -62,6 +65,8 @@ limitations under the License.
   <script>
    Polymer({
        is: "guild-view-2",
+
+       behaviors: [Guild.FullscreenHost],
 
        properties: {
            route: Object,
