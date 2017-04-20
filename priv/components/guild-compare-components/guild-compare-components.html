@@ -22,7 +22,7 @@ limitations under the License.
 
 <dom-module id="guild-compare-components">
   <template>
-    <style include="guild-view-row-styles"></style>
+    <style include="guild-row-styles"></style>
     <style>
      .component {
          margin: 10px 0;
@@ -40,7 +40,7 @@ limitations under the License.
          margin-bottom: 20px;
      }
     </style>
-    <div class="row guild-view-row">
+    <div class="row row-20">
       <template is="dom-repeat" items="[[components]]" as="c">
         <div class$="component [[componentColClass(c)]]">
           <template is="dom-if" if="[[c.isChart]]">

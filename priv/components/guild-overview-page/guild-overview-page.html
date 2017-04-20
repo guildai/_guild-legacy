@@ -21,11 +21,13 @@ limitations under the License.
 <link rel="import" href="../guild-imports/bootstrap-grid.html">
 <link rel="import" href="../guild-output/guild-output.html">
 <link rel="import" href="../guild-run-select-page-header/guild-run-select-page-header.html">
+<link rel="import" href="../guild-styles/guild-styles.html">
 
 <link rel="import" href="guild-overview-overlay.html">
 
 <dom-module id="guild-overview-page">
   <template>
+    <style include="guild-row-styles"></style>
     <style>
      guild-run-select-page-header {
          flex: 1;
@@ -33,7 +35,7 @@ limitations under the License.
      }
 
      .component {
-         margin-bottom: 20px;
+         margin-bottom: 18px;
      }
     </style>
 
@@ -45,23 +47,23 @@ limitations under the License.
       <guild-overview-overlay id="overlay"></guild-overview-overlay>
 
       <template is="dom-if" if="[[viewdef]]">
-        <div class="row">
+        <div class="row row-20">
           <div class="col-lg-8 col-xl-9">
-            <div class="row">
+            <div class="row row-20">
               <template is="dom-repeat" items="[[viewdef.fields]]" as="field">
                 <div class="component col-sm-6 col-xl-4 col-xxl-3">
                   <guild-field env="[[env]]" field="[[field]]"></guild-field>
                 </div>
               </template>
             </div>
-            <div class="row">
+            <div class="row row-20">
               <template is="dom-repeat" items="[[viewdef.series]]" as="series">
                 <div class="component col-xl-6">
                   <guild-chart env="[[env]]" series="[[series]]"></guild-chart>
                 </div>
               </template>
             </div>
-            <div class="row">
+            <div class="row row-20">
               <div class="component col-12">
                 <guild-output env="[[env]]"></guild-output>
               </div>
