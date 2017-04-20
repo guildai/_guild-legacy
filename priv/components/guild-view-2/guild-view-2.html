@@ -26,9 +26,11 @@ limitations under the License.
 <link rel="import" href="guild-view-app-layout.html">
 <link rel="import" href="guild-view-page.html">
 <link rel="import" href="guild-view-route.html">
+<link rel="import" href="guild-view-styles.html">
 
 <dom-module id="guild-view-2">
   <template>
+    <style include="root-styles"></style>
 
     <app-location route="{{route}}"></app-location>
     <guild-view-route route="{{route}}" selected="{{page}}"></guild-view-route>
