@@ -24,13 +24,19 @@ limitations under the License.
        behaviors: [Guild.DataListener],
 
        properties: {
+           env: Object,
            data: {
                type: Object,
                notify: true
            },
+           dataType: {
+               type: Object,
+               value: Object
+           },
            formattedValue: {
                type: String,
-               notify: true
+               notify: true,
+               computed: "computeFormattedValue(data)"
            },
            formattedDefault: String,
            runDataSource: String,
@@ -58,8 +64,11 @@ limitations under the License.
 
        handleData: function(data) {
            this.data = data;
+       },
+
+       computeFormattedValue: function(data) {
            if (this.dataFormat) {
-               this.formattedValue = this.formatData(data, this.formattedDefault);
+               return this.formatData(data, this.formattedDefault);
            }
        },
 
