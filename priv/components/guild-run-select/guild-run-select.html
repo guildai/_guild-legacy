@@ -29,7 +29,7 @@ limitations under the License.
     </style>
 
     <template is="dom-if" if="[[isSelected(selected)]]">
-      <paper-dropdown-menu label="Active run" no-animations>
+      <paper-dropdown-menu label="Active run" always-float-label no-animations>
         <paper-listbox class="dropdown-content" selected="{{selected}}">
           <template is="dom-repeat" items="[[env.runs]]" as="run">
             <guild-run-select-item run="[[run]]"></guild-run-select-item>
