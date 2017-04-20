@@ -113,6 +113,13 @@ limitations under the License.
                this.searchInput.value = val;
                this.searchInput.dispatchEvent(new Event("input"));
            }
+       },
+
+       clear: function() {
+           this.dtOp(function(dt) {
+               dt.clear();
+               dt.draw();
+           });
        }
    });
   </script>

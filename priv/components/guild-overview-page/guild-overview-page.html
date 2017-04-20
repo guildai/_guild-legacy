@@ -19,6 +19,7 @@ limitations under the License.
 <link rel="import" href="../guild-field/guild-field.html">
 <link rel="import" href="../guild-flags/guild-flags.html">
 <link rel="import" href="../guild-imports/bootstrap-grid.html">
+<link rel="import" href="../guild-output/guild-output.html">
 <link rel="import" href="../guild-run-select-page-header/guild-run-select-page-header.html">
 
 <dom-module id="guild-overview-page">
@@ -55,7 +56,9 @@ limitations under the License.
             </template>
           </div>
           <div class="row">
-            Output here
+            <div class="component col-12">
+              <guild-output env="[[env]]"></guild-output>
+            </div>
           </div>
         </div>
         <div class="col-lg-4 col-xl-3">

@@ -15,9 +15,10 @@ limitations under the License.
 -->
 
 <link rel="import" href="../guild-component-panel/guild-component-panel.html">
-<link rel="import" href="../guild-data/guild-data-listener.html">
 <link rel="import" href="../guild-datatable/guild-datatable.html">
 <link rel="import" href="../guild-filter-input/guild-filter-input.html">
+<link rel="import" href="../guild-imports/d3.html">
+<link rel="import" href="../guild-run/guild-run-data-listener.html">
 <link rel="import" href="../paper-toolbar/paper-toolbar.html">
 
 <dom-module id="guild-output">
@@ -40,6 +41,14 @@ limitations under the License.
          white-space: nowrap;
      }
     </style>
+
+    <guild-run-data-listener
+        env="[[env]]"
+        run-data-source="output"
+        data="{{data}}"
+        repeat-while-running
+    </guild-run-data-listener>
+
     <guild-component-panel title="Output">
       <paper-toolbar>
         <guild-filter-input id="filter" value="{{filter}}"></guild-filter-input>
@@ -55,34 +64,26 @@ limitations under the License.
         <datatable-col title="Message" data="message"></datatable-col>
       </guild-datatable>
     </guild-component-panel>
+
   </template>
   <script>
    Polymer({
        is: "guild-output",
 
-       behaviors: [Guild.DataListener],
-
        properties: {
            filter: String,
-           dataSource: {
-               type: String,
-               value: "output",
-               readOnly: true
-           },
-           nextIndex: {
-               type: Number,
-               value: 0
-           }
+           nextIndex: Number
        },
+
+       observers: [
+           "handleData(data)",
+           "reset(env.selectedRun)"
+       ],
 
        handleData: function(data) {
            var slice = data.slice(this.nextIndex);
            this.$.table.addRows(this.formatItems(slice));
            this.nextIndex = data.length;
-       },
-
-       repeatData: function() {
-           return Guild.Run.isRunning(this.env.run);
        },
 
        formatItems: function(data) {
@@ -97,8 +98,9 @@ limitations under the License.
            });
        },
 
-       filter: function(e) {
-           console.log(e);
+       reset: function() {
+           this.nextIndex = 0;
+           this.$.table.clear();
        }
    });
   </script>
