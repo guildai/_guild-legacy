@@ -33,6 +33,13 @@ limitations under the License.
          background-color: #fafafa;
      }
     </style>
+    <style is="custom-style">
+     :root {
+         /* HACK iron-overlay-backdrop is added to the page body,
+            so we style it here. */
+         --iron-overlay-backdrop-opacity: 0.75;
+     }
+    </style>
   </head>
   <body>
     <guild-view-2></guild-view-2>
