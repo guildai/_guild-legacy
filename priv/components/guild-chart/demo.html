@@ -27,12 +27,36 @@ limitations under the License.
          font-family: 'Roboto', 'Noto', sans-serif;
          background-color: #fafafa;
      }
+
+     th {
+         text-align: left;
+         padding-right: 20px;
+     }
     </style>
   </head>
   <body>
     <dom-module id="guild-chart-demo">
       <template>
-        <guild-chart env="[[env]]"></guild-chart>
+        <guild-chart env="[[env]]" options="{{options}}"></guild-chart>
+        <h3>Options</h3>
+        <table>
+          <tr>
+            <th>Smoothing</th>
+            <td>[[options.smoothing]]</td>
+          </tr>
+          <tr>
+            <th>xType</th>
+            <td>[[options.xType]]</td>
+          </tr>
+          <tr>
+            <th>yScale</th>
+            <td>[[options.yScale]]</td>
+          </tr>
+          <tr>
+            <th>tooltipSort</th>
+            <td>[[options.tooltipSort]]</td>
+          </tr>
+        </table>
       </template>
       <script>
        HTMLImports.whenReady(function () {
@@ -47,7 +71,8 @@ limitations under the License.
                                settings: {}
                            }
                        }
-                   }
+                   },
+                   options: Object
                },
 
                ready: function() {
