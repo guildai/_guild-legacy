@@ -30,8 +30,8 @@ limitations under the License.
           smoothing-enabled="[[smoothingEnabled]]"
           smoothing-weight="[[options.smoothing]]"
           tooltip-sorting-method="[[options.tooltipSort]]">
+      </vz-line-chart>
     </template>
-    </vz-line-chart>
   </template>
   <script>
    Polymer({
@@ -49,6 +49,7 @@ limitations under the License.
                type: Boolean,
                computed: 'computeSmoothingEnabled(options.smoothing)'
            },
+           instance: Object,
            chart: Object,
            chartOps: {
                value: function() {
@@ -67,20 +68,24 @@ limitations under the License.
               not find suitable interval to display labels' from
               plottable.js:751. */
            window.setTimeout(function() {
-               this.cart = this.initChart();
-               this.applyChartOps(this.chart);
+               this.initChart();
+               this.applyChartOps();
            }.bind(this), 0);
        },
 
        initChart: function() {
+           if (this.chart) {
+               throw ["chart already initialized", this.chart];
+           }
            var template = this.$$("template");
            this.templatize(template);
-           var instance = this.stamp();
-           Polymer.dom(this.root).appendChild(instance.root);
-           this.chart = instance._nodes[0];
+           this.instance = this.stamp();
+           Polymer.dom(this.root).appendChild(this.instance.root);
+           this.chart = this.instance._nodes[0];
        },
 
-       applyChartOps: function(chart) {
+       applyChartOps: function() {
+           var chart = this.chart;
            this.chartOps.forEach(function(op) {
                op(chart);
            });
@@ -108,6 +113,18 @@ limitations under the License.
                op(this.chart);
            } else {
                this.chartOps.push(op);
+           }
+       },
+
+       _forwardParentPath: function(path, value) {
+           if (this.instance) {
+               this.instance.set(path, value);
+           }
+       },
+
+       _forwardParentProp: function(prop, value) {
+           if (this.instance) {
+               this.instance[prop] = value;
            }
        }
    });
