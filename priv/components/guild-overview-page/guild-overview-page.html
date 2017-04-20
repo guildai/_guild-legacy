@@ -22,6 +22,8 @@ limitations under the License.
 <link rel="import" href="../guild-output/guild-output.html">
 <link rel="import" href="../guild-run-select-page-header/guild-run-select-page-header.html">
 
+<link rel="import" href="guild-overview-overlay.html">
+
 <dom-module id="guild-overview-page">
   <template>
     <style>
@@ -39,37 +41,43 @@ limitations under the License.
       <div class="row">
         <guild-run-select-page-header env="{{env}}"></guild-run-select-page-header>
       </div>
-      <div class="row">
-        <div class="col-lg-8 col-xl-9">
-          <div class="row">
-            <template is="dom-repeat" items="[[viewdef.fields]]" as="field">
-              <div class="component col-sm-6 col-xl-4 col-xxl-3">
-                <guild-field env="[[env]]" field="[[field]]"></guild-field>
+
+      <guild-overview-overlay id="overlay"></guild-overview-overlay>
+
+      <template is="dom-if" if="[[viewdef]]">
+        <div class="row">
+          <div class="col-lg-8 col-xl-9">
+            <div class="row">
+              <template is="dom-repeat" items="[[viewdef.fields]]" as="field">
+                <div class="component col-sm-6 col-xl-4 col-xxl-3">
+                  <guild-field env="[[env]]" field="[[field]]"></guild-field>
+                </div>
+              </template>
+            </div>
+            <div class="row">
+              <template is="dom-repeat" items="[[viewdef.series]]" as="series">
+                <div class="component col-xl-6">
+                  <guild-chart env="[[env]]" series="[[series]]"></guild-chart>
+                </div>
+              </template>
+            </div>
+            <div class="row">
+              <div class="component col-12">
+                <guild-output env="[[env]]"></guild-output>
               </div>
-            </template>
+            </div>
           </div>
-          <div class="row">
-            <template is="dom-repeat" items="[[viewdef.series]]" as="series">
-              <div class="component col-xl-6">
-                <guild-chart env="[[env]]" series="[[series]]"></guild-chart>
-              </div>
-            </template>
-          </div>
-          <div class="row">
-            <div class="component col-12">
-              <guild-output env="[[env]]"></guild-output>
+          <div class="col-lg-4 col-xl-3">
+            <div class="component">
+              <guild-flags env="[[env]]"></guild-flags>
+            </div>
+            <div class="component">
+              <guild-attrs env="[[env]]"></guild-attrs>
             </div>
           </div>
         </div>
-        <div class="col-lg-4 col-xl-3">
-          <div class="component">
-            <guild-flags env="[[env]]"></guild-flags>
-          </div>
-          <div class="component">
-            <guild-attrs env="[[env]]"></guild-attrs>
-          </div>
-        </div>
-      </div>
+      </template>
+
     </div>
   </template>
   <script>
@@ -79,6 +87,23 @@ limitations under the License.
        properties: {
            env: Object,
            viewdef: Object
+       },
+
+       observers: [
+           "checkDeletedRun(viewdef, env.selectedRun, env.runs)"
+       ],
+
+       checkDeletedRun: function(viewdef, selected, runs) {
+           if (viewdef) {
+               var deleted = !Guild.Run.runForId(selected, runs);
+               if (deleted) {
+                   this.$.overlay.open();
+               } else {
+                   this.$.overlay.close();
+               }
+           } else {
+               this.$.overlay.close();
+           }
        }
    });
   </script>
