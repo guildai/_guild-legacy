@@ -15,6 +15,7 @@ limitations under the License.
 -->
 
 <link rel="import" href="../guild-attrs/guild-attrs.html">
+<link rel="import" href="../guild-chart/guild-chart.html">
 <link rel="import" href="../guild-field/guild-field.html">
 <link rel="import" href="../guild-flags/guild-flags.html">
 <link rel="import" href="../guild-imports/bootstrap-grid.html">
@@ -47,7 +48,11 @@ limitations under the License.
             </template>
           </div>
           <div class="row">
-            Series charts here
+            <template is="dom-repeat" items="[[viewdef.series]]" as="series">
+              <div class="component col-xl-6">
+                <guild-chart env="[[env]]" series="[[series]]"></guild-chart>
+              </div>
+            </template>
           </div>
           <div class="row">
             Output here

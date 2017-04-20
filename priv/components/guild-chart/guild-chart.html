@@ -16,8 +16,8 @@ limitations under the License.
 
 <link rel="import" href="../guild-chart-options/guild-chart-options.html">
 <link rel="import" href="../guild-component-panel/guild-component-panel.html">
-<link rel="import" href="../guild-data/guild-data-listener.html">
 <link rel="import" href="../guild-line-chart/guild-line-chart.html">
+<link rel="import" href="../guild-run/guild-run-data-listener.html">
 <link rel="import" href="../guild-util/guild-fullscreen-behavior.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
@@ -41,7 +41,15 @@ limitations under the License.
          color: var(--secondary-text-color);
      }
     </style>
-    <guild-component-panel id="panel" title="[[title]]">
+
+    <guild-run-data-listener
+        env="[[env]]"
+        run-data-source="[[series.source]]"
+        data="{{data}}"
+        repeat-while-running
+    </guild-run-data-listener>
+
+    <guild-component-panel id="panel" title="[[series.title]]">
       <div class="actions">
         <paper-icon-button
             icon="[[fullscreenIcon]]"
@@ -50,18 +58,20 @@ limitations under the License.
         <guild-chart-options options="{{options}}"></guild-chart-option>
       </div>
       <div id="container">
-        <guild-line-chart id="chart" options="{{options}}"></guild-line-chart>
+        <guild-line-chart id="chart" options="[[options]]"></guild-line-chart>
       </div>
     </guild-component-panel>
+
   </template>
   <script>
    Polymer({
        is: "guild-chart",
 
-       behaviors: [Guild.DataListener, Guild.FullscreenBehavior],
+       behaviors: [Guild.FullscreenBehavior],
 
        properties: {
-           title: String,
+           series: Object,
+           data: Object,
            options: {
                type: Object,
                notify: true,
@@ -76,6 +86,10 @@ limitations under the License.
            }
        },
 
+       observers: [
+           "handleData(data)"
+       ],
+
        handleData: function(data) {
            var names = Object.keys(data);
            this.$.chart.setVisibleSeries(names);
@@ -83,10 +97,6 @@ limitations under the License.
                var seriesData = this.seriesData(name, data);
                this.$.chart.setSeriesData(name, seriesData);
            }.bind(this));
-       },
-
-       repeatData: function() {
-           return Guild.Run.isRunning(this.env.run);
        },
 
        seriesData: function(name, data) {
