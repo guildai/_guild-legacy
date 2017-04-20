@@ -21,33 +21,42 @@ limitations under the License.
 <dom-module id="guild-compare-page">
   <template>
     <style>
-     :host {
-         display: flex;
-         flex-direction: column;
-         align-items: stretch;
-         padding: 0 15px;
-     }
      guild-page-header {
+         flex: 1;
          margin-bottom: 20px;
      }
+
      guild-compare-table {
          margin-bottom: 10px;
      }
     </style>
-    <guild-page-header
-        title="[[env.project.title]]"
-        title-tooltip="[[env.project.description]]">
-    </guild-page-header>
-    <guild-compare-table
-        id="table"
-        env="[[env]]"
-        fields="[[config.fields]]">
-    </guild-compare-table>
+
+    <div class="container-fluid">
+      <div class="row">
+        <guild-page-header
+            title="[[env.project.title]]"
+            title-tooltip="[[env.project.description]]">
+      </div>
+
+      <div class="row">
+        <div class="col-12">
+          <guild-compare-table
+              id="table"
+              env="[[env]]"
+              fields="[[viewdef.compare]]">
+          </guild-compare-table>
+        </div>
+      </div>
+    </div>
+
+    <!--
     <guild-compare-components
         id="components"
         env="[[env]]"
         runs="[[selectedRuns]]">
     </guild-compare-components>
+    -->
+
   </template>
   <script>
    Polymer({
@@ -59,7 +68,7 @@ limitations under the License.
 
        properties: {
            env: Object,
-           config: Object,
+           viewdef: Object,
            active: {
                observer: 'activeChanged'
            },

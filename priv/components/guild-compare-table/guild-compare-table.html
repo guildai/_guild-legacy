@@ -46,11 +46,12 @@ limitations under the License.
          padding: 20px;
      }
     </style>
+
     <paper-material>
       <div id="container">
         <paper-toolbar>
-          <guild-filter-input id="filter" on-input="filter"></guild-filter-input>
-          <span class="title"></span>
+          <guild-filter-input id="filter" on-input="syncWithSearch"></guild-filter-input>
+          <span class="title"></span> <!-- spacer w/flex=1 -->
           <paper-toggle-button checked="{{hideFailed}}">Hide failed runs</paper-toggle-button>
         </paper-toolbar>
         <table
@@ -62,6 +63,7 @@ limitations under the License.
         </table>
       </div>
     </paper-material>
+
   </template>
   <script>
    Polymer({
@@ -72,28 +74,39 @@ limitations under the License.
        properties: {
            env: Object,
            fields: Array,
-           dataSource: {
-               type: String,
-               computed: 'computeDataSource(fields)'
-           },
            dt: Object,
            cachedSearchInput: Object,
            hideFailed: {
                type: Boolean,
                value: false,
                observer: 'hideFailedChanged'
+           },
+           lockSelects: Boolean
+       },
+
+       observers: [
+           "init(fields, env.settings)"
+       ],
+
+       listeners: {
+           "select-changed": "handleSelectChanged",
+           "select-header-changed": "handleSelectHeaderChanged"
+       },
+
+       init: function(fields, settings) {
+           if (!this.dt) {
+               this.initDatatable(fields);
            }
+           this.dataSource = Guild.CompareTable.fieldsDataSource(fields),
+           this.dataFetchInterval = settings.refreshInterval || 10;
+           this.scheduleFetch(0);
        },
 
-       computeDataSource: function(fields) {
-           return Guild.CompareTable.fieldsDataSource(fields);
-       },
-
-       ready: function() {
+       initDatatable: function(fields) {
            this.scopeSubtree(this.$.container, true);
            this.dt = Guild.CompareTable.init(
                this.$.table,
-               this.fields,
+               fields,
                {height: "250px"});
            this.dt.on("search.dt", this.handleSearch.bind(this));
        },
@@ -102,11 +115,32 @@ limitations under the License.
            Guild.CompareTable.refresh(this.dt, data, this.fields);
        },
 
-       repeatData: function() {
-           return true;
+       handleSelectChanged: function() {
+           Guild.CompareTable.refreshRowsForSelected(this.dt);
+           this.refreshSelectHeader();
        },
 
-       filter: function(e) {
+       handleSelectHeaderChanged: function() {
+           this.syncSelectsWithHeader();
+       },
+
+       syncSelectsWithHeader: function() {
+           if (!this.lockSelects) {
+               this.lockSelects = true;
+               Guild.CompareTable.syncSelectsWithHeader(this.dt);
+               this.lockSelects = false;
+           }
+       },
+
+       refreshSelectHeader: function() {
+           if (!this.lockSelects) {
+               this.lockSelects = true;
+               Guild.CompareTable.refreshSelectHeader(this.dt);
+               this.lockSelects = false;
+           }
+       },
+
+       syncWithSearch: function(e) {
            var search = this.searchInputElement();
            search.value = e.target.value;
            search.dispatchEvent(new Event("input"));
@@ -130,43 +164,18 @@ limitations under the License.
            }
        },
 
-       selected: function() {
-           var filtered = this.dt.rows().data().filter(function(item) {
-               return item.selected;
-           });
-           return filtered.toArray();
-       },
-
        handleSearch: function() {
-           this.debounce("check-hidden", this.checkHidden, 100);
+           this.debounce("handle-search", this.handleSearch_, 100);
        },
 
-       checkHidden: function() {
-           var deselected = this.deselectRemovedItems();
+       handleSearch_: function() {
+           var deselected = Guild.CompareTable.deselectRemoved(this.dt);
            if (deselected) {
                // We need to fire this event because the removed items
                // aren't in the DOM and so their events don't propagate.
-               this.fire("run-select-changed");
+               this.fire("select-changed");
            }
            this.refreshSelectHeader();
-       },
-
-       deselectRemovedItems: function() {
-           var removed = Guild.CompareTable.removedItems(this.dt);
-           var deselected = false;
-           for (var i in removed) {
-               var item = removed[i];
-               if (item.selected) {
-                   Guild.CompareTable.deselect(this.dt, item)
-                   deselected = true;
-               }
-           }
-           return deselected;
-       },
-
-       refreshSelectHeader: function() {
-           var header = $(this.dt.table().header()).find("guild-compare-table-select")[0];
-           header.refreshHeader();
        }
    });
   </script>

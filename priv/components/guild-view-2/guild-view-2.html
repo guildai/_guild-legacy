@@ -41,17 +41,19 @@ limitations under the License.
     <guild-view-fullscreen></guild-view-fullscreen>
 
     <guild-view-app-layout selected="{{page}}">
+
       <guild-view-page id="overview" label="Overview" icon="apps" env="{{env}}">
         <template>
           <guild-overview-page env="{{env}}" viewdef="[[viewdef]]"></guild-overview-page>
         </template>
       </guild-view-page>
+
       <guild-view-page id="compare" label="Compare" icon="av:playlist-add-check" env="[[env]]">
         <template>
-          <div>TODO: compare page</div>
-          <!-- <guild-compare-page env="[[env]]"></guild-compare-page> -->
+          <guild-compare-page env="[[env]]" viewdef="[[viewdef]]"></guild-compare-page>
         </template>
       </guild-view-page>
+
       <guild-view-page id="tensorboard" label="TensorBoard" icon="timeline" env="[[env]]">
         <template>
           <div>TODO: TensorBoard page</div>
