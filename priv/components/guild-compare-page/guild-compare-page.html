@@ -43,20 +43,22 @@ limitations under the License.
           <guild-compare-table
               id="table"
               env="[[env]]"
-              fields="[[viewdef.compare]]">
+              fields="[[viewdef.compare]]"
+              selected-runs="{{selected}}">
           </guild-compare-table>
         </div>
       </div>
+
+      <div class="row">
+        <div class="col-12">
+          <guild-compare-components
+              id="components"
+              env="[[env]]"
+              runs="[[selected]]">
+          </guild-compare-components>
+        </div>
+      </div>
     </div>
-
-    <!--
-    <guild-compare-components
-        id="components"
-        env="[[env]]"
-        runs="[[selectedRuns]]">
-    </guild-compare-components>
-    -->
-
   </template>
   <script>
    Polymer({
@@ -72,12 +74,7 @@ limitations under the License.
            active: {
                observer: 'activeChanged'
            },
-           selectedRuns: {
-               type: Array,
-               value: function() {
-                   return [];
-               }
-           }
+           selected: Array
        },
 
        handleRunSelectChanged: function() {
@@ -85,7 +82,7 @@ limitations under the License.
        },
 
        refreshSelectedRuns: function() {
-           this.selectedRuns = this.$.table.selected().map(function(item) {
+           this.selected = this.$.table.selected().map(function(item) {
                return item.run;
            });
        },

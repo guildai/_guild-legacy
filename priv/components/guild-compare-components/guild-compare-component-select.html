@@ -64,6 +64,7 @@ limitations under the License.
          color: var(--paper-input-container-color, --secondary-text-color);
      }
     </style>
+
     <paper-menu-button
         horizontal-offset="55"
         dynamic-align
@@ -94,6 +95,7 @@ limitations under the License.
       </div
     </paper-menu-button>
   </template>
+
   <script>
    Polymer({
        is: "guild-compare-component-select",
@@ -101,7 +103,6 @@ limitations under the License.
        behaviors: [Guild.DataListener],
 
        properties: {
-           env: Object,
            dataSource: {
                type: String,
                value: "sources"
@@ -123,16 +124,16 @@ limitations under the License.
            }
        },
 
+       ready: function() {
+           this.scheduleFetch(0);
+       },
+
        computeAddIcon: function(addOpened) {
            return addOpened ? 'close' : 'add';
        },
 
        handleData: function(sources) {
            this.sources = sources;
-       },
-
-       repeatData: function() {
-           return true;
        },
 
        handleAddOpened: function() {

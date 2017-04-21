@@ -40,6 +40,7 @@ limitations under the License.
          margin-bottom: 20px;
      }
     </style>
+
     <div class="row row-20">
       <template is="dom-repeat" items="[[components]]" as="c">
         <div class$="component [[componentColClass(c)]]">
@@ -62,10 +63,12 @@ limitations under the License.
         </div>
       </template>
     </div>
+
     <guild-compare-component-select
         env="[[env]]"
         on-component-selected="handleComponentSelected">
     </guild-compare-component-select>
+
   </template>
   <script>
    Polymer({
@@ -102,15 +105,13 @@ limitations under the License.
                return {
                    isKeyval: true,
                    source: source,
-                   title: "Flags",
-                   fullWidth: true
+                   title: "Flags"
                };
            } else if  (source == "attrs") {
                return {
                    isKeyval: true,
                    source: source,
-                   title: "Attributes",
-                   fullWidth: true
+                   title: "Attributes"
                };
            } else {
                throw ["unsupported component source", source];

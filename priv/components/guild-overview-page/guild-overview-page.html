@@ -51,14 +51,14 @@ limitations under the License.
           <div class="col-lg-8 col-xl-9">
             <div class="row row-20">
               <template is="dom-repeat" items="[[viewdef.fields]]" as="field">
-                <div class="component col-sm-6 col-xl-4 col-xxl-3">
+                <div class="component col-12 col-sm-6 col-xl-4 col-xxl-3">
                   <guild-field env="[[env]]" field="[[field]]"></guild-field>
                 </div>
               </template>
             </div>
             <div class="row row-20">
               <template is="dom-repeat" items="[[viewdef.series]]" as="series">
-                <div class="component col-xl-6">
+                <div class="component col-12 col-xl-6">
                   <guild-chart env="[[env]]" series="[[series]]"></guild-chart>
                 </div>
               </template>
@@ -69,7 +69,7 @@ limitations under the License.
               </div>
             </div>
           </div>
-          <div class="col-lg-4 col-xl-3">
+          <div class="col-12 col-lg-4 col-xl-3">
             <div class="component">
               <guild-flags env="[[env]]"></guild-flags>
             </div>

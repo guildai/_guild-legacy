@@ -29,6 +29,7 @@ limitations under the License.
     <style include="compare-table-styles"></style>
     <style>
      :host {
+         display: block;
          --paper-toolbar-background: transparent;
          --paper-toolbar-height: 100%;
          --paper-toolbar-content: {
@@ -75,6 +76,10 @@ limitations under the License.
            env: Object,
            fields: Array,
            dt: Object,
+           selectedRuns: {
+               type: Array,
+               notify: true
+           },
            cachedSearchInput: Object,
            hideFailed: {
                type: Boolean,
@@ -89,8 +94,8 @@ limitations under the License.
        ],
 
        listeners: {
-           "select-changed": "handleSelectChanged",
-           "select-header-changed": "handleSelectHeaderChanged"
+           "select-changed": "handleSelected",
+           "select-header-changed": "handleHeader"
        },
 
        init: function(fields, settings) {
@@ -115,12 +120,30 @@ limitations under the License.
            Guild.CompareTable.refresh(this.dt, data, this.fields);
        },
 
-       handleSelectChanged: function() {
+       handleSelected: function() {
            Guild.CompareTable.refreshRowsForSelected(this.dt);
            this.refreshSelectHeader();
+           this.updateSelectedRuns();
        },
 
-       handleSelectHeaderChanged: function() {
+       updateSelectedRuns: function() {
+           this.debounce(
+               "update-selected-runs",
+               this.updateSelectedRuns_.bind(this),
+               200);
+       },
+
+       updateSelectedRuns_: function() {
+           var filter = function(item) {
+               return item.selected;
+           };
+           var selected = this.dt.data().filter(filter).toArray();
+           this.selectedRuns = selected.map(function(item) {
+               return item.run;
+           });
+       },
+
+       handleHeader: function() {
            this.syncSelectsWithHeader();
        },
 
