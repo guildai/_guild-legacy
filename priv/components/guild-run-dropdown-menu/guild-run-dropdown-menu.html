@@ -33,11 +33,7 @@ limitations under the License.
          padding: 0px 16px;
       }
     </style>
-    <paper-dropdown-menu
-        no-animations
-        noink
-        no-float-label
-        __dynamic-align>
+    <paper-dropdown-menu no-animations noink no-float-label>
       <paper-listbox class="dropdown-content" selected="{{lbSelected}}">
         <template is="dom-repeat" items="[[runs]]" as="run">
           <paper-item>[[runLabel(run)]]</paper-item>
@@ -67,7 +63,7 @@ limitations under the License.
                type: Object,
                observer: 'lbSelectedChanged'
            },
-           _lockSelected: {
+           lockSelected: {
                type: Boolean,
                value: false
            }
@@ -79,10 +75,10 @@ limitations under the License.
 
        selectedChanged: function(val) {
            // Force a change as underlying runs may have changed
-           this._lockSelected = true;
+           this.lockSelected = true;
            this.lbSelected = null;
            this.lbSelected = this.runIndex(val);
-           this._lockSelected = false;
+           this.lockSelected = false;
        },
 
        runIndex: function(runId) {
@@ -95,7 +91,7 @@ limitations under the License.
        },
 
        lbSelectedChanged: function(val) {
-           if (!this._lockSelected) {
+           if (!this.lockSelected) {
                var maybeRun = this.runs[val];
                this.selected = maybeRun ? maybeRun.id : null;
            }
