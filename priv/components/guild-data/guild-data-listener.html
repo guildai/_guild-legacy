@@ -24,11 +24,15 @@ limitations under the License.
 
      properties: {
          dataSource: String,
-         dataReduce: String,
-         dataFormat: String,
          dataFetchInterval: {
              type: Number,
-             value: 0
+             observer: "dataFetchIntervalChanged"
+         },
+         dataReduce: String,
+         dataFormat: String,
+         dataPrefix: {
+             type: String,
+             value: "/data/"
          },
          active: {
              type: Boolean,
@@ -38,6 +42,16 @@ limitations under the License.
          pendingFetch: {
              type: Object,
              value: null
+         }
+     },
+
+     observers: [
+         "maybeFetch(dataSource, active)"
+     ],
+
+     maybeFetch: function(source, active) {
+         if (source && active) {
+             this.scheduleFetch(0);
          }
      },
 
@@ -52,7 +66,7 @@ limitations under the License.
      },
 
      dataFetchUrl: function() {
-         return "/data/" + this.dataSource;
+         return this.dataPrefix + this.dataSource;
      },
 
      handleFetchResult: function(result) {
@@ -103,6 +117,12 @@ limitations under the License.
          }
      },
 
+     dataFetchIntervalChanged(interval, old) {
+         if (!old && interval > 0) {
+             this.maybeFetch(this.dataSource, this.active);
+         }
+     },
+
      activeChanged: function(active, old) {
          if (old !== undefined) {
              this.cancelPendingFetch();
@@ -126,10 +146,6 @@ limitations under the License.
                type: Object,
                notify: true
            }
-       },
-
-       ready: function() {
-           this.scheduleFetch(0);
        },
 
        handleData: function(data) {
