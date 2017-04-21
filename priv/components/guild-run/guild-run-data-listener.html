@@ -40,7 +40,7 @@ limitations under the License.
            },
            formattedDefault: String,
            runDataSource: String,
-           repeatWhileRunning: {
+           repeatWhenRunning: {
                type: Boolean,
                value: false
            },
@@ -54,7 +54,7 @@ limitations under the License.
            },
            dataFetchInterval: {
                computed: "computeDataFetchInterval("
-                       + "  repeatWhileRunning,"
+                       + "  repeatWhenRunning,"
                        + "  env.selectedRun,"
                        + "  env.runs,"
                        + "  runDataFetchInterval,"
@@ -86,9 +86,9 @@ limitations under the License.
            }
        },
 
-       computeDataFetchInterval: function(repeatWhileRunning, selected,
+       computeDataFetchInterval: function(repeatWhenRunning, selected,
                                           runs, interval, settings) {
-           if (repeatWhileRunning) {
+           if (repeatWhenRunning) {
                if (this.util.isRunning(selected, runs)) {
                    return this.util.maybeInterval(interval, settings.refreshInterval || 0);
                } else {
