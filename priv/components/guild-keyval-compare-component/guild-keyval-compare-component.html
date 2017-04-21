@@ -192,14 +192,6 @@ limitations under the License.
            lockDiff: Boolean
        },
 
-       sortRuns: function(runs) {
-           var sorted = Array.from(runs);
-           sorted.sort(function(a, b) {
-               return a.started < b.started;
-           });
-           return sorted;
-       },
-
        handleData: function(data, old) {
            if (this.util.dataChanged(data, old)) {
                this.lockDiff = true;
@@ -216,6 +208,14 @@ limitations under the License.
                    this.left, this.right, this.data, this.source);
                this.showValues = !this.diff.unchanged;
            }
+       },
+
+       sortRuns: function(runs) {
+           var sorted = Array.from(runs);
+           sorted.sort(function(a, b) {
+               return a.started < b.started;
+           });
+           return sorted;
        },
 
        longestKey: function(rows) {

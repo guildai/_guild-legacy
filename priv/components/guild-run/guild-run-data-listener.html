@@ -42,7 +42,6 @@ limitations under the License.
            },
            dataSource: {
                computed: "computeDataSource(runDataSource, env.selectedRun)",
-               observer: "dataSourceChanged"
            },
            runDataFetchInterval: {
                type: Number,
@@ -73,12 +72,6 @@ limitations under the License.
                return runDataSource + "?run=" + selectedRun;
            } else {
                return null;
-           }
-       },
-
-       dataSourceChanged: function(val) {
-           if (val) {
-               this.scheduleFetch(0);
            }
        },
 

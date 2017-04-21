@@ -34,10 +34,16 @@ limitations under the License.
          flex: 1;
      }
     </style>
-    <guild-compare-component-panel
-        title="[[title]]"
-        on-fullscreen="handleFullscreen"
-        on-fullscreen-exit="handleFullscreenExit">
+
+    <guild-run-compare-data-listener
+        env="[[env]]]"
+        compare-data-source="[[source]]"
+        runs="[[runs]]"
+        repeat-when-running
+        data="{{data}}">
+    </guild-run-compare-data-listener>
+
+    <guild-compare-component-panel title="[[title]]">
       <div class="actions">
         <guild-chart-options options="{{options}}"></guild-chart-option>
       </div>
@@ -45,15 +51,17 @@ limitations under the License.
         <guild-line-chart id="chart" options="{{options}}"></guild-line-chart>
       </div>
     </guild-compare-component-panel>
+
   </template>
   <script>
    Polymer({
        is: "guild-chart-compare-component",
 
-       behaviors: [Guild.RunCompareDataListener],
-
        properties: {
            title: String,
+           data: {
+               observer: "handleData"
+           },
            options: {
                type: Object,
                value: function() {
@@ -68,6 +76,7 @@ limitations under the License.
        },
 
        handleData: function(data) {
+           console.log("GOT DATA FOR CHART");
            var labels = [];
            var labelData = {};
            data.forEach(function(item) {

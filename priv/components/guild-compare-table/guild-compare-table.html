@@ -48,6 +48,12 @@ limitations under the License.
      }
     </style>
 
+    <guild-data-listener
+        data-source="[[dataSource]]"
+        data-fetch-interval="[[dataFetchInterval]]"
+        data="{{data}}">
+    </guild-data-listener>
+
     <paper-material>
       <div id="container">
         <paper-toolbar>
@@ -70,12 +76,23 @@ limitations under the License.
    Polymer({
        is: "guild-compare-table",
 
-       behaviors: [Guild.DataListener],
-
        properties: {
            env: Object,
            fields: Array,
-           dt: Object,
+           dataSource: {
+               computed: "computeDataSource(fields)"
+           },
+           dataFetchInterval: {
+               computed: "computeDataFetchInterval(env.runs, data, env.settings)"
+           },
+           data: {
+               type: Object,
+               value: []
+           },
+           dt: {
+               type: Object,
+               computed: "initDt(fields)"
+           },
            selectedRuns: {
                type: Array,
                notify: true
@@ -84,13 +101,13 @@ limitations under the License.
            hideFailed: {
                type: Boolean,
                value: false,
-               observer: 'hideFailedChanged'
+               observer: "hideFailedChanged"
            },
            lockSelects: Boolean
        },
 
        observers: [
-           "init(fields, env.settings)"
+           "handleData(data, dt, fields)"
        ],
 
        listeners: {
@@ -98,25 +115,30 @@ limitations under the License.
            "select-header-changed": "handleHeader"
        },
 
-       init: function(fields, settings) {
-           if (!this.dt) {
-               this.initDatatable(fields);
-           }
-           this.dataSource = Guild.CompareTable.fieldsDataSource(fields),
-           this.dataFetchInterval = settings.refreshInterval || 10;
-           this.scheduleFetch(0);
+       ready: function() {
+           this.scopeSubtree(this.$.container, true);
        },
 
-       initDatatable: function(fields) {
-           this.scopeSubtree(this.$.container, true);
-           this.dt = Guild.CompareTable.init(
+       initDt: function(fields) {
+           var dt = Guild.CompareTable.init(
                this.$.table,
                fields,
                {height: "250px"});
-           this.dt.on("search.dt", this.handleSearch.bind(this));
+           dt.on("search.dt", this.handleSearch.bind(this));
+           return dt;
+       },
+
+       computeDataSource: function(fields) {
+           return Guild.CompareTable.fieldsDataSource(fields);
+       },
+
+       computeDataFetchInterval: function(runs, data, settings) {
+           console.log("FETCH INTERVAL", runs, data, settings);
+           return 10;
        },
 
        handleData: function(data) {
+           console.log("DATA", data);
            Guild.CompareTable.refresh(this.dt, data, this.fields);
        },
 

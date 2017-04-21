@@ -24,7 +24,7 @@ limitations under the License.
 <link rel="import" href="../../paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="../../polymer/polymer.html">
 
-<link rel="import" href="../guild-data-listener.html">
+<link rel="import" href="../guild-run-data-listener.html">
 
 <html>
   <head>
@@ -44,7 +44,7 @@ limitations under the License.
     </style>
   </head>
   <body>
-    <dom-module id="guild-data-demo">
+    <dom-module id="guild-run-data-demo">
       <template>
         <style>
          :host {
@@ -72,32 +72,40 @@ limitations under the License.
              color: #777;
              font-size: 24px;
          }
+
+         paper-toggle-button {
+             margin-bottom: 10px;
+         }
         </style>
 
-        <guild-data-listener
-            data-prefix=""
-            data-source="[[dataSource]]"
-            data-fetch-interval="[[dataFetchInterval]]"
-            active="[[active]]"
-            data="{{data}}">
-        </guild-data-listener>
+        <h2>Run data listener</h2>
 
-        <h2>Data listener</h2>
+        <guild-run-data-listener
+            env="[[env]]"
+            data-prefix=""
+            run-data-source="[[runDataSource]]"
+            repeat-when-running="[[repeatWhenRunning]]"
+            run-data-fetch-interval="[[runDataFetchInterval]]"
+            active="[[active]]"
+            data="{{data}}"
+            formatted-value="{{formattedValue}}">
+        </guild-run-data-listener>
 
         <paper-toggle-button checked="{{active}}">Active</paper-toggle-button>
+        <paper-toggle-button checked="{{repeatWhenRunning}}">Repeat when running</paper-toggle-button>
 
         <paper-dropdown-menu
-            label="Data source"
+            label="Run data source"
             value="{{dataSource}}"
             no-animations>
           <paper-listbox class="dropdown-content">
-            <paper-item>colors</paper-item>
-            <paper-item>shapes</paper-item>
+            <paper-item>series</paper-item>
+            <paper-item>flags</paper-item>
           </paper-listbox>
         </paper-dropdown-menu>
 
         <paper-dropdown-menu
-            label="Data fetch interval"
+            label="Run data fetch interval"
             selected-item="{{selectedInterval}}"
             no-animations>
           <paper-listbox class="dropdown-content">
@@ -107,6 +115,14 @@ limitations under the License.
             <paper-item>5</paper-item>
           </paper-listbox>
         </paper-dropdown-menu>
+
+        <h3>Runs</h3>
+
+        <paper-listbox multi>
+          <template is="dom-repeat" items="[[env.runs]]" as="run">
+            <paper-item run-id="[[run.id]]">[[runLabel(run)]]</paper-item>
+          </template>
+        </paper-listbox>
 
         <h3>Data
           <paper-icon-button icon="delete-sweep" on-tap="clearLog"></paper-icon-button>
@@ -125,22 +141,58 @@ limitations under the License.
       <script>
        HTMLImports.whenReady(function () {
            Polymer({
-               is: "guild-data-demo",
+               is: "guild-run-data-demo",
 
                properties: {
-                   dataSource: String,
+                   env: {
+                       type: Object,
+                       value: function() {
+                           runs: [
+                               {
+                                   "stopped": 1492797969444,
+                                   "started": 1492797875512,
+                                   "model": "intro",
+                                   "exit_status": 0,
+                                   "status": "stopped",
+                                   "id": 295228047
+                               },
+                               {
+                                   "stopped": 1492786905920,
+                                   "started": 1492786811830,
+                                   "model": "intro",
+                                   "exit_status": 0,
+                                   "status": "stopped",
+                                   "id": 744510823
+                               },
+                               {
+                                   "stopped": 1492786262276,
+                                   "started": 1492786218788,
+                                   "model": "intro",
+                                   "exit_status": 0,
+                                   "status": "stopped",
+                                   "id": 3655183969
+                               }
+                           ]
+                       }
+                   },
+                   runDataSource: String,
                    selectedInterval: String,
-                   dataFetchInterval: {
+                   runDataFetchInterval: {
                        type: Number,
-                       computed: "computeDataFetchInterval(selectedInterval)"
+                       computed: "computeRunDataFetchInterval(selectedInterval)"
                    },
                    active: {
+                       type: Boolean,
+                       value: true
+                   },
+                   repeatWhenRunning: {
                        type: Boolean,
                        value: true
                    },
                    data: {
                        observer: "handleData"
                    },
+                   formattedValue: String,
                    log: {
                        type: Array,
                        value: function() {
@@ -154,7 +206,7 @@ limitations under the License.
                    }
                },
 
-               computeDataFetchInterval: function(item) {
+               computeRunDataFetchInterval: function(item) {
                    return item ? parseInt(item.textContent) : this.dataFetchInterval;
                },
 
@@ -180,6 +232,6 @@ limitations under the License.
        });
       </script>
     </dom-module>
-    <guild-data-demo></guild-data-demo>
+    <guild-run-data-demo></guild-run-data-demo>
   </body>
 </html>
