@@ -168,6 +168,7 @@ limitations under the License.
 
                initKeyvals: function(kv, data) {
                    kv.runs = data.map(function(item) { return item.run; });
+                   kv.data = data;
                    kv.handleData(data);
                },
            });
