@@ -35,7 +35,7 @@ limitations under the License.
              value: true,
              observer: 'activeChanged'
          },
-         _pendingFetch: {
+         pendingFetch: {
              type: Object,
              value: null
          }
@@ -46,7 +46,7 @@ limitations under the License.
              var url = this.dataFetchUrl();
              var handler = this.handleFetchResult.bind(this);
              this.cancelPendingFetch();
-             this._pendingFetch =
+             this.pendingFetch =
                  Guild.Data.scheduleFetch(url, handler, whenSeconds * 1000);
          }
      },
@@ -65,14 +65,14 @@ limitations under the License.
      },
 
      cancelPendingFetch: function() {
-         if (this._pendingFetch) {
-             window.clearTimeout(this._pendingFetch);
-             this._pendingFetch = null;
+         if (this.pendingFetch) {
+             window.clearTimeout(this.pendingFetch);
+             this.pendingFetch = null;
          }
      },
 
      maybeScheduleNextFetch: function() {
-         if (this.dataFetchInterval > 0 && !this._pendingFetch) {
+         if (this.dataFetchInterval > 0 && !this.pendingFetch) {
              this.scheduleFetch(this.dataFetchInterval);
          }
      },
