@@ -26,6 +26,12 @@ limitations under the License.
   <template>
     <style include="guild-table-styles"></style>
     <style>
+     :host {
+         --paper-input-container: {
+             padding: 0 0 4px;
+         };
+     }
+
      div.waiting {
          padding: 0 20px;
          color: #777;
@@ -95,6 +101,14 @@ limitations under the License.
          cursor: pointer;
       }
     </style>
+
+    <guild-run-compare-data-listener
+        env="[[env]]]"
+        compare-data-source="[[source]]"
+        runs="[[runs]]"
+        data="{{data}}">
+    </guild-run-compare-data-listener>
+
     <guild-compare-component-panel title="[[title]]">
       <template is="dom-if" if="[[!right]]">
         <div class="waiting">No runs selected</div>
@@ -109,12 +123,12 @@ limitations under the License.
                 </th>
                 <template is="dom-if" if="[[left]]">
                   <th width="40%">
-                    <guild-run-dropdown-menu runs="[[runs]]" selected="{{left}}">
+                    <guild-run-dropdown-menu runs="[[sortedRuns]]" selected="{{left}}">
                     </guild-run-dropdown-menu>
                   </th>
                 </template>
                 <th width="40%">
-                  <guild-run-dropdown-menu runs="[[runs]]" selected="{{right}}">
+                  <guild-run-dropdown-menu runs="[[sortedRuns]]" selected="{{right}}">
                   </guild-run-dropdown-menu>
                 </th>
               </tr>
@@ -144,23 +158,22 @@ limitations under the License.
         </template>
       </template>
     </guild-compare-component-panel>
+
   </template>
   <script>
    Polymer({
        is: "guild-keyval-compare-component",
 
-       behaviors: [Guild.RunCompareDataListener],
-
        properties: {
            title: String,
-           data: {
+           source: String,
+           runs: Array,
+           sortedRuns: {
                type: Array,
-               value: function() {
-                   return [];
-               }
+               computed: "sortRuns(runs)"
            },
-           diff: {
-               type: Object
+           data: {
+               observer: "handleData"
            },
            left: {
                type: Object,
@@ -172,109 +185,37 @@ limitations under the License.
                value: null,
                observer: 'refreshDiff'
            },
-           _lockDiff: {
-               type: Boolean,
-               value: false
-           }
+           diff: {
+               type: Object
+           },
+           showValues: Boolean,
+           lockDiff: Boolean
        },
 
-       handleData: function(data) {
-           if (this.dataChanged(data)) {
-               this.data = data;
-               this._lockDiff = true;
-               this.left = this.initLeft(data);
-               this.right = this.initRight(data);
-               this._lockDiff = false;
+       sortRuns: function(runs) {
+           var sorted = Array.from(runs);
+           sorted.sort(function(a, b) {
+               return a.started < b.started;
+           });
+           return sorted;
+       },
+
+       handleData: function(data, old) {
+           if (this.util.dataChanged(data, old)) {
+               this.lockDiff = true;
+               this.left = this.util.left(this.sortedRuns);
+               this.right = this.util.right(this.sortedRuns);
+               this.lockDiff = false;
                this.refreshDiff();
            }
        },
 
-       dataChanged: function(data) {
-           return (
-               data.length != this.data.length
-               || JSON.stringify(data) != JSON.stringify(this.data));
-       },
-
-       initLeft: function(data) {
-           return data.length > 1 ? data[data.length - 1].run.id : null;
-       },
-
-       initRight: function(data) {
-           return data.length > 0 ? data[0].run.id : null;
-       },
-
        refreshDiff: function() {
-           if (!this._lockDiff) {
-               this.diff = this.computeDiff(this.left, this.right, this.data);
+           if (!this.lockDiff) {
+               this.diff = this.util.computeDiff(
+                   this.left, this.right, this.data, this.source);
                this.showValues = !this.diff.unchanged;
            }
-       },
-
-       computeDiff: function(left, right, data) {
-           if (left && right) {
-               return this.diffRuns(left, right, data);
-           } else if (right) {
-               return this.singleRun(right, data);
-           } else {
-               return this.noDiff();
-           }
-       },
-
-       diffRuns: function(left, right, data) {
-           var leftData = this.runData(left, data);
-           var rightData = this.runData(right, data);
-           var delta = Guild.JSONDiffPatch.diff(leftData, rightData);
-           var rows = Guild.JSONDiffPatch.formatKeyvalDelta(delta, leftData);
-           return this.formatDiff(rows, delta);
-       },
-
-       runData: function(runId, data) {
-           for (var i = 0; i < data.length; i++) {
-               var item = data[i];
-               if (item.run.id == runId) {
-                   return item[this.source];
-               }
-           }
-           throw ["cannot find run", runId];
-       },
-
-       formatDiff: function(rows, delta) {
-           return {
-               rows: rows,
-               unchanged: delta == null
-           }
-       },
-
-       singleRun: function(run, data) {
-           return {
-               rows: this.formatKeyvals(this.runData(run, data)),
-               unchanged: false
-           }
-       },
-
-       formatKeyvals: function(items) {
-           var keys = Object.keys(items);
-           return keys.map(function(key) {
-               return {
-                   type: "unchanged",
-                   key: key,
-                   left: null,
-                   right: items[key]
-               }
-           });
-       },
-
-       noDiff: function() {
-           return {
-               rows: [],
-               unchanged: false
-           }
-       },
-
-       dataRuns: function(data) {
-           return data.map(function(item) {
-               return item.run;
-           });
        },
 
        longestKey: function(rows) {
@@ -293,6 +234,85 @@ limitations under the License.
            } else {
                return "Runs have the same values";
            }
+       },
+
+       util: new function() {
+
+           this.dataChanged = function(data, old) {
+               return (
+                   !old
+                   || data.length != old.length
+                   || JSON.stringify(data) != JSON.stringify(old));
+           };
+
+           this.left = function(runs) {
+               return runs.length > 1 ? runs[runs.length - 1].id : null;
+           };
+
+           this.right = function(runs) {
+               return runs.length > 0 ? runs[0].id : null;
+           };
+
+           this.computeDiff = function(left, right, data, source) {
+               if (left && right) {
+                   return diffRuns(left, right, data, source);
+               } else if (right) {
+                   return singleRun(right, data, source);
+               } else {
+                   return noDiff();
+               }
+           };
+
+           var diffRuns = function(left, right, data, source) {
+               var leftData = runData(left, data, source);
+               var rightData = runData(right, data, source);
+               var delta = Guild.JSONDiffPatch.diff(leftData, rightData);
+               var rows = Guild.JSONDiffPatch.formatKeyvalDelta(delta, leftData);
+               return formatDiff(rows, delta);
+           };
+
+           var runData = function(runId, data, source) {
+               for (var i = 0; i < data.length; i++) {
+                   var item = data[i];
+                   if (item.run.id == runId) {
+                       return item[source];
+                   }
+               }
+               throw ["cannot find run", runId, data];
+           };
+
+           var formatDiff = function(rows, delta) {
+               return {
+                   rows: rows,
+                   unchanged: delta == null
+               }
+           };
+
+           var singleRun = function(run, data, source) {
+               return {
+                   rows: formatKeyvals(runData(run, data, source)),
+                   unchanged: false
+               }
+           };
+
+           var formatKeyvals = function(items) {
+               var keys = Object.keys(items);
+               return keys.map(function(key) {
+                   return {
+                       type: "unchanged",
+                       key: key,
+                       left: null,
+                       right: items[key]
+                   }
+               });
+           };
+
+           var noDiff = function() {
+               return {
+                   rows: [],
+                   unchanged: false
+               }
+           };
        }
    });
   </script>

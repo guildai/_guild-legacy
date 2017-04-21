@@ -16,56 +16,82 @@ limitations under the License.
 
 <link rel="import" href="../guild-data/guild-data-listener.html">
 
-<script>
- var Guild = Guild || {};
- Guild.RunCompareDataListenerImpl = {
+<dom-module id="guild-run-compare-data-listener">
+  <script>
+   Polymer({
+       is: "guild-run-compare-data-listener",
 
-     properties: {
-         env: Object,
-         source: String,
-         runs: {
-             type: Array,
-             value: function() {
-                 return [];
-             }
-         },
-         dataSource: {
-             type: String,
-             computed: 'computeDataSource(source, runs, env)',
-             observer: 'dataSourceChanged'
-         }
-     },
+       behaviors: [Guild.DataListener],
 
-     computeDataSource: function(source, runs) {
-         var runIds = runs.map(function(run) {return run.id}).join(",");
-         return "compare?sources=" + source + "&runs=" + runIds;
-     },
+       properties: {
+           env: Object,
+           data: {
+               type: Object,
+               notify: true
+           },
+           compareDataSource: String,
+           runs: Array,
+           repeatWhenRunning: {
+               type: Boolean,
+               value: false
+           },
+           dataSource: {
+               computed: 'computeDataSource(compareDataSource, runs)',
+               observer: 'dataSourceChanged'
+           },
+           runDataFetchInterval: {
+               type: Number,
+               value: null
+           },
+           dataFetchInterval: {
+               computed: "computeDataFetchInterval("
+                       + "  repeatWhenRunning,"
+                       + "  runs,"
+                       + "  runDataFetchInterval,"
+                       + "  env.settings)"
+           }
+       },
 
-     dataSourceChanged: function(val) {
-         this.scheduleFetch(0);
-     },
+       handleData: function(data) {
+           this.data = data;
+       },
 
-     repeatData: function() {
-         // Repeat only if something's running
-         var runs = this.runs;
-         var status = this.envRunsStatus();
-         for (var i = 0; i < runs.length; i++) {
-             if (status[runs[i].id] == "running") {
-                 return true;
-             }
-         }
-         return false;
-     },
+       computeDataSource: function(compareDataSource, runs) {
+           var runIds = runs.map(function(run) {return run.id}).join(",");
+           return "compare?sources=" + compareDataSource + "&runs=" + runIds;
+       },
 
-     envRunsStatus: function() {
-         return this.env.runs.reduce(function(acc, run) {
-             acc[run.id] = run.status;
-             return acc;
-         }, {});
-     }
- };
- Guild.RunCompareDataListener = [
-     Guild.DataListener,
-     Guild.RunCompareDataListenerImpl
- ];
-</script>
+       dataSourceChanged: function(val) {
+           if (val) {
+               this.scheduleFetch(0);
+           }
+       },
+
+       computeDataFetchInterval: function(repeatWhenRunning, runs,
+                                          interval, settings) {
+           console.log("compute fetch interval", runs);
+       },
+
+       util: new function() {
+
+           this.isRunning = function(selected, runs) {
+               var run = Guild.Run.runForId(selected, runs);
+               return Guild.Run.isRunning(run);
+           };
+
+           this.maybeInterval = function(interval, defaultValue) {
+               return interval != null ? interval : defaultValue;
+           };
+
+           /* TODO
+           this.envRunsStatus: function(runs) {
+               return runs.reduce(function(acc, run) {
+                   acc[run.id] = run.status;
+                   return acc;
+               }, {});
+           }
+           */
+       }
+   });
+  </script>
+</dom-module>
