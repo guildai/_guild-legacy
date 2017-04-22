@@ -118,7 +118,7 @@ limitations under the License.
      },
 
      dataFetchIntervalChanged(interval, old) {
-         if (!old && interval > 0) {
+         if (interval > 0) {
              this.maybeFetch(this.dataSource, this.active);
          }
      },

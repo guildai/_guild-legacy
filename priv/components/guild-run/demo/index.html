@@ -14,16 +14,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+<link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../guild-imports/d3.html">
-<link rel="import" href="../../iron-icons/iron-icons.html">
+<link rel="import" href="../../guild-icons/guild-icons.html">
+<link rel="import" href="../../guild-run-select/guild-run-select-item.html">
 <link rel="import" href="../../iron-list/iron-list.html">
-<link rel="import" href="../../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../paper-dialog/paper-dialog.html">
 <link rel="import" href="../../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../paper-item/paper-item.html">
 <link rel="import" href="../../paper-listbox/paper-listbox.html">
 <link rel="import" href="../../paper-toggle-button/paper-toggle-button.html">
-<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../paper-styles/paper-styles.html">
 
+<link rel="import" href="../guild-run.html">
 <link rel="import" href="../guild-run-data-listener.html">
 
 <html>
@@ -38,7 +42,7 @@ limitations under the License.
          font-family: 'Roboto', 'Noto', sans-serif;
      }
 
-     guild-data-demo {
+     guild-run-data-demo {
          flex: 1;
      }
     </style>
@@ -69,12 +73,46 @@ limitations under the License.
          }
 
          paper-icon-button {
-             color: #777;
+             color: var(--paper-blue-800);
              font-size: 24px;
+         }
+
+         paper-icon-button[disabled] {
+             color: #ccc;
          }
 
          paper-toggle-button {
              margin-bottom: 10px;
+         }
+
+         paper-dropdown-menu {
+             margin-right: 10px;
+         }
+
+         paper-item {
+             cursor: pointer;
+         }
+
+         iron-icon {
+             margin-right: 5px;
+             visibility: hidden;
+         }
+
+         .env div:not(:last-child) {
+             margin-bottom: 10px;
+         }
+
+         .env .label {
+             color: var(--secondary-text-color);
+         }
+
+         .row {
+             display: flex;
+             align-items: flex-end;
+         }
+
+         paper-dialog.help {
+             width: 300px;
          }
         </style>
 
@@ -84,7 +122,7 @@ limitations under the License.
             env="[[env]]"
             data-prefix=""
             run-data-source="[[runDataSource]]"
-            repeat-when-running="[[repeatWhenRunning]]"
+            stop-with-run="[[stopWithRun]]"
             run-data-fetch-interval="[[runDataFetchInterval]]"
             active="[[active]]"
             data="{{data}}"
@@ -92,11 +130,26 @@ limitations under the License.
         </guild-run-data-listener>
 
         <paper-toggle-button checked="{{active}}">Active</paper-toggle-button>
-        <paper-toggle-button checked="{{repeatWhenRunning}}">Repeat when running</paper-toggle-button>
+        <div class="row">
+          <paper-toggle-button checked="{{stopWithRun}}">
+            Stop with run
+          </paper-toggle-button>
+          <paper-icon-button icon="help" onclick="openBy(stopWithRunHelp, this)">
+          </paper-icon-button>
+        </div>
+
+        <paper-dialog id="stopWithRunHelp" class="help"
+                      horizontal-align="left" vertical-align="top">
+          <p>
+            When <strong>Stop with run</strong> is selected, the
+            listener will not repeat when the selected run is stopped,
+            regardless of the value of <strong>Run data fetch interval</strong>.
+          </p>
+        </paper-dialog>
 
         <paper-dropdown-menu
             label="Run data source"
-            value="{{dataSource}}"
+            value="{{runDataSource}}"
             no-animations>
           <paper-listbox class="dropdown-content">
             <paper-item>series</paper-item>
@@ -116,19 +169,52 @@ limitations under the License.
           </paper-listbox>
         </paper-dropdown-menu>
 
-        <h3>Runs</h3>
+        <div class="row">
+          <paper-dropdown-menu
+              label="Selected run"
+              selected-item="{{selectedRun}}"
+              no-animations>
+            <paper-listbox class="dropdown-content">
+              <template is="dom-repeat" items="[[env.runs]]" as="run">
+                <guild-run-select-item run="[[run]]"></guild-run-select-item>
+              </template>
+            </paper-listbox>
+          </paper-dropdown-menu>
 
-        <paper-listbox multi>
-          <template is="dom-repeat" items="[[env.runs]]" as="run">
-            <paper-item run-id="[[run.id]]">[[runLabel(run)]]</paper-item>
+          <template is="dom-if" if="[[env.selectedRun]]">
+            <paper-icon-button
+                icon="av:play-arrow"
+                on-tap="startSelected"
+                disabled="[[isSelectedRunning]]">
+            </paper-icon-button>
+            <paper-icon-button
+                icon="av:stop"
+                on-tap="stopSelected"
+                disabled="[[!isSelectedRunning]]">
+            </paper-icon-button>
           </template>
-        </paper-listbox>
+        </div>
+
+        <h3>Env</h3>
+
+        <div class="env">
+          <div>
+            <span class="label">settings.refreshInterval:</span>
+            [[env.settings.refreshInterval]]
+          </div>
+          <div>
+            <span class="label">selectedRun:</span>
+            <template is="dom-if" if="[[env.selectedRun]]">
+              [[env.selectedRun]] ([[runStatusLabel(env.selectedRun)]])
+            </template>
+          </div>
+        </div>
 
         <h3>Data
           <paper-icon-button icon="delete-sweep" on-tap="clearLog"></paper-icon-button>
         </h3>
 
-        <iron-list items="[[log]]">
+        <iron-list id="logList" items="[[log]]">
           <template>
             <div class="item">
               <span class="time">[[formatTime(item.time)]]</span>
@@ -139,6 +225,42 @@ limitations under the License.
 
       </template>
       <script>
+       var SAMPLE_ENV = {
+           settings: {
+               refreshInterval: 2
+           },
+           runs: [
+               {
+                   "stopped": 1492797969444,
+                   "started": 1492797875512,
+                   "model": "intro",
+                   "status": "running",
+                   "id": 295228047
+               },
+               {
+                   "stopped": 1492786905920,
+                   "started": 1492786811830,
+                   "model": "intro",
+                   "exit_status": 0,
+                   "status": "stopped",
+                   "id": 744510823
+               },
+               {
+                   "stopped": 1492786262276,
+                   "started": 1492786218788,
+                   "model": "intro",
+                   "exit_status": 1,
+                   "status": "stopped",
+                   "id": 3655183969
+               }
+           ]
+       };
+
+       var openBy = function(dialog, target) {
+           dialog.positionTarget = target;
+           dialog.open();
+       }
+
        HTMLImports.whenReady(function () {
            Polymer({
                is: "guild-run-data-demo",
@@ -147,36 +269,19 @@ limitations under the License.
                    env: {
                        type: Object,
                        value: function() {
-                           runs: [
-                               {
-                                   "stopped": 1492797969444,
-                                   "started": 1492797875512,
-                                   "model": "intro",
-                                   "exit_status": 0,
-                                   "status": "stopped",
-                                   "id": 295228047
-                               },
-                               {
-                                   "stopped": 1492786905920,
-                                   "started": 1492786811830,
-                                   "model": "intro",
-                                   "exit_status": 0,
-                                   "status": "stopped",
-                                   "id": 744510823
-                               },
-                               {
-                                   "stopped": 1492786262276,
-                                   "started": 1492786218788,
-                                   "model": "intro",
-                                   "exit_status": 0,
-                                   "status": "stopped",
-                                   "id": 3655183969
-                               }
-                           ]
+                           return SAMPLE_ENV;
                        }
                    },
                    runDataSource: String,
                    selectedInterval: String,
+                   selectedRun: {
+                       type: String,
+                       observer: "selectedRunChanged"
+                   },
+                   isSelectedRunning: {
+                       type: Boolean,
+                       computed: "computeIsSelectedRunning(env.selectedRun, env.runs)"
+                   },
                    runDataFetchInterval: {
                        type: Number,
                        computed: "computeRunDataFetchInterval(selectedInterval)"
@@ -185,7 +290,7 @@ limitations under the License.
                        type: Boolean,
                        value: true
                    },
-                   repeatWhenRunning: {
+                   stopWithRun: {
                        type: Boolean,
                        value: true
                    },
@@ -210,11 +315,48 @@ limitations under the License.
                    return item ? parseInt(item.textContent) : this.dataFetchInterval;
                },
 
+               computeIsSelectedRunning: function(selected, runs) {
+                   var run = Guild.Run.runForId(selected, runs);
+                   return run ? Guild.Run.isRunning(run) : false;
+               },
+
+               selectedRunChanged: function(item) {
+                   if (item) {
+                       this.set("env.selectedRun", item.run.id);
+                   }
+               },
+
+               startSelected: function() {
+                   this.setSelectedStatus("running");
+               },
+
+               stopSelected: function() {
+                   this.setSelectedStatus("stopped");
+               },
+
+               setSelectedStatus: function(status) {
+                   var run = Guild.Run.runForId(
+                       this.env.selectedRun,
+                       this.env.runs);
+                   var updatedRun = Object.assign({}, run);
+                   updatedRun.status = status;
+                   var index = this.env.runs.indexOf(run);
+                   this.splice("env.runs", index, 1, updatedRun);
+                   this.set("env.selectedRun", null);
+                   this.set("env.selectedRun", run.id);
+               },
+
                handleData: function(data) {
                    this.push("log", {
                        time: new Date(),
                        data: data
                    });
+                   this.$.logList.scrollToIndex(this.log.length - 1);
+               },
+
+               runStatusLabel: function(selected) {
+                   var run = Guild.Run.runForId(selected, this.env.runs);
+                   return run ? run.status : "";
                },
 
                formatTime: function(time) {

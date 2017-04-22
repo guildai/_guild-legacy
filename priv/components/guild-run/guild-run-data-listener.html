@@ -36,7 +36,7 @@ limitations under the License.
            },
            formattedDefault: String,
            runDataSource: String,
-           repeatWhenRunning: {
+           stopWithRun: {
                type: Boolean,
                value: false
            },
@@ -45,25 +45,19 @@ limitations under the License.
            },
            runDataFetchInterval: {
                type: Number,
+               // Must initialize with to trigger calls to
+               // computeDataFetchInterval. Must be null so
+               // we can use env.settings.refreshInterval by
+               // default.
                value: null
            },
            dataFetchInterval: {
                computed: "computeDataFetchInterval("
-                       + "  repeatWhenRunning,"
+                       + "  runDataFetchInterval,"
+                       + "  stopWithRun,"
                        + "  env.selectedRun,"
                        + "  env.runs,"
-                       + "  runDataFetchInterval,"
                        + "  env.settings)"
-           }
-       },
-
-       handleData: function(data) {
-           this.data = data;
-       },
-
-       computeFormattedValue: function(data) {
-           if (this.dataFormat) {
-               return this.formatData(data, this.formattedDefault);
            }
        },
 
@@ -75,16 +69,24 @@ limitations under the License.
            }
        },
 
-       computeDataFetchInterval: function(repeatWhenRunning, selected,
-                                          runs, interval, settings) {
-           if (repeatWhenRunning) {
-               if (this.util.isRunning(selected, runs)) {
-                   return this.util.maybeInterval(interval, settings.refreshInterval || 0);
-               } else {
-                   return 0;
-               }
+       computeDataFetchInterval: function(interval, stopWithRun, selected,
+                                          runs, settings) {
+           if (stopWithRun && !this.util.isRunning(selected, runs)) {
+               return 0;
            } else {
-               return this.util.maybeInterval(interval, 0);
+               return interval != null
+                    ? interval
+                    : (settings.refreshInterval || 0);
+           }
+       },
+
+       handleData: function(data) {
+           this.data = data;
+       },
+
+       computeFormattedValue: function(data) {
+           if (this.dataFormat) {
+               return this.formatData(data, this.formattedDefault);
            }
        },
 
