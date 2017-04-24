@@ -23,7 +23,8 @@ limitations under the License.
     <guild-run-data-listener
         env="[[env]]"
         run-data-source="flags"
-        data="{{data}}"
+        run-data-fetch-interval="0"
+        data="{{data}}">
     </guild-run-data-listener>
     <guild-component-panel title="Flags">
       <vz-keyval-table data="[[data]]"></vz-keyval-table>

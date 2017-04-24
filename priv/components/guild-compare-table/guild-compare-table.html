@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../guild-data/guild-data-listener.html">
 <link rel="import" href="../guild-filter-input/guild-filter-input.html">
+<link rel="import" href="../guild-run/guild-run-compare-data-listener.html">
 <link rel="import" href="../guild-styles/guild-styles.html">
 <link rel="import" href="../paper-material/paper-material.html">
 <link rel="import" href="../paper-toggle-button/paper-toggle-button.html">
@@ -48,11 +48,14 @@ limitations under the License.
      }
     </style>
 
-    <guild-data-listener
-        data-source="[[dataSource]]"
-        data-fetch-interval="[[dataFetchInterval]]"
+    <guild-run-compare-data-listener
+        env="[[env]]]"
+        compare-data-source="[[dataSource]]"
+        compare-data-fetch-interval="[[dataFetchInterval]]"
+        runs="[[env.runs]]"
+        stop-with-runs
         data="{{data}}">
-    </guild-data-listener>
+    </guild-run-compare-data-listener>
 
     <paper-material>
       <div id="container">
@@ -83,12 +86,9 @@ limitations under the License.
                computed: "computeDataSource(fields)"
            },
            dataFetchInterval: {
-               computed: "computeDataFetchInterval(env.runs, data, env.settings)"
+               computed: "computeDataFetchInterval(env.settings)"
            },
-           data: {
-               type: Object,
-               value: []
-           },
+           data: Array,
            dt: {
                type: Object,
                computed: "initDt(fields)"
@@ -120,25 +120,35 @@ limitations under the License.
        },
 
        initDt: function(fields) {
-           var dt = Guild.CompareTable.init(
-               this.$.table,
-               fields,
-               {height: "250px"});
-           dt.on("search.dt", this.handleSearch.bind(this));
-           return dt;
+           if (!this.dt) {
+               var dt = Guild.CompareTable.init(
+                   this.$.table,
+                   fields,
+                   {height: "250px"});
+               dt.on("search.dt", this.handleSearch.bind(this));
+               return dt;
+           } else {
+               /* HACK We currently define fields per model, which
+               means fields can change depending on the set of
+               selected runs. Semantically the dependency on fields is
+               correct here - but until we support a proper reset of
+               the datatable, we're returning this.dt. */
+               console.warn(
+                   "fields changed but dt is not reinitialized",
+                   [fields, this.fields]);
+               return this.dt;
+           }
        },
 
        computeDataSource: function(fields) {
            return Guild.CompareTable.fieldsDataSource(fields);
        },
 
-       computeDataFetchInterval: function(runs, data, settings) {
-           console.log("FETCH INTERVAL", runs, data, settings);
-           return 10;
+       computeDataFetchInterval: function(settings) {
+           return Guild.CompareTable.dataFetchInterval(settings);
        },
 
        handleData: function(data) {
-           console.log("DATA", data);
            Guild.CompareTable.refresh(this.dt, data, this.fields);
        },
 

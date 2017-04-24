@@ -17,6 +17,8 @@ var Guild = Guild || {};
 
 Guild.CompareTable = new function() {
 
+    MIN_DATA_FETCH_INTERVAL = 10;
+
     var fieldsDataSource = function(fields) {
         var sources = new Set();
         fields.forEach(function(field) {
@@ -24,11 +26,7 @@ Guild.CompareTable = new function() {
                 sources.add(source);
             });
         });
-        if (sources.size > 0) {
-            return "compare?sources=" + Array.from(sources).join(",");
-        } else {
-            return "compare";
-        }
+        return Array.from(sources).join(",");
     };
 
     var init = function(table, fields, options) {
@@ -419,6 +417,10 @@ Guild.CompareTable = new function() {
         return dt.cell(row, 0).node().firstChild;
     };
 
+    var dataFetchInterval = function(settings) {
+        return Math.max((settings.refreshInterval || 0), MIN_DATA_FETCH_INTERVAL);
+    };
+
     this.fieldsDataSource = fieldsDataSource;
     this.init = init;
     this.refresh = refresh;
@@ -428,4 +430,5 @@ Guild.CompareTable = new function() {
     this.refreshSelectHeader = refreshSelectHeader;
     this.syncSelectsWithHeader = syncSelectsWithHeader;
     this.deselectRemoved = deselectRemoved;
+    this.dataFetchInterval = dataFetchInterval;
 };
