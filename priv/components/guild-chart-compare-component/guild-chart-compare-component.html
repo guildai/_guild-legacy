@@ -43,7 +43,7 @@ limitations under the License.
         data="{{data}}">
     </guild-run-compare-data-listener>
 
-    <guild-compare-component-panel title="[[title]]">
+    <guild-compare-component-panel title="[[title]]" on-component-fullscreen="fullscreen">
       <div class="actions">
         <guild-chart-options options="{{options}}"></guild-chart-option>
       </div>
@@ -108,12 +108,12 @@ limitations under the License.
            });
        },
 
-       handleFullscreen: function() {
-           this.$.container.style.height = '520px';
-       },
-
-       handleFullscreenExit: function() {
-           this.$.container.style.height = '260px';
+       fullscreen: function(e) {
+           if (e.detail.fullscreen) {
+               this.$.container.style.height = '520px';
+           } else {
+               this.$.container.style.height = '260px';
+           }
        }
    });
   </script>

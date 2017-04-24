@@ -57,12 +57,14 @@ limitations under the License.
        },
 
        onFullscreen: function() {
+           this.fire("component-fullscreen", {fullscreen: true});
            this.$.panel.noToggle = true;
            this.noDelete = true;
            this.$.panel.opened = true;
        },
 
        onFullscreenExit: function() {
+           this.fire("component-fullscreen", {fullscreen: false});
            this.$.panel.noToggle = false;
            this.noDelete = false;
        },
