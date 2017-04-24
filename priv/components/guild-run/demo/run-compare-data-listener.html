@@ -192,6 +192,18 @@ limitations under the License.
           <div class="row">
             <paper-checkbox checked="[[isSelected(run)]]" run-id$="[[run.id]]" on-change="handleRunChecked"></paper-checkbox>
             <guild-run-select-item run="[[run]]"></guild-run-select-item>
+            <paper-icon-button
+                icon="av:play-arrow"
+                run-id$="[[run.id]]"
+                on-tap="startRun"
+                disabled="[[isRunning(run)]]">
+            </paper-icon-button>
+            <paper-icon-button
+                icon="av:stop"
+                run-id$="[[run.id]]"
+                on-tap="stopRun"
+                disabled="[[!isRunning(run)]]">
+            </paper-icon-button>
           </div>
         </template>
 
@@ -321,6 +333,35 @@ limitations under the License.
 
                isSelected: function(run) {
                    return this.userSelectedRuns.has(run.id);
+               },
+
+               isRunning: function(run) {
+                   return Guild.Run.isRunning(run);
+               },
+
+               startRun: function(e) {
+                   this.setRunStatus(
+                       e.target.parentElement.getAttribute("run-id"),
+                       "running");
+               },
+
+               stopRun: function(e) {
+                   this.setRunStatus(
+                       e.target.parentElement.getAttribute("run-id"),
+                       "stopped");
+               },
+
+               setRunStatus: function(runId, status) {
+                   var run = Guild.Run.runForId(runId, this.env.runs);
+
+                   // Update run by creating a copy + updated status
+                   var updatedRun = Object.assign({}, run);
+                   updatedRun.status = status;
+
+                   // Replace env.runs with a copy containing the updated run
+                   var index = this.env.runs.indexOf(run);
+                   this.env.runs[index] = updatedRun;
+                   this.set("env.runs", Array.from(this.env.runs));
                },
 
                joinSelected: function(selected) {
