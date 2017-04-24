@@ -25,35 +25,30 @@ limitations under the License.
 
        properties: {
            env: Object,
-           data: {
-               type: Object,
-               notify: true
-           },
            compareDataSource: String,
+           dataSource: {
+               computed: 'computeDataSource(compareDataSource, runs)'
+           },
            runs: Array,
-           repeatWhenRunning: {
+           stopWithRuns: {
                type: Boolean,
                value: false
            },
-           dataSource: {
-               computed: 'computeDataSource(compareDataSource, runs)',
-               observer: 'dataSourceChanged'
-           },
-           runDataFetchInterval: {
+           compareDataFetchInterval: {
                type: Number,
                value: null
            },
            dataFetchInterval: {
                computed: "computeDataFetchInterval("
-                       + "  repeatWhenRunning,"
+                       + "  compareDataFetchInterval,"
+                       + "  stopWithRuns,"
                        + "  runs,"
-                       + "  runDataFetchInterval,"
                        + "  env.settings)"
+           },
+           data: {
+               type: Object,
+               notify: true
            }
-       },
-
-       handleData: function(data) {
-           this.data = data;
        },
 
        computeDataSource: function(compareDataSource, runs) {
@@ -61,36 +56,31 @@ limitations under the License.
            return "compare?sources=" + compareDataSource + "&runs=" + runIds;
        },
 
-       dataSourceChanged: function(val) {
-           if (val) {
-               this.scheduleFetch(0);
+       computeDataFetchInterval: function(interval, stopWithRuns,
+                                          runs, settings) {
+           if (stopWithRuns && !this.util.anyRunning(runs)) {
+               return 0;
+           } else {
+               return interval != null
+                    ? interval
+                    : (settings.refreshInterval || 0);
            }
        },
 
-       computeDataFetchInterval: function(repeatWhenRunning, runs,
-                                          interval, settings) {
-           console.log("compute fetch interval", runs);
+       handleData: function(data) {
+           this.data = data;
        },
 
        util: new function() {
 
-           this.isRunning = function(selected, runs) {
-               var run = Guild.Run.runForId(selected, runs);
-               return Guild.Run.isRunning(run);
+           this.anyRunning = function(runs) {
+               for (var i = 0; i < runs.length; i++) {
+                   if (Guild.Run.isRunning(runs[i])) {
+                       return true;
+                   }
+               }
+               return false;
            };
-
-           this.maybeInterval = function(interval, defaultValue) {
-               return interval != null ? interval : defaultValue;
-           };
-
-           /* TODO
-           this.envRunsStatus: function(runs) {
-               return runs.reduce(function(acc, run) {
-                   acc[run.id] = run.status;
-                   return acc;
-               }, {});
-           }
-           */
        }
    });
   </script>

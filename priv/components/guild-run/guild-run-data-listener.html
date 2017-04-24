@@ -25,23 +25,13 @@ limitations under the License.
 
        properties: {
            env: Object,
-           data: {
-               type: Object,
-               notify: true
-           },
-           formattedValue: {
-               type: String,
-               notify: true,
-               computed: "computeFormattedValue(data)"
-           },
-           formattedDefault: String,
            runDataSource: String,
+           dataSource: {
+               computed: "computeDataSource(runDataSource, env.selectedRun)",
+           },
            stopWithRun: {
                type: Boolean,
                value: false
-           },
-           dataSource: {
-               computed: "computeDataSource(runDataSource, env.selectedRun)",
            },
            runDataFetchInterval: {
                type: Number,
@@ -58,7 +48,17 @@ limitations under the License.
                        + "  env.selectedRun,"
                        + "  env.runs,"
                        + "  env.settings)"
-           }
+           },
+           data: {
+               type: Object,
+               notify: true
+           },
+           formattedValue: {
+               type: String,
+               notify: true,
+               computed: "computeFormattedValue(data)"
+           },
+           formattedDefault: String
        },
 
        computeDataSource: function(runDataSource, selectedRun) {
@@ -95,10 +95,6 @@ limitations under the License.
            this.isRunning = function(selected, runs) {
                var run = Guild.Run.runForId(selected, runs);
                return Guild.Run.isRunning(run);
-           };
-
-           this.maybeInterval = function(interval, defaultValue) {
-               return interval != null ? interval : defaultValue;
            };
        }
    });

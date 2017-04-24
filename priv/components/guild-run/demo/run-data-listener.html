@@ -60,11 +60,20 @@ limitations under the License.
          .item {
              color: #333;
              padding-bottom: 10px;
+             display: flex;
          }
 
          .time {
-             color: #666;
              margin-right: 10px;
+         }
+
+         .source {
+             margin-right: 10px;
+             font-weight: 700;
+         }
+
+         .data {
+             color: #666;
          }
 
          iron-list {
@@ -75,6 +84,10 @@ limitations under the License.
          paper-icon-button {
              color: var(--paper-blue-800);
              font-size: 24px;
+         }
+
+         paper-icon-button[icon=help] {
+             margin-bottom: 12px;
          }
 
          paper-icon-button[disabled] {
@@ -108,7 +121,7 @@ limitations under the License.
 
          .row {
              display: flex;
-             align-items: flex-end;
+             align-items: center;
          }
 
          paper-dialog.help {
@@ -119,14 +132,14 @@ limitations under the License.
         <h2>Run data listener</h2>
 
         <guild-run-data-listener
+            id="listener"
             env="[[env]]"
             data-prefix=""
             run-data-source="[[runDataSource]]"
             stop-with-run="[[stopWithRun]]"
             run-data-fetch-interval="[[runDataFetchInterval]]"
             active="[[active]]"
-            data="{{data}}"
-            formatted-value="{{formattedValue}}">
+            data="{{data}}">
         </guild-run-data-listener>
 
         <paper-toggle-button checked="{{active}}">Active</paper-toggle-button>
@@ -218,7 +231,8 @@ limitations under the License.
           <template>
             <div class="item">
               <span class="time">[[formatTime(item.time)]]</span>
-              [[formatData(item.data)]]
+              <span class="source">[[item.source]]</span>
+              <span class="data">[[formatData(item.data)]]</span>
             </div>
           </template>
         </iron-list>
@@ -297,7 +311,6 @@ limitations under the License.
                    data: {
                        observer: "handleData"
                    },
-                   formattedValue: String,
                    log: {
                        type: Array,
                        value: function() {
@@ -349,7 +362,9 @@ limitations under the License.
                handleData: function(data) {
                    this.push("log", {
                        time: new Date(),
-                       data: data
+                       data: data,
+                       source: this.$.listener.dataSource
+
                    });
                    this.$.logList.scrollToIndex(this.log.length - 1);
                },
