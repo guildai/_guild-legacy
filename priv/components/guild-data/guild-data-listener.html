@@ -70,8 +70,8 @@ limitations under the License.
      },
 
      handleFetchResult: function(result) {
+         this.cancelPendingFetch();
          if (result != null) {
-             this.cancelPendingFetch();
              var data = this.maybeReduce(result);
              this.handleData.bind(this)(data);
          }
