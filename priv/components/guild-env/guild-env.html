@@ -45,7 +45,12 @@ limitations under the License.
                type: Object,
                notify: true,
                value: function() {
-                   return {};
+                   return {
+                       settings: {},
+                       project: {},
+                       runs: undefined,
+                       selectedRun: undefined
+                   }
                }
            },
            route: {
