@@ -75,6 +75,10 @@ handle_msg({F, A}, _From, State) ->
 project_summary_(State) ->
     project_attrs(load_project(State)).
 
+load_project(#state{pdir=Dir}) ->
+    {ok, Project} = guild_project:from_dir(Dir),
+    Project.
+
 project_attrs(Project) ->
     #{
        title => ?bin(project_title(Project)),
@@ -158,11 +162,7 @@ viewdef_(Run, State) ->
     guild_view_viewdef:viewdef(Model, Project).
 
 %% ===================================================================
-%% Helpers
+%% Settings
 %% ===================================================================
-
-load_project(#state{pdir=Dir}) ->
-    {ok, Project} = guild_project:from_dir(Dir),
-    Project.
 
 settings_(#state{settings=S}) -> S.

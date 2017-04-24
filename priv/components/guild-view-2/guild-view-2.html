@@ -56,11 +56,12 @@ limitations under the License.
 
       <guild-view-page id="tensorboard" label="TensorBoard" icon="timeline" env="[[env]]">
         <template>
-          <div>TODO: TensorBoard page</div>
-          <!-- <guild-tensorboard-page env="[[env]]"></guild-tensorboard-page> -->
+          <guild-tensorboard-page env="[[env]]"></guild-tensorboard-page>
         </template>
       </guild-view-page>
+
       <guild-view-404 class="not-found" path="[[route.path]]"></guild-view-404>
+
     </guild-view-app-layout>
 
   </template>
@@ -82,7 +83,7 @@ limitations under the License.
        ],
 
        setTitle: function(project) {
-           if (project.title) {
+           if (project && project.title) {
                document.title = project.title + " - Guild View";
            } else {
                document.title = "Guild View";
