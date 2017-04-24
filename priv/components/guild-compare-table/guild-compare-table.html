@@ -150,6 +150,7 @@ limitations under the License.
 
        handleData: function(data) {
            Guild.CompareTable.refresh(this.dt, data, this.fields);
+           this.updateSelectedRuns();
        },
 
        handleSelected: function() {
@@ -169,10 +170,13 @@ limitations under the License.
            var filter = function(item) {
                return item.selected;
            };
-           var selected = this.dt.data().filter(filter).toArray();
-           this.selectedRuns = selected.map(function(item) {
+           var selectedItems = this.dt.data().filter(filter).toArray();
+           var newSelectedRuns = selectedItems.map(function(item) {
                return item.run;
            });
+           if (Guild.CompareTable.runsChanged(newSelectedRuns, this.selectedRuns)) {
+               this.selectedRuns = newSelectedRuns;
+           }
        },
 
        handleHeader: function() {

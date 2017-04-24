@@ -421,6 +421,30 @@ Guild.CompareTable = new function() {
         return Math.max((settings.refreshInterval || 0), MIN_DATA_FETCH_INTERVAL);
     };
 
+    var runsChanged = function(a, b) {
+        // Returns true if any of these are true:
+        //
+        // - length of a and b differ
+        // - run ID for a[N] and b[N] differ
+        // - run status for a[N] and b[N] differ
+        //
+        // This is an optimization based on our defintion of "change", which
+        // is restricted to run status.
+        //
+        if (!a || !b || a.length != b.length) {
+            return true;
+        } else {
+            for (var i = 0; i < a.length; i++) {
+                var aRun = a[i];
+                var bRun = b[i];
+                if (aRun.id != bRun.id || aRun.status != bRun.status) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    };
+
     this.fieldsDataSource = fieldsDataSource;
     this.init = init;
     this.refresh = refresh;
@@ -431,4 +455,5 @@ Guild.CompareTable = new function() {
     this.syncSelectsWithHeader = syncSelectsWithHeader;
     this.deselectRemoved = deselectRemoved;
     this.dataFetchInterval = dataFetchInterval;
+    this.runsChanged = runsChanged;
 };
