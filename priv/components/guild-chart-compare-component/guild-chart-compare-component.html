@@ -36,7 +36,8 @@ limitations under the License.
     </style>
 
     <guild-run-compare-data-listener
-        env="[[env]]]"
+        active="[[active]]"
+        env="[[env]]"
         compare-data-source="[[source]]"
         runs="[[runs]]"
         stop-with-runs
@@ -58,6 +59,10 @@ limitations under the License.
        is: "guild-chart-compare-component",
 
        properties: {
+           env: Object,
+           source: String,
+           active: Boolean,
+           runs: Array,
            title: String,
            data: {
                observer: "handleData"

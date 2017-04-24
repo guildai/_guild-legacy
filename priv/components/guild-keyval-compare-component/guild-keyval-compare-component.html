@@ -103,6 +103,7 @@ limitations under the License.
     </style>
 
     <guild-run-compare-data-listener
+        active="[[active]]"
         env="[[env]]]"
         compare-data-source="[[source]]"
         compare-data-fetch-interval="0"
@@ -166,13 +167,17 @@ limitations under the License.
        is: "guild-keyval-compare-component",
 
        properties: {
-           title: String,
+           env: Object,
            source: String,
+           active: Boolean,
            runs: Array,
            sortedRuns: {
                type: Array,
                computed: "sortRuns(runs)"
            },
+           title: String,
+           source: String,
+           runs: Array,
            data: {
                observer: "handleData"
            },
