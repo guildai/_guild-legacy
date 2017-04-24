@@ -35,120 +35,29 @@ limitations under the License.
      still rely on these however. -->
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
 
+<link rel="import" href="guild-tensorboard-styles.html">
+
 <dom-module id="guild-tensorboard-page">
   <template>
+    <style include="tf-styles"></style>
     <style>
-     :host {
-         display: block;
-         height: 100%;
-         padding: 0 15px;
 
+     :host {
+         --paper-tabs-selection-bar-color: var(--toolbar-text-accent-color );
          --toolbar-text-color: #444;
          --toolbar-text-accent-color: #ccc;
          --toolbar-tab-ink: #ccc;
-
-         --tf-multi-checkbox-outer-container: {
-             height: inherit;
-             margin-bottom: 20px;
-         };
-
-         --tf-sidebar-helper-sidebar-section: {
-             padding: 20px 0;
-         };
-
-         --tf-dashboard-layout-sidebar: {
-             padding: 20px 20px 0 20px;
-             margin: 2px 20px 2px 2px;
-             background-color: white;
-             @apply(--shadow-elevation-2dp);
-             height: calc(100% - 4px);
-             top: 1px;
-             margin-left: 1px;
-         };
-
-         --tf-sidebar-helper-first-sidebar-section: {
-             padding-top: 0;
-         };
-
-         --tf-option-selector-content-wrapper: {
-             display: flex;
-             flex-wrap: wrap;
-         };
-
-         --tf-regex-group-regex-inpput: {
-              margin-left: 0;
-         };
-
-         --tf-dashboard-style-sidebar-section: {
-             padding: 20px 0;
-         };
-
-         --tf-collapsable-pane: {
-             margin: 2px 2px 20px 2px;
-             @apply(--shadow-elevation-2dp);
-         };
-
-         --tf-collapsable-pane-first: {
-             margin: 2px 2px 20px 2px;
-         };
-
-         --tf-collapsable-pane-heading: {
-             font-size: 18px;
-             padding: 12px 18px;
-             width: calc(100% - 4px);
-             margin-left: 1px;
-             box-shadow: none;
-             outline: 0;
-         };
-
-         --tf-collapsable-pane-content: {
-             border: none;
-         };
-
-         --tf-categorizer: {
-             padding-bottom: 0;
-         };
-
-         --tf-categorizer-underscore-categorization: {
-             display: none;
-         };
-
-         --tf-graph-controls-allcontrols: {
-             width: 240px;
-             padding: 0;
-             margin-top: -20px;
-         };
-
-         --tf-graph-controls-legend-holder: {
-             padding-bottom: 20px;
-         };
-
-         --tf-graph-board-container: {
-             padding: 0;
-         };
-
-         --tf-graph-container: {
-             padding: 0;
-             top: 1px;
-             width: calc(100% - 4px);
-             height: calc(100% - 4px);
-             @apply(--shadow-elevation-2dp);
-         };
-     }
-
-     paper-header-panel {
-         --paper-header-panel-shadow: {
-             display: none;
-         } ;
      }
 
      guild-page-header {
-         margin-bottom: 20px;
+         flex: 1;
+         margin-bottom: 10px;
      }
 
-     #nav {
+     .toolbar {
          display: flex;
          justify-content: space-between;
+         margin-bottom: 10px;
      }
 
      paper-tabs {
@@ -156,7 +65,6 @@ limitations under the License.
          font-size: 14px;
          height: 38px;
          margin-left: 0px;
-         --paper-tabs-selection-bar-color: var(--toolbar-text-accent-color );
      }
 
      paper-tab {
@@ -164,11 +72,87 @@ limitations under the License.
          --paper-tab-ink: var(--toolbar-tab-ink);
      }
 
-     #content {
-         height: 100%;
-     }
     </style>
 
+    <div class="container-fluid">
+      <div class="row">
+        <guild-page-header
+            title="[[env.project.title]]"
+            title-tooltip="[[env.project.description]]">
+      </div>
+
+      <div class="row">
+        <div class="col-12">
+          <template is="dom-if" if="[[initialized]]">
+
+            <div class="toolbar">
+              <paper-tabs selected="{{selected}}">
+                <template is="dom-repeat" items="[[tabs]]" as="tab">
+                  <paper-tab data-mode="[[tab.id]]">[[tab.label]]</paper-tab>
+                </template>
+              </paper-tabs>
+              <paper-icon-button
+                  icon="refresh"
+                  on-tap="reload"
+                  disabled$="[[isGraphs(mode)]]"
+                  id="reload-button">
+              </paper-icon-button>
+            </div>
+
+            <div id="dashboard">
+
+              <template is="dom-if" if="[[isScalars(mode)]]">
+                <tf-scalar-dashboard
+                    id="scalars"
+                    backend="[[backend]]"
+                    router="[[router]]">
+                </tf-scalar-dashboard>
+              </template>
+
+              <template is="dom-if" if="[[isImages(mode)]]">
+                <tf-image-dashboard
+                    id="images"
+                    backend="[[backend]]">
+                </tf-image-dashboard>
+              </template>
+
+              <template is="dom-if" if="[[isAudio(mode)]]">
+                <tf-audio-dashboard
+                    id="audio"
+                    backend="[[backend]]">
+                </tf-audio-dashboard>
+              </template>
+
+              <template is="dom-if" if="[[isGraphs(mode)]]">
+                <tf-graph-dashboard
+                    id="graphs"
+                    backend="[[backend]]">
+                </tf-graph-dashboard>
+              </template>
+
+              <template is="dom-if" if="[[isDistributions(mode)]]">
+                <tf-distribution-dashboard
+                    id="distributions"
+                    backend="[[backend]]">
+                </tf-distribution-dashboard>
+              </template>
+
+              <template is="dom-if" if="[[isHistograms(mode)]]">
+                <tf-histogram-dashboard
+                    id="histograms"
+                    backend="[[backend]]">
+                </tf-histogram-dashboard>
+              </template>
+
+            </div>
+
+          </template>
+        </div>
+      </div>
+
+    </div>
+
+    <!--
     <paper-header-panel>
       <guild-page-header
           class="paper-header"
@@ -190,6 +174,8 @@ limitations under the License.
       </guild-page-header>
 
       <div id="content">
+        -->
+
         <!--
         <template is="dom-if" if="[[env.settings.tensorboard]]">
           <template is="dom-if" if="[[isScalars(mode)]]">
@@ -235,12 +221,14 @@ limitations under the License.
             </tf-histogram-dashboard>
           </template>
         </template>
-        -->
+           -->
 
-        <p>[[env.settings.tensorboard.demo]]</p>
+        <!--
       </div>
 
     </paper-header-panel>
+           -->
+
   </template>
   <script>
    Polymer({
@@ -254,6 +242,10 @@ limitations under the License.
 
        properties: {
            env: Object,
+           initialized: {
+               type: Boolean,
+               computed: "computeInitialized(router, backend)"
+           },
            router: {
                type: Object,
                computed: "computeRouter(env.settings)"
@@ -304,12 +296,19 @@ limitations under the License.
            }
        },
 
+       computeInitialized: function(router, backend) {
+           return router && backend;
+       },
+
        computeRouter: function(settings) {
-           return null; ////////////////////////////////////////
-           if (settings.tensorboard.demo) {
-               return TF.Backend.router("/assets/tf-demo", true);
+           if (settings) {
+               if (settings.tensorboard.demo) {
+                   return TF.Backend.router("/assets/tf-demo", true);
+               } else {
+                   return TF.Backend.router("/data/tf");
+               }
            } else {
-               return TF.Backend.router("/data/tf");
+               return undefined;
            }
        },
 
