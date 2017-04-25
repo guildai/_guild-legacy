@@ -14,58 +14,68 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../guild-styles/guild-styles.html">
-
-<script src="viewpage.js"></script>
-
 <dom-module id="guild-view-page">
-  <template>
-    <style include="guild-spacing-styles"></style>
-    <style include="guild-view-row-styles"></style>
-    <style>
-     .component-wrapper {
-         margin-bottom: 20px;
-     }
-    </style>
-  </template>
-
   <script>
    Polymer({
-       is: 'guild-view-page',
+       is: "guild-view-page",
+
+       behaviors: [Polymer.Templatizer],
 
        properties: {
-           page: Object,
+           id: String,
+           label: String,
+           icon: String,
            env: Object,
-           generated: {
-               type: Boolean,
-               value: false
-           }
-       },
-
-       ensureGenerated: function() {
-           if (!this.generated) {
-               if (this.page.layout) {
-                   Guild.ViewPage.generate(
-                       this.root,
-                       this.page.layout,
-                       this.initGenerateState());
+           instance: Object,
+           mutablePaths: {
+               type: Object,
+               value: function() {
+                   return new Set([
+                       "env.selectedRun"
+                   ]);
                }
-               this.generated = true;
            }
        },
 
-       initGenerateState: function() {
-           return {
-               env: this.env,
-               page: this
-           };
+       ready: function() {
+           var template = this.$$("template");
+           if (!template) {
+               throw ["guild-view-page must provide a template", this];
+           }
+           this.templatize(template);
        },
 
-       selected: function(val) {
-           Guild.ViewPage.components(this).forEach(function(c) {
-               c.active = val;
-           });
+       initialize: function() {
+           if (this.instance) {
+               throw ["already initialized", this, this.instance];
+           }
+           this.instance = this.stamp();
+           Polymer.dom(this.root).appendChild(this.instance.root);
+       },
+
+       _forwardParentPath: function(path, value) {
+           if (this.instance) {
+               this.instance.set(path, value);
+           }
+       },
+
+       _forwardParentProp: function(prop, value) {
+           if (this.instance) {
+               this.instance[prop] = value;
+           }
+       },
+
+       _forwardInstanceProp: function(inst, prop, value) {
+           console.log("*** _forwardInstanceProp", inst, prop, value);
+           // TODO move up to host, but what?
+       },
+
+       _forwardInstancePath: function(inst, path, value) {
+           if (this.mutablePaths.has(path)) {
+               this.set(path, value);
+           }
        }
+
    });
   </script>
 </dom-module>
