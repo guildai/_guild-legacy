@@ -32,7 +32,8 @@ limitations under the License.
       <app-drawer hidden$="[[!narrow]]">
         <guild-view-app-menu
             pages="[[pages]]"
-            selected="{{selected}}">
+            selected="{{selected}}"
+            on-iron-activate="closeDrawer">
         </guild-view-app-menu>
       </app-drawer>
 
@@ -105,7 +106,6 @@ limitations under the License.
        },
 
        selectedChanged: function(selected, containers) {
-           this.closeDrawer();
            this.ensureInstance(selected, containers);
        },
 
