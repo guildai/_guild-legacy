@@ -46,7 +46,7 @@ block-insert \
 block-insert \
     priv/components/tf-dashboard-common/tf-regex-group.html \
     '\.regex-input {' '}' \
-    '\            @apply(--tf-regex-group-regex-inpput);'
+    '\            @apply(--tf-regex-group-regex-input);'
 
 block-insert \
     priv/components/tf-dashboard-common/tf-option-selector.html \
@@ -77,6 +77,11 @@ block-insert \
     priv/components/tf-dashboard-common/tf-collapsable-pane.html \
     ':host:first-of-type {' '}' \
     '\        @apply(--tf-collapsable-pane-first);'
+
+block-insert \
+    priv/components/tf-dashboard-common/tf-collapsable-pane.html \
+    ':host:last-of-type {' '}' \
+    '\        @apply(--tf-collapsable-pane-last);'
 
 block-insert \
     priv/components/tf-dashboard-common/tf-categorizer.html \

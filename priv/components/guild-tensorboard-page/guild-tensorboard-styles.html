@@ -14,31 +14,34 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+<link rel="import" href="../paper-styles/paper-styles.html">
+
 <dom-module id="tf-styles">
   <template>
     <style>
      :host {
          --tf-multi-checkbox-outer-container: {
              height: inherit;
-             margin-bottom: 20px;
+             margin: 0 0 10px 0;
          };
 
          --tf-sidebar-helper-sidebar-section: {
-             padding: 20px 0;
+             padding: 20px 0 0 0;
+             margin: 20px 0 0 0;
          };
 
          --tf-dashboard-layout-sidebar: {
-             padding: 20px 20px 0 20px;
-             margin: 2px 20px 2px 2px;
+             padding: 10px 0 10px 20px;
+             margin: 0 20px 0 0;
              background-color: white;
-             @apply(--shadow-elevation-2dp);
              height: calc(100% - 4px);
              top: 1px;
-             margin-left: 1px;
+             @apply(--shadow-elevation-2dp);
          };
 
          --tf-sidebar-helper-first-sidebar-section: {
-             padding-top: 0;
+             padding: 0;
+             margin-top: 0;
          };
 
          --tf-option-selector-content-wrapper: {
@@ -46,16 +49,18 @@ limitations under the License.
              flex-wrap: wrap;
          };
 
-         --tf-regex-group-regex-inpput: {
+         --tf-regex-group-regex-input: {
              margin-left: 0;
          };
 
          --tf-dashboard-style-sidebar-section: {
-             padding: 20px 0;
+             padding: 20px 0 0 0;
+             margin: 20px 0 0 0;
          };
 
          --tf-collapsable-pane: {
              margin: 2px 2px 20px 2px;
+             width: calc(100% - 4px);
              @apply(--shadow-elevation-2dp);
          };
 
@@ -63,10 +68,14 @@ limitations under the License.
              margin: 2px 2px 20px 2px;
          };
 
+         --tf-collapsable-pane-last: {
+             margin: 2px;
+         };
+
          --tf-collapsable-pane-heading: {
              font-size: 18px;
-             padding: 12px 18px;
-             width: calc(100% - 4px);
+             padding: 15px;
+             width: calc(100% - 5px);
              margin-left: 1px;
              box-shadow: none;
              outline: 0;
@@ -85,13 +94,13 @@ limitations under the License.
          };
 
          --tf-graph-controls-allcontrols: {
-             width: 240px;
-             padding: 0;
-             margin-top: -20px;
+             min-width: 300px;
+             padding: 0 20px 0 0;
+             margin-top: -10px;
          };
 
          --tf-graph-controls-legend-holder: {
-             padding-bottom: 20px;
+             padding-bottom: 40px;
          };
 
          --tf-graph-board-container: {
