@@ -19,8 +19,8 @@ import os
 import subprocess
 import sys
 
-from tensorflow.python.summary import event_multiplexer
-from tensorflow.python.summary import event_accumulator
+from tensorflow.tensorboard.backend.event_processing import event_multiplexer
+from tensorflow.tensorboard.backend.event_processing import event_accumulator
 
 RUNDIR = None
 
