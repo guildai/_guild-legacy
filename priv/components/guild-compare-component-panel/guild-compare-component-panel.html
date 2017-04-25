@@ -26,7 +26,7 @@ limitations under the License.
          color: var(--disabled-text-color);
      }
     </style>
-    <guild-component-panel id="panel" title="[[title]]">
+    <guild-component-panel id="panel" heading="[[heading]]">
       <div class="actions">
         <paper-icon-button
             icon="[[fullscreenIcon]]"
@@ -49,7 +49,7 @@ limitations under the License.
        behaviors: [Guild.FullscreenBehavior],
 
        properties: {
-           title: String
+           heading: String
        },
 
        attached: function() {

@@ -36,11 +36,11 @@ limitations under the License.
          padding: 0;
      }
     </style>
-    <h1 id="title">[[title]]</h1>
+    <h1 id="title">[[heading]]</h1>
     <paper-tooltip
         for="title"
         offset="5"
-        animation-delay="250">[[titleTooltip]]</paper-tooltip>
+        animation-delay="250">[[headingTooltip]]</paper-tooltip>
     <content></content>
   </template>
   <script>
@@ -48,8 +48,8 @@ limitations under the License.
        is: "guild-page-header",
 
        properties: {
-           title: String,
-           titleTooltip: String
+           heading: String,
+           headingTooltip: String
        }
    });
   </script>

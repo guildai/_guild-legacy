@@ -104,14 +104,14 @@ limitations under the License.
 
     <guild-run-compare-data-listener
         active="[[active]]"
-        env="[[env]]]"
+        env="[[env]]"
         compare-data-source="[[source]]"
         compare-data-fetch-interval="0"
         runs="[[runs]]"
         data="{{data}}">
     </guild-run-compare-data-listener>
 
-    <guild-compare-component-panel title="[[title]]">
+    <guild-compare-component-panel heading="[[heading]]">
       <template is="dom-if" if="[[!right]]">
         <div class="waiting">No runs selected</div>
       </template>
@@ -175,7 +175,7 @@ limitations under the License.
                type: Array,
                computed: "sortRuns(runs)"
            },
-           title: String,
+           heading: String,
            source: String,
            runs: Array,
            data: {

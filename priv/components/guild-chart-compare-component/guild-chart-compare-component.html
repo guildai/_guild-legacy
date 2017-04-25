@@ -44,7 +44,7 @@ limitations under the License.
         data="{{data}}">
     </guild-run-compare-data-listener>
 
-    <guild-compare-component-panel title="[[title]]" on-component-fullscreen="fullscreen">
+    <guild-compare-component-panel heading="[[heading]]" on-component-fullscreen="fullscreen">
       <div class="actions">
         <guild-chart-options options="{{options}}"></guild-chart-option>
       </div>
@@ -63,7 +63,7 @@ limitations under the License.
            source: String,
            active: Boolean,
            runs: Array,
-           title: String,
+           heading: String,
            data: {
                observer: "handleData"
            },

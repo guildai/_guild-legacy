@@ -50,7 +50,7 @@ limitations under the License.
                 source="[[c.source]]"
                 runs="[[runs]]"
                 active="[[active]]"
-                title="[[c.title]]">
+                heading="[[c.heading]]">
             </guild-chart-compare-component>
           </template>
           <template is="dom-if" if="[[c.isKeyval]]">
@@ -59,7 +59,7 @@ limitations under the License.
                 source="[[c.source]]"
                 runs="[[runs]]"
                 active="[[active]]"
-                title="[[c.title]]">
+                heading="[[c.heading]]">
           </template>
         </div>
       </template>
@@ -100,19 +100,19 @@ limitations under the License.
                return {
                    isChart: true,
                    source: source,
-                   title: source.slice(7)
+                   heading: source.slice(7)
                };
            } else if (source == "flags") {
                return {
                    isKeyval: true,
                    source: source,
-                   title: "Flags"
+                   heading: "Flags"
                };
            } else if  (source == "attrs") {
                return {
                    isKeyval: true,
                    source: source,
-                   title: "Attributes"
+                   heading: "Attributes"
                };
            } else {
                throw ["unsupported component source", source];
