@@ -34,6 +34,8 @@ limitations under the License.
          --paper-toolbar-height: 100%;
          --paper-toolbar-content: {
              padding: 0 10px 5px;
+             flex-wrap: wrap;
+             justify-content: space-between;
          };
          --paper-toggle-button-checked-bar-color: var(--paper-green-200);
          --paper-toggle-button-checked-button-color: var(--paper-green-600);
@@ -61,7 +63,6 @@ limitations under the License.
       <div id="container">
         <paper-toolbar>
           <guild-filter-input id="filter" on-input="syncWithSearch"></guild-filter-input>
-          <span class="title"></span> <!-- spacer w/flex=1 -->
           <paper-toggle-button checked="{{hideFailed}}">Hide failed runs</paper-toggle-button>
         </paper-toolbar>
         <table
