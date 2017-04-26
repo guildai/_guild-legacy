@@ -25,7 +25,6 @@
 %% ===================================================================
 
 start_server(View, Port, Opts) ->
-    guild_dtl:init([recompile_templates]),
     App = create_app(View, Opts),
     ServerOpts = [{proc_callback, {?MODULE, [View]}}],
     guild_http_sup:start_server(Port, App, ServerOpts).
@@ -51,7 +50,6 @@ routes(View) ->
       [{{starts_with, "/assets/"},     static_handler()},
        {{starts_with, "/components/"}, components_handler()},
        {{starts_with, "/data/"},       data_handler(View)},
-       {"/bye",                        bye_handler()},
        {'_',                           app_page_handler()}]).
 
 static_handler() ->
@@ -62,14 +60,6 @@ components_handler() ->
 
 data_handler(View) ->
     guild_view_data_http:create_app(View).
-
-bye_handler() ->
-    fun(_Env) -> handle_bye() end.
-
-handle_bye() ->
-    timer:apply_after(500, ?MODULE, stop_server, []),
-    Page = guild_dtl:render(guild_bye_page, []),
-    guild_http:ok_html(Page).
 
 middleware(Opts) ->
     maybe_apply_log_middleware(Opts, []).
@@ -93,7 +83,10 @@ app_page_handler() ->
 handle_app_page({"/", QS, _}) ->
     handle_index_page(QS);
 handle_app_page(_) ->
-    handle_app_page().
+    psycho_static:serve_file(index_path()).
+
+index_path() ->
+    filename:join(guild_app:priv_dir(), "assets/htdocs/view-index.html").
 
 handle_index_page(QS) ->
     guild_http:redirect(viewdef_page1_path(QS)).
@@ -103,10 +96,6 @@ viewdef_page1_path(QS) ->
 
 maybe_qs("") -> "";
 maybe_qs(QS) -> ["?", QS].
-
-handle_app_page() ->
-    Page = guild_dtl:render(guild_view_index_page, []),
-    guild_http:ok_html(Page).
 
 %% ===================================================================
 %% Helpers

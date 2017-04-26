@@ -16,18 +16,22 @@
 
 -export([start_link/3]).
 
--export([ok_html/1, ok_html/2, ok_text/1, ok_json/1, ok_no_content/0,
-         error_html/1, redirect/1, redirect/2, not_found/0,
-         not_found/1, bad_request/0, bad_request/1, internal_error/0,
-         internal_error/1, validate_params/2, validate_params/3]).
+-export([init_mime_types/0, ok_html/1, ok_html/2, ok_text/1,
+         ok_json/1, ok_no_content/0, error_html/1, redirect/1,
+         redirect/2, not_found/0, not_found/1, bad_request/0,
+         bad_request/1, internal_error/0, internal_error/1,
+         validate_params/2, validate_params/3]).
 
 %% ===================================================================
 %% Start
 %% ===================================================================
 
 start_link(Port, App, Opts) ->
-    init_mime_types(),
     psycho_server:start_link(Port, App, Opts).
+
+%% ===================================================================
+%% Init mime types
+%% ===================================================================
 
 init_mime_types() ->
     Types = psycho_mime:load_types(mime_types_source()),

@@ -124,6 +124,7 @@ validate_interval(I) when I > 0 -> I;
 validate_interval(_) -> throw({error, "invalid value for --interval"}).
 
 start_http_server(View, Port, Opts) ->
+    guild_http:init_mime_types(),
     case guild_view_http:start_server(View, Port, Opts) of
         {ok, Server} ->
             Server;
