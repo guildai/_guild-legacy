@@ -16,7 +16,7 @@
 
 -export([start_server/3, stop_server/0, run_for_params/2]).
 
--export([handle_app_page/1]).
+-export([handle_app_page/2]).
 
 -export([init/1, handle_msg/3]).
 
@@ -43,14 +43,14 @@ handle_msg(stop, _From, _App) ->
 %% ===================================================================
 
 create_app(View, Opts) ->
-    psycho_util:chain_apps(routes(View), middleware(Opts)).
+    psycho_util:chain_apps(routes(View, Opts), middleware(Opts)).
 
-routes(View) ->
+routes(View, Opts) ->
     psycho_route:create_app(
       [{{starts_with, "/assets/"},     static_handler()},
        {{starts_with, "/components/"}, components_handler()},
        {{starts_with, "/data/"},       data_handler(View)},
-       {'_',                           app_page_handler()}]).
+       {'_',                           app_page_handler(Opts)}]).
 
 static_handler() ->
     psycho_static:create_app(guild_app:priv_dir()).
@@ -77,16 +77,47 @@ log_middleware() ->
 %% App page handler
 %% ===================================================================
 
-app_page_handler() ->
-    psycho_util:dispatch_app({?MODULE, handle_app_page}, [parsed_path]).
+app_page_handler(Opts) ->
+    Index = static_index_resp(Opts),
+    psycho_util:dispatch_app({?MODULE, handle_app_page}, [parsed_path, Index]).
 
-handle_app_page({"/", QS, _}) ->
+static_index_resp(Opts) ->
+    static_index_resp(vulcanized_index_file(), debug_mode(Opts)).
+
+debug_mode(Opts) -> proplists:get_bool(debug, Opts).
+
+vulcanized_index_file() ->
+    Path = filename:join(guild_app:priv_dir(), "view-index-all.html.gz"),
+    case filelib:is_file(Path) of
+        true -> {ok, Path};
+        false -> error
+    end.
+
+static_index_resp({ok, Vulcanized}, false) ->
+    gzip_html_resp(Vulcanized);
+static_index_resp(_, _) ->
+    html_resp(index_file()).
+
+index_file() ->
+    filename:join(guild_app:priv_dir(), "view-index.html").
+
+gzip_html_resp(Path) ->
+    html_resp(Path, [{"Content-Encoding", "gzip"}]).
+
+html_resp(Path) -> html_resp(Path, []).
+
+html_resp(Path, ExtraHeaders) ->
+    {ok, Bin} = file:read_file(Path),
+    Headers =
+        [{"Content-Length", integer_to_list(size(Bin))},
+         {"Content-Type", "text/html"}
+         |ExtraHeaders],
+    {{200, "OK"}, Headers, Bin}.
+
+handle_app_page({"/", QS, _}, _) ->
     handle_index_page(QS);
-handle_app_page(_) ->
-    psycho_static:serve_file(index_path()).
-
-index_path() ->
-    filename:join(guild_app:priv_dir(), "assets/htdocs/view-index.html").
+handle_app_page(_, Resp) ->
+    Resp.
 
 handle_index_page(QS) ->
     guild_http:redirect(viewdef_page1_path(QS)).

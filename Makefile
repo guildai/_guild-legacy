@@ -32,10 +32,20 @@ polylint:
 	  exit 1; \
 	fi
 
+vulcanize-view-index:
+	cd priv && vulcanize \
+	  --inline-scripts \
+	  --inline-css \
+	  --strip-comments \
+	  view-index.html | gzip > view-index-all.html.gz
+
+clean-vulcanized:
+	cd priv && rm -f *.html.gz
+
 component-demos:
 	cd priv/components; python -m SimpleHTTPServer 8082
 
-clean: clean-local-deps clean-bin-deps clean-components
+clean: clean-local-deps clean-bin-deps clean-components clean-vulcanized
 	rm -rf build; rm -f rebar.lock
 	rm -f compile_commands.json
 

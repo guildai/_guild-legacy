@@ -8,7 +8,7 @@ rebar.lock
 # Not sure who's generating this but it's related to erlexec
 compile_commands.json
 /priv/bin/multimarkdown
-/priv/dtl/analytics.html
+/priv/*.html.gz
 /priv/components/*
 !/priv/components/guild-*
 !/priv/components/vz-*

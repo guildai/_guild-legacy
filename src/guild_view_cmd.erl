@@ -52,6 +52,8 @@ view_options() ->
       [{metavar, "SECONDS"}]},
      {logging, "-l, --logging",
       "enable logging", [flag]},
+     %% view --debug flag is shorthand for global --debug and --reload
+     {debug, "--debug", "Run with debug settings", [hidden, flag]},
      {tf_demo, "--tf-demo", "Use tf-demo data", [hidden, flag]}].
 
 fmt(Msg, Data) -> io_lib:format(Msg, Data).
@@ -61,6 +63,7 @@ fmt(Msg, Data) -> io_lib:format(Msg, Data).
 %% ===================================================================
 
 main(Opts, []) ->
+    apply_debug_opts(Opts),
     Project = guild_cmd_support:project_from_opts(Opts),
     guild_app:init_support([exec]),
     TBInfo = start_tensorboard(Project, Opts),
@@ -69,6 +72,15 @@ main(Opts, []) ->
     Server = start_http_server(View, Port, Opts),
     guild_cli:out("Guild View running on port ~b~n", [Port]),
     wait_for_server_and_terminate(Server, Opts).
+
+apply_debug_opts(Opts) ->
+    maybe_apply_debug_opts(proplists:get_bool(debug, Opts)).
+
+maybe_apply_debug_opts(true) ->
+    guild_reloader:init_from_opts([reload]),
+    ok = application:ensure_started(sasl);
+maybe_apply_debug_opts(false) ->
+    ok.
 
 start_tensorboard(Project, Opts) ->
     LogDir = tensorboard_logdir(Project),
