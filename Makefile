@@ -1,25 +1,23 @@
 LOCAL_DEPS = $(wildcard local-deps/*)
 
-compile: bin-deps
+compile: app component-deps
+	@echo
+	@echo "  Congratulations - you've compiled Guild AI!"
+	@echo
+	@echo "  Run 'scripts/guild-dev' directly or create a symbolic link"
+	@echo "  to it somewhere on your path."
+	@echo
+	@echo "  Run tests by running 'make test'"
+	@echo
+
+app:
 	./rebar3 compile
-
-bin-deps: priv/bin/multimarkdown
-
-mmd_repo = https://github.com/fletcher/MultiMarkdown-4.git
-
-priv/bin/multimarkdown:
-	mkdir -p build/default/lib
-	git clone $(mmd_repo) build/default/lib/mmd
-	cd build/default/lib/mmd && git submodule init && git submodule update && make
-	cp build/default/lib/mmd/multimarkdown priv/bin/multimarkdown
 
 component-deps:
 	bower install
 	scripts/patch-components
 
-compile-with-deps: component-deps compile
-
-sync-tf-component:
+sync-tf-components:
 	scripts/sync-tf-components
 	scripts/patch-components
 
@@ -39,15 +37,12 @@ vulcanize-view-index:
 	  --strip-comments \
 	  view-index.html | gzip > view-index-all.html.gz
 
-clean-vulcanized:
-	cd priv && rm -f *.html.gz
-
-component-demos:
-	cd priv/components; python -m SimpleHTTPServer 8082
-
 clean: clean-local-deps clean-bin-deps clean-components clean-vulcanized
 	rm -rf build; rm -f rebar.lock
 	rm -f compile_commands.json
+
+clean-vulcanized:
+	cd priv && rm -f *.html.gz
 
 clean-local-deps: $(LOCAL_DEPS:=.clean)
 
@@ -62,13 +57,13 @@ clean-components:
 	  | grep -v '^guild-' \
 	  | grep -v '^tf-' \
 	  | grep -v '^vz-' \
-	  | xargs echo
+	  | xargs rm -rf
 
 upgrade:
 	./rebar3 upgrade
 	./rebar3 compile
 
-test: compile
+test: app
 	test/internal $(TESTS)
 	priv/bin/tensorflow-port test
 
@@ -92,5 +87,5 @@ version:
 # Ordering dependencies so invoking targets explicitly
 release: version
 	make vulcanize-view-index
-	make compile-with-deps
+	make compile
 	scripts/mkrel $(VERSION)
