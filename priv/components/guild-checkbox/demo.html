@@ -55,17 +55,17 @@ limitations under the License.
              padding: 10px 20px;
          }
         </style>
-        <h3>Aria checked</h3>
+        <h3>Value</h3>
         <div>
-          <guild-checkbox id="cb1" aria-checked="{{ac1}}">Checkbox 1 ([[ac1]])</guild-checkbox>
-          <guild-checkbox id="cb2" aria-checked="{{ac2}}">Checkbox 2 ([[ac2]])</guild-checkbox>
-          <guild-checkbox id="cb3" aria-checked="{{ac3}}">Checkbox 3 ([[ac3]])</guild-checkbox>
+          <guild-checkbox id="cb1" value="{{ac1}}">Checkbox 1 ([[ac1]])</guild-checkbox>
+          <guild-checkbox id="cb2" value="{{ac2}}">Checkbox 2 ([[ac2]])</guild-checkbox>
+          <guild-checkbox id="cb3" value="{{ac3}}">Checkbox 3 ([[ac3]])</guild-checkbox>
         </div>
         <div style="margin-top:20px">
-          Set <code>aria-checked</code>:
-          <paper-button raised on-click="acTrue">true</paper-button>
-          <paper-button raised on-click="acFalse">false</paper-button>
-          <paper-button raised on-click="acMixed">mixed</paper-button>
+          Set <code>value</code>:
+          <paper-button raised on-click="setTrue">true</paper-button>
+          <paper-button raised on-click="setFalse">false</paper-button>
+          <paper-button raised on-click="setMixed">mixed</paper-button>
         </div>
         <h3>Other styles</h3>
           <guild-checkbox aria-checked="true" disabled>Disabled</guild-checkbox>
@@ -89,22 +89,22 @@ limitations under the License.
                    this.ac3 = "mixed";
                },
 
-               acTrue: function() {
+               setTrue: function() {
                    this.setAc("true");
                },
 
-               acFalse: function() {
+               setFalse: function() {
                    this.setAc("false");
                },
 
-               acMixed: function() {
+               setMixed: function() {
                    this.setAc("mixed");
                },
 
                setAc: function(val) {
-                   this.$.cb1.ariaChecked = val;
-                   this.$.cb2.ariaChecked = val;
-                   this.$.cb3.ariaChecked = val;
+                   this.$.cb1.value = val;
+                   this.$.cb2.value = val;
+                   this.$.cb3.value = val;
                }
            });
        });

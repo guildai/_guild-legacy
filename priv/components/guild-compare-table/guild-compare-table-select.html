@@ -26,7 +26,7 @@ limitations under the License.
          --paper-checkbox-size: 16px;
      }
     </style>
-    <guild-checkbox noink aria-checked="{{checked}}"></guild-checkbox>
+    <guild-checkbox noink value="{{value}}"></guild-checkbox>
   </template>
   <script>
    Polymer({
@@ -37,7 +37,7 @@ limitations under the License.
                type: Boolean,
                value: false
            },
-           checked: {
+           value: {
                type: String,
                value: "false",
                observer: "changed"

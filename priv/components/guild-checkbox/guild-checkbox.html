@@ -19,8 +19,7 @@ limitations under the License.
 <dom-module id="guild-checkbox">
   <template>
     <style>
-     :host[aria-checked=mixed] {
-
+     :host[value=mixed] {
          /* HACK The use of important here works around an issue where
            additional styles are added to the checkbox container,
            overriding this setting. */
@@ -29,7 +28,7 @@ limitations under the License.
     </style>
     <paper-checkbox
         id="cb"
-        checked="[[cbChecked]]"
+        checked="[[checked]]"
         disabled="{{disabled}}"
         noink="{{noink}}"
         on-change="checkedChanged"
@@ -40,17 +39,17 @@ limitations under the License.
        is: "guild-checkbox",
 
        properties: {
-           ariaChecked: {
+           value: {
                type: String,
-               observer: 'ariaCheckedChanged',
+               observer: 'valueChanged',
                notify: true,
                reflectToAttribute: true
            },
            disabled: Boolean,
            noink: Boolean,
-           cbChecked: {
+           checked: {
                type: Boolean,
-               computed: 'computeCbChecked(ariaChecked)'
+               computed: 'computeChecked(value)'
            }
        },
 
@@ -58,15 +57,15 @@ limitations under the License.
            this.updateStyles();
        },
 
-       computeCbChecked: function(ariaChecked) {
-           return ariaChecked == "true";
+       computeChecked: function(value) {
+           return value == "true";
        },
 
        checkedChanged: function() {
-           this.ariaChecked = this.$.cb.checked ? "true" : "false";
+           this.value = this.$.cb.checked ? "true" : "false";
        },
 
-       ariaCheckedChanged: function(val, old) {
+       valueChanged: function() {
            this.updateStyles();
        }
    });

@@ -344,7 +344,7 @@ Guild.CompareTable = new function() {
             var tr = dt.row(index).node();
             var item = dt.row(index).data();
             var select = tr.querySelector("guild-compare-table-select");
-            if (select.checked == "true") {
+            if (select.value == "true") {
                 item.selected = true;
                 $(tr).addClass("highlight");
             } else {
@@ -357,7 +357,7 @@ Guild.CompareTable = new function() {
     var refreshSelectHeader = function(dt) {
         var header = headerSelectForTable(dt);
         var selects = selectsForTable(dt);
-        header.checked = headerCheckedForSelects(selects);
+        header.value = headerValueForSelects(selects);
     };
 
     var headerSelectForTable = function(dt) {
@@ -368,10 +368,10 @@ Guild.CompareTable = new function() {
         return dt.table().body().querySelectorAll("guild-compare-table-select");
     };
 
-    var headerCheckedForSelects = function(selects) {
+    var headerValueForSelects = function(selects) {
         var first = null;
         for (var i = 0; i < selects.length; i++) {
-            var cur = selects[i].checked;
+            var cur = selects[i].value;
             if (first == null) {
                 first = cur;
             } else if (first != cur) {
@@ -385,7 +385,7 @@ Guild.CompareTable = new function() {
         var header = headerSelectForTable(dt);
         var selects = selectsForTable(dt);
         selects.forEach(function(select) {
-            select.checked = header.checked;
+            select.value = header.value;
         });
     };
 
@@ -407,7 +407,7 @@ Guild.CompareTable = new function() {
     };
 
     var deselect = function(dt, item) {
-        tableSelectComponent(dt, item).checked = "false";
+        tableSelectComponent(dt, item).value = "false";
     };
 
     var tableSelectComponent = function(dt, item) {
