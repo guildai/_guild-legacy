@@ -35,7 +35,7 @@ limitations under the License.
         <paper-icon-button
             icon="close"
             on-click="fireDelete"
-            hidden="[[noDelete]]">
+            hidden$="[[noDelete]]">
         </paper-icon-button>
         <content select=".actions"></content>
       </div>
@@ -49,7 +49,8 @@ limitations under the License.
        behaviors: [Guild.FullscreenBehavior],
 
        properties: {
-           heading: String
+           heading: String,
+           noDelete: Boolean
        },
 
        attached: function() {
