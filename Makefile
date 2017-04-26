@@ -89,5 +89,8 @@ version:
 	  exit 1; \
 	fi
 
-release: version compile
+# Ordering dependencies so invoking targets explicitly
+release: version
+	make vulcanize-view-index
+	make compile-with-deps
 	scripts/mkrel $(VERSION)

@@ -16,7 +16,7 @@
 
 -export([start_server/3, stop_server/0, run_for_params/2]).
 
--export([handle_app_page/2]).
+-export([handle_app_page/3]).
 
 -export([init/1, handle_msg/3]).
 
@@ -46,17 +46,18 @@ create_app(View, Opts) ->
     psycho_util:chain_apps(routes(View, Opts), middleware(Opts)).
 
 routes(View, Opts) ->
+    Static = static_handler(),
     psycho_route:create_app(
-      [{{starts_with, "/assets/"},     static_handler()},
-       {{starts_with, "/components/"}, components_handler()},
+      [{{starts_with, "/assets/"},     Static},
+       {{starts_with, "/components/"}, Static},
        {{starts_with, "/data/"},       data_handler(View)},
+       {"/favicon.ico",                Static},
        {'_',                           app_page_handler(Opts)}]).
 
 static_handler() ->
-    psycho_static:create_app(guild_app:priv_dir()).
-
-components_handler() ->
-    psycho_static:create_app(guild_app:priv_dir()).
+    Root = guild_app:priv_dir(),
+    Opts = [{default_cache_control, "no-cache"}],
+    psycho_static2:create_app(Root, Opts).
 
 data_handler(View) ->
     guild_view_data_http:create_app(View).
@@ -78,46 +79,35 @@ log_middleware() ->
 %% ===================================================================
 
 app_page_handler(Opts) ->
-    Index = static_index_resp(Opts),
-    psycho_util:dispatch_app({?MODULE, handle_app_page}, [parsed_path, Index]).
+    Index = static_index_path(Opts),
+    psycho_util:dispatch_app(
+      {?MODULE, handle_app_page},
+      [parsed_path, Index, env]).
 
-static_index_resp(Opts) ->
-    static_index_resp(vulcanized_index_file(), debug_mode(Opts)).
+static_index_path(Opts) ->
+    static_index_path(maybe_vulcanized_path(), debug_mode(Opts)).
 
 debug_mode(Opts) -> proplists:get_bool(debug, Opts).
 
-vulcanized_index_file() ->
+maybe_vulcanized_path() ->
     Path = filename:join(guild_app:priv_dir(), "view-index-all.html.gz"),
     case filelib:is_file(Path) of
         true -> {ok, Path};
         false -> error
     end.
 
-static_index_resp({ok, Vulcanized}, false) ->
-    gzip_html_resp(Vulcanized);
-static_index_resp(_, _) ->
-    html_resp(index_file()).
+static_index_path({ok, Vulcanized}, false) ->
+    {Vulcanized, [{content_type, "text/html"}, {content_encoding, "gzip"}]};
+static_index_path(_, _) ->
+    {index_file(), []}.
 
 index_file() ->
     filename:join(guild_app:priv_dir(), "view-index.html").
 
-gzip_html_resp(Path) ->
-    html_resp(Path, [{"Content-Encoding", "gzip"}]).
-
-html_resp(Path) -> html_resp(Path, []).
-
-html_resp(Path, ExtraHeaders) ->
-    {ok, Bin} = file:read_file(Path),
-    Headers =
-        [{"Content-Length", integer_to_list(size(Bin))},
-         {"Content-Type", "text/html"}
-         |ExtraHeaders],
-    {{200, "OK"}, Headers, Bin}.
-
-handle_app_page({"/", QS, _}, _) ->
+handle_app_page({"/", QS, _}, _Index, _Env) ->
     handle_index_page(QS);
-handle_app_page(_, Resp) ->
-    Resp.
+handle_app_page(_, {Path, Opts}, Env) ->
+    psycho_static2:serve_file(Path, Env, Opts).
 
 handle_index_page(QS) ->
     guild_http:redirect(viewdef_page1_path(QS)).
