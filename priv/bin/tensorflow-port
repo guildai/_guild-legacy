@@ -183,7 +183,8 @@ def validate_read_image_args(req):
     return path, index
 
 def iter_images(path):
-    from tensorflow.python.summary.impl import event_file_loader
+    from tensorflow.tensorboard.backend.event_processing \
+        import event_file_loader
     for event_file in find_event_files(path):
         loader = event_file_loader.EventFileLoader(event_file)
         for event in loader.Load():
