@@ -4,10 +4,10 @@ compile: app component-deps
 	@echo
 	@echo "  Congratulations - you've compiled Guild AI!"
 	@echo
+	@echo "  Run tests by running 'make test'"
+	@echo
 	@echo "  Run 'scripts/guild-dev' directly or create a symbolic link"
 	@echo "  to it somewhere on your path."
-	@echo
-	@echo "  Run tests by running 'make test'"
 	@echo
 
 app:
