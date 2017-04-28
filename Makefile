@@ -40,7 +40,7 @@ vulcanize-view-index:
 	  --strip-comments \
 	  view-index.html | gzip > view-index-all.html.gz
 
-clean: clean-local-deps clean-bin-deps clean-components clean-vulcanized
+clean: clean-local-deps clean-components clean-vulcanized
 	rm -rf build; rm -f rebar.lock
 	rm -f compile_commands.json
 
@@ -51,9 +51,6 @@ clean-local-deps: $(LOCAL_DEPS:=.clean)
 
 local-deps/%.clean:
 	make -C local-deps/$* clean
-
-clean-bin-deps:
-	rm -f priv/bin/multimarkdown
 
 clean-components:
 	rm -f priv/components/.deps-resolved
