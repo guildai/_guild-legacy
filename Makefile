@@ -13,9 +13,12 @@ compile: app component-deps
 app:
 	./rebar3 compile
 
-component-deps:
+component-deps: priv/components/.deps-resolved
+
+priv/components/.deps-resolved:
 	bower install
 	scripts/patch-components
+	touch priv/components/.deps-resolved
 
 sync-tf-components:
 	scripts/sync-tf-components
@@ -53,6 +56,7 @@ clean-bin-deps:
 	rm -f priv/bin/multimarkdown
 
 clean-components:
+	rm -f priv/components/.deps-resolved
 	cd priv/components && ls \
 	  | grep -v '^guild-' \
 	  | grep -v '^tf-' \
