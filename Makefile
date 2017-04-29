@@ -1,14 +1,10 @@
 LOCAL_DEPS = $(wildcard local-deps/*)
 
 compile: app component-deps
-	@echo
-	@echo "  Congratulations - you've compiled Guild AI!"
-	@echo
-	@echo "  Run tests by running 'make test'"
-	@echo
-	@echo "  Run 'scripts/guild-dev' directly or create a symbolic link"
-	@echo "  to it somewhere on your path."
-	@echo
+	@if [ ! -f .first-build ]; then \
+	  scripts/post-build-msg; \
+	  touch .first-build; \
+	fi
 
 app:
 	./rebar3 compile
@@ -43,6 +39,7 @@ vulcanize-view-index:
 clean: clean-local-deps clean-components clean-vulcanized
 	rm -rf build; rm -f rebar.lock
 	rm -f compile_commands.json
+	rm -f .first-build
 
 clean-vulcanized:
 	cd priv && rm -f *.html.gz

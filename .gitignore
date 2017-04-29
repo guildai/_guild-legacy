@@ -13,3 +13,4 @@ compile_commands.json
 !/priv/components/guild-*
 !/priv/components/vz-*
 !/priv/components/tf-*
+/.first-build
