@@ -33,6 +33,12 @@ parser() ->
       parser_commands(),
       [{version, guild:version()}]).
 
+global_opts() ->
+    [{trace,     "--trace",     "trace a module/function", [hidden]},
+     {reload,    "--reload",    "reload modified modules", [hidden, flag]},
+     {observer,  "--observer",  "run observer",            [hidden, flag]},
+     {debug,     "--debug",     "enable detailed logging", [hidden, flag]}].
+
 parser_commands() ->
     parser_commands(
       ["check",
@@ -94,12 +100,6 @@ init_tty_error_logger() ->
 %% ===================================================================
 %% Global opts
 %% ===================================================================
-
-global_opts() ->
-    [{trace,     "--trace",     "trace a module/function", [hidden]},
-     {reload,    "--reload",    "reload modified modules", [hidden, flag]},
-     {observer,  "--observer",  "run observer",            [hidden, flag]},
-     {debug,     "--debug",     "enable detailed logging", [hidden, flag]}].
 
 apply_global_opts(Opts) ->
     guild_trace:init_from_opts(Opts),
