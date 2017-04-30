@@ -88,6 +88,10 @@ limitations under the License.
 
        properties: {
            env: Object,
+           active: {
+               type: Boolean,
+               observer: "activeChanged"
+           },
            viewdef: Object
        },
 
@@ -106,6 +110,13 @@ limitations under the License.
            } else {
                this.$.overlay.close();
            }
+       },
+
+       activeChanged: function(val) {
+           var cs = Polymer.dom(this.root).querySelectorAll(".component");
+           cs.forEach(function(c) {
+               c.children[0].active = val;
+           });
        }
    });
   </script>

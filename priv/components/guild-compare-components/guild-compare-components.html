@@ -83,6 +83,10 @@ limitations under the License.
                value: function() {
                    return [];
                }
+           },
+           active: {
+               type: Boolean,
+               observer: "activeChanged"
            }
        },
 
@@ -145,6 +149,13 @@ limitations under the License.
 
        componentColClass: function(c) {
            return c.fullWidth ? "col-12" : "col-12 col-xl-6";
+       },
+
+       activeChanged: function(val) {
+           var cs = Polymer.dom(this.root).querySelectorAll(".component");
+           cs.forEach(function(c) {
+               c.active = val;
+           });
        }
    });
   </script>

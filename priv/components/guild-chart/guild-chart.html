@@ -46,6 +46,7 @@ limitations under the License.
         env="[[env]]"
         run-data-source="[[series.source]]"
         data="{{data}}"
+        active="[[active]]"
         stop-with-run
     </guild-run-data-listener>
 
@@ -72,6 +73,7 @@ limitations under the License.
        properties: {
            env: Object,
            series: Object,
+           active: Boolean,
            data: Object,
            options: {
                type: Object,

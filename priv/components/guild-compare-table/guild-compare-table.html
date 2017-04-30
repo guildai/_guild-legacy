@@ -55,6 +55,7 @@ limitations under the License.
         compare-data-source="[[dataSource]]"
         compare-data-fetch-interval="[[dataFetchInterval]]"
         runs="[[env.runs]]"
+        active="[[active]]"
         stop-with-runs
         data="{{data}}">
     </guild-run-compare-data-listener>
@@ -89,6 +90,7 @@ limitations under the License.
            dataFetchInterval: {
                computed: "computeDataFetchInterval(env.settings)"
            },
+           active: Boolean,
            data: Array,
            dt: {
                type: Object,

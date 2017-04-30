@@ -29,6 +29,10 @@ limitations under the License.
            icon: String,
            env: Object,
            instance: Object,
+           active: {
+               type: Boolean,
+               observer: "activeChanged"
+           },
            mutablePaths: {
                type: Object,
                value: function() {
@@ -53,6 +57,16 @@ limitations under the License.
            }
            this.instance = this.stamp();
            Polymer.dom(this.root).appendChild(this.instance.root);
+       },
+
+       activeChanged: function(val) {
+           if (this.instance) {
+               Array.from(this.children).forEach(function(child) {
+                   if ("active" in child) {
+                       child.active = val;
+                   }
+               });
+           }
        },
 
        _forwardParentPath: function(path, value) {

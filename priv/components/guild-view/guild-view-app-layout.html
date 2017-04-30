@@ -105,10 +105,7 @@ limitations under the License.
 
        selectedChanged: function(selected, containers) {
            this.ensureInstance(selected, containers);
-       },
-
-       closeDrawer: function() {
-           this.$$("app-drawer").close();
+           this.refreshActiveStates(selected);
        },
 
        ensureInstance: function(selected, containers) {
@@ -130,6 +127,16 @@ limitations under the License.
            return this.pages.find(function(page) {
                return page.id == id;
            });
+       },
+
+       refreshActiveStates: function(selected) {
+           this.pages.forEach(function(page) {
+               page.active = page.id == selected;
+           });
+       },
+
+       closeDrawer: function() {
+           this.$$("app-drawer").close();
        },
 
        util: new function() {
