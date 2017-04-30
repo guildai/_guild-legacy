@@ -39,4 +39,10 @@ handle_args(Args) ->
 
 version() ->
     {ok, Vsn} = application:get_key(?MODULE, vsn),
-    Vsn.
+    maybe_apply_git_commit(Vsn).
+
+maybe_apply_git_commit(Vsn) ->
+    case os:getenv("GUILD_GIT_COMMIT") of
+        false -> Vsn;
+        Commit -> [Vsn, " (", Commit, ")"]
+    end.
