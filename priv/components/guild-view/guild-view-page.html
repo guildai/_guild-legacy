@@ -82,8 +82,7 @@ limitations under the License.
        },
 
        _forwardInstanceProp: function(inst, prop, value) {
-           console.log("*** _forwardInstanceProp", inst, prop, value);
-           // TODO move up to host, but what?
+           console.warn("unhandled _forwardInstanceProp", inst, prop, value);
        },
 
        _forwardInstancePath: function(inst, path, value) {
