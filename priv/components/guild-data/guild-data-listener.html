@@ -124,10 +124,10 @@ limitations under the License.
          }
      },
 
-     activeChanged: function(active, old) {
+     activeChanged: function(val, old) {
          if (old !== undefined) {
              this.cancelPendingFetch();
-             if (active) {
+             if (val) {
                  this.scheduleFetch(0);
              }
          }
