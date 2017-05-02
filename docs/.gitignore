@@ -1,0 +1,8 @@
+_site
+.jekyll-metadata
+Gemfile.lock
+*.bak
+src/assets/img/*.jpg
+src/_includes/Guild-mnist-expert
+src/favicon.ico
+src/_data/commands.json

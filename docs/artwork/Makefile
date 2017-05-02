@@ -1,0 +1,2 @@
+images:
+	cd ..; make images
