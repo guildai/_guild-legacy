@@ -5,9 +5,8 @@ description: Getting started with Guild AI
 group: getting-started
 ---
 
-Welcome to Guild AI! This is a short overview of Guild and its
-features. If you're ready to install Guild, skip
-to [Setup](/getting-started/setup).
+This is a short overview of Guild and its features. If you're ready to
+install Guild, go to [Setup](/getting-started/setup).
 
 Guild AI is a set of tools to enhance TensorFlow&trade;
 development. Start by adding a simple `Guild` file to the root of your
