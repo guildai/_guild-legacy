@@ -1,9 +1,13 @@
 PNGS := $(wildcard artwork/*.png)
+MP4S := $(wildcard artwork/*.mp4)
+
 JPEGS := $(patsubst artwork/%.png,src/assets/img/%.jpg,$(PNGS))
+GIFS := $(patsubst artwork/%.mp4,src/assets/img/%.gif,$(MP4S))
+
 COMMANDS_JSON := src/_data/commands.json
 MNIST_EXPERT_SKEL := src/_includes/Guild-mnist-expert
 FAVICON := src/favicon.ico
-ALL := $(JPEGS) $(COMMANDS_JSON) $(MNIST_EXPERT_SKEL) $(FAVICON)
+ALL := $(JPEGS) $(GIFS) $(COMMANDS_JSON) $(MNIST_EXPERT_SKEL) $(FAVICON)
 
 GUILD := ../scripts/guild-dev
 
@@ -12,6 +16,10 @@ build: $(ALL)
 
 src/assets/img/%.jpg: artwork/%.png artwork/%.opts
 	convert $(word 1,$^) `cat $(word 2,$^)` $@
+
+src/assets/img/%.gif: artwork/%.mp4 artwork/%.opts
+	ffmpeg -i $(word 1,$^) -vf "palettegen" -y /tmp/guild-docs-palettegen.png
+	ffmpeg -i $(word 1,$^) -i /tmp/guild-docs-palettegen.png -lavfi "`cat $(word 2,$^)` paletteuse" -y $@
 
 $(COMMANDS_JSON):
 	$(GUILD) cmds-json > $@
