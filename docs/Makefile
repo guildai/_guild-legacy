@@ -4,9 +4,8 @@ MP4S := $(wildcard artwork/*.mp4)
 JPEGS := $(patsubst artwork/%.png,src/assets/img/%.jpg,$(PNGS))
 GIFS := $(patsubst artwork/%.mp4,src/assets/img/%.gif,$(MP4S))
 
-MNIST_EXPERT_SKEL := src/_includes/Guild-mnist-expert
 FAVICON := src/favicon.ico
-ALL := $(JPEGS) $(GIFS) $(MNIST_EXPERT_SKEL) $(FAVICON)
+ALL := $(JPEGS) $(GIFS) $(FAVICON)
 
 GUILD := ../scripts/guild-dev
 
@@ -19,12 +18,6 @@ src/assets/img/%.jpg: artwork/%.png artwork/%.opts
 src/assets/img/%.gif: artwork/%.mp4 artwork/%.opts
 	ffmpeg -i $(word 1,$^) -vf "palettegen" -y /tmp/guild-docs-palettegen.png
 	ffmpeg -i $(word 1,$^) -i /tmp/guild-docs-palettegen.png -lavfi "`cat $(word 2,$^)` paletteuse" -y $@
-
-$(MNIST_EXPERT_SKEL):
-	guild init --print \
-	  --name "MNIST Expert" \
-	  --train-cmd mnist_with_summaries \
-	  > $@
 
 clean:
 	bundle exec jekyll clean
@@ -43,8 +36,16 @@ $(FAVICON): src/apple-touch-icon.png
 	-delete 0 \
 	$@
 
+refresh-all: refresh-commands-json refresh-project-skels
+
 refresh-commands-json:
 	$(GUILD) cmds-json > src/_data/commands.json
+
+refresh-project-skels:
+	$(GUILD) init --print \
+	  --name "MNIST Expert" \
+	  --train-cmd mnist_with_summaries \
+	  > src/_includes/Guild-mnist-expert
 
 spell-list:
 	@for f in `find -name "*.md"`; do \
