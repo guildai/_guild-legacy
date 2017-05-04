@@ -16,45 +16,28 @@ Follow the steps below to install and configure Guild AI on your system.
 
 ### Python
 
-Guild AI currently requires Python 2.7.
-
-{% note %}
-
-As of Guild version {{site.current_version}} Python 3 is not
-supported.
-
-{% endnote %}
+Guild AI currently requires Python 2.7. As of Guild version
+{{site.current_version}} Python 3 is not supported.
 
 ### TensorFlow
 
-Guild AI requires TensorFlow version {{site.tensorflow_min}} or later.
+Guild AI requires TensorFlow version {{site.tensorflow_min}} or
+later. Some projects may require later versions of TensorFlow ---
+refer to the documentation for each project to confirm you have a
+compatible version of TensorFlow installed.
 
-{% note %}
-
-Some projects may require specific versions of TensorFlow --- refer to
-the documentation for each project to confirm you have a compatible
-version of TensorFlow installed.
-
-{% endnote %}
-
-Refer to {% link https://www.tensorflow.org/get_started/os_setup
-%}Download and Setup{% endlink %} for instructions on installing
-TensorFlow on your system.
-
-{% note %}
-
-If your system does not have a GPU, or you're not sure, select the
-non-GPU version of TensorFlow. You can upgrade to the GPU version
-later if you need to.
-
-{% endnote %}
+Refer to {% link https://www.tensorflow.org/install/ %}Installing
+TensorFlow{% endlink %} for instructions on installing TensorFlow on
+your system. If your system does not have a GPU, or you're not sure,
+select the non-GPU version of TensorFlow. You can upgrade to the GPU
+version later if you need to.
 
 ### psutil
 
-Guild uses the Python
-library [psutil](https://github.com/giampaolo/psutil) to collect many
-system stats. While this library is optional, we recommend installing
-it to extend the data Guild collects for your model.
+Guild uses the Python library {% link
+https://github.com/giampaolo/psutil %}psutil{% endlink %} to collect
+many system stats. While this library is optional, we recommend
+installing it to extend the data Guild collects for your model.
 
 Using `pip` run:
 
@@ -62,22 +45,22 @@ Using `pip` run:
 $ pip install --upgrade psutil
 {% endterm %}
 
-For alternatives, see the
-`psutil`
-[install instructions](https://github.com/giampaolo/psutil/blob/master/INSTALL.rst).
+For alternatives, see the {% link
+https://github.com/giampaolo/psutil/blob/master/INSTALL.rst %}psutil
+install instructions{% endlink %}.
 
 ### nvidia-smi
 
-Guild
-uses
-[NVIDIA System Management Interface](https://developer.nvidia.com/nvidia-system-management-interface) (nvidia-smi)
-to collect GPU statistics. If your system has an NVIDIA GPU, we
-recommend installing this utility to extend the data Guild collects
-for your model.
+Guild uses {% link
+https://developer.nvidia.com/nvidia-system-management-interface
+%}NVIDIA System Management Interface{% endlink %} to collect GPU
+statistics. If your system has an NVIDIA GPU, we recommend installing
+this utility to extend the data Guild collects for your model.
 
 To install `nvidia-smi` install the latest CUDA toolkit from this location:
 
-[https://developer.nvidia.com/cuda-downloads](https://developer.nvidia.com/cuda-downloads)
+{% link https://developer.nvidia.com/cuda-downloads
+%}https://developer.nvidia.com/cuda-downloads{% endlink %}
 
 ## Installing precompiled binaries
 
@@ -91,9 +74,8 @@ below.
 If your platform is not listed,
 see [Installing from source](#installing-from-source) below.
 
-Earlier versions of Guild AI can be downloaded here:
-
-[https://github.com/guildai/guild/releases](https://github.com/guildai/guild/releases)
+Earlier versions of Guild AI can be
+downloaded [here](https://github.com/guildai/guild/releases).
 
 ### Unpack archive
 
@@ -130,8 +112,7 @@ following ways:
 1. Create a `guild` symbolic link that points to `bin/guild`
 2. Add the `bin` directory to your `PATH` environment
 
-If you're unsure which method to use, select option 1, which is outlined
-below.
+If you're unsure which method to use, select option 1 below.
 
 #### Option 1 - symbolic link
 
