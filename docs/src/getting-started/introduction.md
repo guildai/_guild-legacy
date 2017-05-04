@@ -79,7 +79,7 @@ $ curl -sd @my-request.json localhost:6444/run
 
 That's Guild AI in a nutshell! Use it to augment your TensorFlow
 development to train, evaluate, and finally run your
-models.  [Read more about Guild features](/user-guide/overview/) or
+models.  [Read more about Guild features](/features/) or
 click below to get started using Guild on your system.
 
 {% next /getting-started/setup/ %}Next: Setup Guild on you system{% endnext %}

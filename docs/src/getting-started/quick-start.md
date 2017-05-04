@@ -60,11 +60,10 @@ evaluate the "intro" model:
 {% code %}
 [model "intro"]
 
-runtime         = tensorflow
 train           = intro
 prepare         = intro --prepare
 train_requires  = ./data
-evaluate        = intro --evaluate
+evaluate        = intro --test
 {% endcode %}
 
 When you run `guild prepare`, this is what Guild runs in the
@@ -100,9 +99,9 @@ $ guild train
 The model we just trained is simple and will train in a matter of
 seconds on most systems.
 
-The MNIST project actually defines two models --- an *intro* and an
-*expert* model. You can list the models defined for a project using
-the `list-models` command:
+The MNIST project defines two models --- an *intro* and an *expert*
+model. You can list the models defined for a project using the
+`list-models` command:
 
 {% term %}
 $ guild list-models
@@ -117,7 +116,7 @@ information about a project (e.g. `list-models`). You may also simply
 view the `Guild` project file, which is located in the project root
 directory. The `Guild` file is a human readable text file that
 describes all of Guild's interactions with the project. For more
-information see [Project reference](/project-reference/).
+information see [Project reference](/project-reference/guild-project-file/).
 
 {% endinsight %}
 
@@ -130,7 +129,7 @@ Open another terminal and change to the MNIST directory --- then run
 the `view` command:
 
 {% term %}
-$ cd guild-examples/MNIST
+$ cd guild-examples/mnist
 $ guild view
 {% endterm %}
 
@@ -140,11 +139,6 @@ other Guild operations.
 Open {% link http://localhost:6333 %}http://localhost:6333{% endlink
 %} in your browser. You should see the results of the MNIST "intro"
 model training.
-
-Guild View organizes information on pages using widgets. Guild View is
-highly customizable --- the information displayed for the MNIST
-project is unique to this project. Other projects may display
-different information.
 
 Let's take a moment to understand the information Guild View provides
 for the MNIST project.
@@ -253,7 +247,7 @@ saw earlier, the `intro` model is used by default if not otherwise
 specified.
 
 The expert model is a convolutional neural network and so takes much
-longer to train! If your system has a GPU you'll be able to train the
+longer to train. If your system has a GPU you'll be able to train the
 expert model over 10 epochs in a few minutes. If you're training on a
 CPU, the expert model will take 20 times longer, or more!
 
@@ -311,7 +305,7 @@ If you were able to train *expert* for more than a few epochs, you
 should see a dramatic improvement in accuracy over *intro*. The expert
 model uses a state of the art convolutional neural network while the
 intro model uses a simple logistic regression. While *expert* is
-considerably more accuracy, it takes far longer to train! Such trade
+considerably more accuracy, it takes far longer to train. Such trade
 offs are common when evaluating models --- performance should be
 measured across various axis, not merely accuracy or error rates.
 
@@ -330,7 +324,7 @@ this quick start guide:
 
 ## Next steps
 
-{% next /user-guide/overview/ %}Read more about Guild features{% endnext %}
+{% next /features/ %}Read more about Guild features{% endnext %}
 {% next /examples/ %}Browse Guild examples{% endnext %}
 {% next /tutorials/integrating-guild-with-your-project/ %}Integrate Guild with your project{% endnext %}
 {% next /tutorials/using-guild-to-serve-models/ %}Run the expert MNIST model as a web service{% endnext %}
