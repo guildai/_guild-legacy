@@ -4,5 +4,4 @@ Gemfile.lock
 *.bak
 src/assets/img/*.jpg
 src/assets/img/*.gif
-src/_includes/Guild-mnist-expert
 src/favicon.ico
