@@ -1,5 +1,5 @@
 ---
-layout: simple
+layout: narrow
 title: Examples
 description: Example Guild AI projects
 group: examples

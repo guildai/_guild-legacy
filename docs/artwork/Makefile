@@ -1,2 +1,2 @@
-images:
-	cd ..; make images
+artwork:
+	cd ..; make artwork

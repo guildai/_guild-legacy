@@ -12,6 +12,8 @@ GUILD := ../scripts/guild-dev
 build: $(ALL)
 	bundle exec jekyll build
 
+artwork: $(JPEGS) $(GIFS)
+
 src/assets/img/%.jpg: artwork/%.png artwork/%.opts
 	convert $(word 1,$^) `cat $(word 2,$^)` $@
 

@@ -1,5 +1,5 @@
 ---
-layout: simple
+layout: narrow
 title: FAQ
 description: Frequently asked questions
 group: faq

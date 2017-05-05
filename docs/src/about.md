@@ -1,5 +1,5 @@
 ---
-layout: simple
+layout: narrow
 title: About
 description: About Guild AI
 group: about
