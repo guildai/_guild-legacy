@@ -241,7 +241,7 @@ train_dir         = $RUNDIR</code></pre>
 ### Integrated inference server
 
 Guild provides an integrated HTTP server that you can use to test your
-trained models before deploying them to TensorFlor serving.
+trained models before deploying them to TensorFlow serving.
 
 {% endmarkdown %}
       </div>
