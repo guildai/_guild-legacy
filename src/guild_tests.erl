@@ -546,7 +546,7 @@ test_operation() ->
     %% our task (an operation starts other core tasks in addition to
     %% what we specify).
 
-    timer:sleep(100),
+    timer:sleep(200),
     [_|_] = guild_optask_sup:tasks(),
 
     %% With the operation underway, we can get the run directory it
