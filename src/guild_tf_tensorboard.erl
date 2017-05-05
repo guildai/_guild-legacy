@@ -48,7 +48,4 @@ start_tensorboard(#state{logdir=LogDir, port=Port}=S) ->
     S#state{ospid=OSPid}.
 
 tensorboard_bin() ->
-    case os:find_executable("tensorboard") of
-        false -> error(tensorboard_not_found);
-        Path -> Path
-    end.
+    guild_app:priv_bin("tensorboard").
