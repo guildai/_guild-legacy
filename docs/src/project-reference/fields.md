@@ -147,3 +147,5 @@ The `format` attribute indicates how the field value should be formatted.
 
 Guild supports the formatting specification defined
 by [Numeral.js](http://numeraljs.com/#format).
+
+{% next /project-reference/series/ %}Next: Project series{% endnext %}
