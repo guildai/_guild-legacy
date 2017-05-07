@@ -88,7 +88,7 @@ class Ref < Liquid::Tag
   def render(context)
     case @target
     when "guild-project-file"
-      "[Guild project file](/project-reference/#overview)"
+      "[Guild project file](/project-reference/guild-project-file/)"
     when "github-issues"
       "<a href=\"https://github.com/guildai/guild/issues\" " \
       "target=\"_blank\">Guild's GitHub issues list " \

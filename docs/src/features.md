@@ -85,7 +85,7 @@ comparing it to previous runs.
 
 {% markdown %}
 
-### Compare model training and sytem statistics
+### Compare model training and system statistics
 
 
 Guild lets you dig deeper into run results by comparing TensorFlow
