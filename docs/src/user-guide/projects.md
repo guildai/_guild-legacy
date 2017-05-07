@@ -85,7 +85,7 @@ $ guild init --name NAME --train-cmd CMD
 
 `NAME` is the name of your project, which is saved in the new project
 file under as the `name` attribute in the `project` section. This
-value is used in [Guild View](/guild-view/) to identify your
+value is used in [Guild View](/user-guide/guild-view/) to identify your
 project. If you omit the project name argument, the name of the
 current directory will be used.
 

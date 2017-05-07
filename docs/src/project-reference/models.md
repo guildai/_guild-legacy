@@ -33,10 +33,9 @@ already exist.
 ## Command specs
 
 Attributes that define operations (e.g. *prepare*, *train*,
-*evaluate*) do so using *command specs*. The syntax of a command spec
-is specific to the runtime.
+*evaluate*) do so using *command specs*.
 
-The TensorFlow runtime expects command specs to consist of a Python
+Guild expects command specs to consist of a Python
 module with zero or more command options. For example, to execute a
 locally defined `train.py` module with the arguments `--datadir
 ./data`, the command spec would be:
@@ -55,7 +54,6 @@ typically provided via flags, [described below](#flags).
 Model attributes are typically defined in this order:
 
 | [description](#description) | optional, used for documentation only |
-| [runtime](#runtime) | required |
 | [prepare](#prepare) | optional, if model supports a prepare operation |
 | [train](#train)     | typically defined |
 | [train_requires](#train_requires) | optional, used as a check before training, typically used with prepare |
@@ -74,11 +72,6 @@ has more than one model.
 Future releases of Guild AI will make use of this attribute.
 
 {% endnote %}
-
-### runtime
-
-The `runtime` attribute is required for all models. Currently Guild AI
-only supports the `tensorflow` runtime.
 
 ### prepare
 
@@ -114,7 +107,6 @@ Here's the model configuration for this example:
 {% code %}
 [model]
 
-runtime         = tensorflow
 prepare         = intro --prepare
 train           = intro
 train_requires  = ./data
