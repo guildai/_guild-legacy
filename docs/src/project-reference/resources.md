@@ -5,17 +5,19 @@ description: Guild project resources
 group: project-reference
 ---
 
-XXX
-
 ## Contents
 
 * Will be replaced with the ToC
 {:toc}
 
-## TensorFlow series
+Resources are project sections that define a `prepare` operation. They
+can be used to perform miscellaneous operations for a project.
 
-xxx
+For an example of a resource, see the `samples` resource defined in the
+{% ref mnist-example-guild %}.
 
-## System series
+## Resource attributes
 
-yyy
+### prepare
+
+Resources are *prepared* and so use a `prepare` command spec.
