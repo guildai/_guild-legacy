@@ -50,3 +50,5 @@ Refer to the series examples above for commonly used sources.
 ### title
 
 The `title` attribute is used as the chart widget title.
+
+{% next /project-reference/resources/ %}Next: Project resources{% endnext %}
