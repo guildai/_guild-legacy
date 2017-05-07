@@ -21,13 +21,13 @@ some useful features.
 
 In particular Guild is helpful when you have any of these goals:
 
-- [Standarize](/user-guide/projects/) your TensorFlow projects to
+- [Standardize](/user-guide/projects/) your TensorFlow projects to
   simplify how you and
   others [work with them](/user-guide/model-operations/)
 - Collect and [visualize](/user-guide/guild-view/) detailed data on
   model performance to inform operational and system decisions, as
   well as make model improvements
-- Automatically preseve the results of every training experiment
+- Automatically preserve the results of every training experiment
 - [Run your trained models](/user-guide/guild-serve/) on your own
   infrastructure, AWS, or other hosted GPU environments
 

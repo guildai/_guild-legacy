@@ -1,7 +1,6 @@
 ---
 layout: docs
-title: Project reference
-title_class: hidden
+title: Guild project file
 description: Details on the Guild project file
 group: project-reference
 ---
