@@ -55,7 +55,7 @@ located in the project root) along with any project defined flags.
 
 For more information on the format of these commands,
 see
-[Command specs](/project-reference/#command-specs).
+[Command specs](/project-reference/models/#command-specs).
 
 {% insight %}
 Rather than dictate how your code should be written, Guild interfaces

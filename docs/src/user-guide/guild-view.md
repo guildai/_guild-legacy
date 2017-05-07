@@ -39,9 +39,7 @@ $ guild view --port 8888
 For more information, refer to the `view` {% ref cmd:view %}.
 
 Guild View provides a default view for your project that is configured
-by the {% ref guild-project-file %}. For information on creating a
-custom view for your project,
-see [Custom views](/developers-guide/#custom-views).
+by the {% ref guild-project-file %}.
 
 The default view provides three pages:
 
@@ -129,7 +127,7 @@ logs. Guild also captures system metrics as time series.
 Time series chart widgets are used to display these values. You must
 specify the series to display for a model in the Guild project
 file. For more information about specifying series for a model,
-see [Series](/project-reference/#series).
+see [Series](/project-reference/series/).
 
 ### Output
 

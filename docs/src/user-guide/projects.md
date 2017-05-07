@@ -15,7 +15,7 @@ Guild is enabled for a TensorFlow project by including a simple
 
 ## Overview
 
-Most [Guild operations](/user-guild/model-operations/) are performed
+Most [Guild operations](/user-guide/model-operations/) are performed
 in the context of a *project*. A project is a directory containing a
 `Guild` project file, which describes your project. Project files
 provide Guild with information needed to perform operations:
@@ -52,7 +52,7 @@ https://en.wikipedia.org/wiki/INI_file %}INI file format{% endlink
 easily read and edited.
 
 For more information on project files,
-see [Project reference](/project-reference/).
+see [Project reference](/project-reference/guild-project-file/).
 
 {% insight %}
 
@@ -128,7 +128,7 @@ with your other source code, ensure that `runs` (or the value used for
 {% endnote %}
 
 For more information,
-see [Project header](/project-reference/#project-header).
+see [Project header](/project-reference/guild-project-file/#project-header).
 
 ## Models
 
@@ -163,7 +163,7 @@ For example, to train the model named "10-layers" above, run:
 $ guild train 10-layers
 {% endterm %}
 
-For more information, see [Models](/project-reference/#models) in the
+For more information, see [Models](/project-reference/models/) in the
 project reference.
 
 ## Flags
@@ -198,7 +198,7 @@ additional view section is named.
 Like named flag sections, named views correspond to models with the
 same name.
 
-For more information, see [Views](/project-reference/#views) in the
+For more information, see [Views](/project-reference/views/) in the
 project reference.
 
 ## Next Steps

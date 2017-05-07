@@ -85,37 +85,15 @@ Yes. The
 you to freely distribute Guild AI source without requiring you to
 release your changes under a particular license.
 
-## Comparisons to other tools and framework
-
-### How is Guild View different from TensorBoard?
-
-[TensorBoard](https://www.tensorflow.org/how_tos/summaries_and_tensorboard/) and
-[Guild View](/user-guide/guild-view/) are superficially
-similar. Both are web based applications used in conjunction with
-TensorFlow model development and training. However, this is where
-their similarities end.
-
-TensorBoard is a lower level tool that provides detailed visualization
-of TensorFlow event logs. These logs are used by model architects to
-understand TensorFlow graphs (which can become quite complex) and to
-view details of weight distributions. Currently Guild View does not
-provide visualizations at this level.
-
-Guild View provides a higher level dashboard view of your model
-training results and supports comparisons across training
-iterations. It also provides an interface for running your
-models. Guild View incorporates the full range of Guild data, which is
-collected alongside TensorFlow log events.
-
 ## Design
 
 ### What language is Guild AI written in?
 
 Guild tools are actually written in several languages:
 
-- **Erlang** provides the control layer for most of the Guild operations
 - **Python** is the primary interface to TensorFlow
 - **bash** is used for system scripting
+- **Erlang** provides the control layer for most of the Guild operations
 
 Training operations in deep learning applications are intense systems
 operations. They may last for not just minutes or hours, but days and
