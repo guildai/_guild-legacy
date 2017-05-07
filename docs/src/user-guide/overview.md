@@ -93,38 +93,14 @@ Guild provides three views to your models:
 
 **Train** is a dashboard for a single training run. Use it to view a
 training in progress or prior experiments. Guild
-supports
-[simple view definitions](/project-reference/#views)
-as well as [custom layouts](/developers-guide/#custom-views)
-and [widgets](/developers-guide/#widgets) as needed.
-
-<div class="card">
-  <div class="card-header">Guild View - Train Tab</div>
-  <div class="card-block">
-  <img src="/assets/img/guild-view-screen-3.png" width="100%">
-  </div>
-</div>
+supports [simple view definitions](/project-reference/views/).
 
 **Compare** lets you evaluate all of your training results in once
 place. Use this view to find the model that performs the best.
 
-<div class="card">
-  <div class="card-header">Guild View - Compare Tab</div>
-  <div class="card-block">
-  <img src="/assets/img/guild-view-screen-11.png" width="100%">
-  </div>
-</div>
-
 **Serve** lets you perform ad hoc predictions using a trained model
 and capture inference performance stats such as run times, predictions
 per second, and memory consumed.
-
-<div class="card">
-  <div class="card-header">Guild View - Serve Tab</div>
-  <div class="card-block">
-  <img src="/assets/img/guild-view-screen-12.png" width="100%">
-  </div>
-</div>
 
 **Benefits of using Guild View**
 
