@@ -14,6 +14,10 @@ group: features
      width: 100%;
  }
 
+ .figure-img {
+      margin-bottom: 10px;
+ }
+
  .highlight pre {
      margin: 5px 12px;
  }
@@ -175,6 +179,8 @@ details for each command using information from the Guild project
 file, letting you run complex operations typing long, complex
 commands.
 
+{% next /command-reference/overview/ %}Guild command reference{% endnext %}
+
 {% endmarkdown %}
 
       </div>
@@ -200,6 +206,8 @@ Guild projects provide instructions for performing the prepare, train,
 and evaluate operations. Project are plain text files that are easy
 for humans to read. They are useful not only to Guild for running
 commands but as model interface specifications.
+
+{% next /project-reference/guild-project-file/ %}Guild project reference{% endnext %}
 
 {% endmarkdown %}
 
@@ -242,6 +250,8 @@ train_dir         = $RUNDIR</code></pre>
 
 Guild provides an integrated HTTP server that you can use to test your
 trained models before deploying them to TensorFlow serving.
+
+{% next /tutorials/using-guild-to-serve-models/ %}More on Guild serve{% endnext %}
 
 {% endmarkdown %}
       </div>

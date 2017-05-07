@@ -5,6 +5,13 @@ description: How to use Guild to train, evaluate and serve an existing project
 group: tutorials
 ---
 
+{% note %}
+
+As of May 4, 2017 some of the content in this tutorial is out-of-date
+and will be updated shortly.
+
+{% endnote %}
+
 In this tutorial we'll add support for Guild to an existing TensorFlow
 project with minimal modification.
 
