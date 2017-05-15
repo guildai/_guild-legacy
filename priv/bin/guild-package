@@ -1,0 +1,189 @@
+#!/bin/bash -eu
+
+set -o pipefail
+
+realpath() {
+    if [ "$(uname -s)" = "Darwin" ]; then
+        perl -e 'use Cwd "abs_path";print abs_path(shift)' "$1"
+    else
+        readlink -f "$1"
+    fi
+}
+
+project="$(realpath $1)"
+
+###################################################################
+# Helpers
+###################################################################
+
+error() {
+    echo $1
+    exit 2
+}
+
+dir-empty() {
+    local dir=$1
+    [ -z "$(ls -A $dir)" ]
+}
+
+url-filename() {
+    local url=$1
+    local filename
+    filename=${url##*/}
+    filename=${filename%%.*}
+    echo $filename
+}
+
+pushd-quiet() {
+    pushd $1 > /dev/null
+}
+
+popd-quiet() {
+    popd > /dev/null
+}
+
+###################################################################
+# Source dir
+###################################################################
+
+srcdir-init() {
+    srcdir="$project/src"
+    if [ ! -z "${CLEAN:-}" ]; then
+        echo "Cleaning sources"
+        rm -rf "$srcdir"
+    fi
+    mkdir -p "$srcdir"
+}
+
+###################################################################
+# Download
+###################################################################
+
+sources-download() {
+    for src in $package_source; do
+        source-download "$src"
+    done
+}
+
+source-download() {
+    local src=$1
+    if [ "${src:0:4}" = "git+" ]; then
+        git-download "${src:4}"
+    else
+        error "$src is not a supported source type"
+    fi
+}
+
+git-download() {
+    local url=$1
+    local repo_name=$(url-filename $url)
+    local repo_dest=$project/$repo_name
+    if [ ! -e "$repo_dest" ] || dir-empty "$repo_dest"; then
+        echo "Cloning $url"
+        git clone --mirror "$url" "$repo_dest"
+    else
+        echo "Updating $repo_name"
+        pushd-quiet "$repo_dest"
+        git fetch --all -p
+        popd-quiet
+    fi
+}
+
+###################################################################
+# Check
+###################################################################
+
+sources-check() {
+    # TODO
+    #
+    # This is a place holder for an important feature - enough to stub
+    # out. The user should be able to specify checksums to apply to
+    # source artifacts.
+    true
+}
+
+###################################################################
+# Extract
+###################################################################
+
+sources-extract() {
+    for src in $package_source; do
+        source-extract "$src"
+    done
+}
+
+source-extract() {
+    local src=$1
+    if [ "${src:0:4}" = "git+" ]; then
+        git-extract "${src:4}"
+    else
+        error "$src is not a supported source type"
+    fi
+}
+
+git-extract() {
+    local url=$1
+    local repo_name=$(url-filename $url)
+    local repo_src=$project/$repo_name
+    local repo_dest=$srcdir/$repo_name
+    echo "Creating working copy of $repo_name"
+    if [ ! -e "$repo_dest" ] || dir-empty "$repo_dest"; then
+        echo "Cloning $url"
+        git clone "$repo_src" "$repo_dest"
+    else
+        echo "Updating $repo_name"
+        pushd-quiet "$repo_dest"
+        git fetch
+        # TODO support for branch=xxx, tag=xxx, commit=xxx
+        git checkout
+        popd-quiet
+    fi
+}
+
+###################################################################
+# Package function support
+###################################################################
+
+package-functions-init() {
+    source "$project/package"
+}
+
+package-function-call() {
+    local name=$1
+    if type -t $name > /dev/null; then
+        echo "Running $name"
+        pushd-quiet "$srcdir"
+        eval $name
+        popd-quiet
+    fi
+}
+
+###################################################################
+# Package init / finalize
+###################################################################
+
+package-init() {
+    pkgdir="$project/pkg"
+    mkdir -p "$pkgdir"
+}
+
+package-finalize() {
+    local pkg="$package_name-$package_version.pkg.tar.xz"
+    echo "Creating $pkg"
+    tar -C "$pkgdir" -cjf "$pkg" .
+}
+
+###################################################################
+# Main
+###################################################################
+
+srcdir-init
+sources-download
+sources-check
+sources-extract
+package-init
+package-functions-init
+package-function-call prepare
+package-function-call build
+package-function-call package
+package-finalize

@@ -21,15 +21,42 @@ parser() ->
       "guild package",
       "[OPTION]...",
       "Creates a Guild package.",
-      []).
+      package_opts() ++ guild_cmd_support:project_options([flag_support])).
+
+package_opts() ->
+    [{clean, "-c, --clean", "Removes sources before building", [flag]}].
 
 %% ===================================================================
 %% Main
 %% ===================================================================
 
-main(_Opts, _Args) ->
-    io:format("TODO: check dependencies (e.g. tensorflow-1.1+)~n"),
-    io:format("TODO: download sources~n"),
-    io:format("TODO: run package script~n"),
-    io:format("TODO: create package~n"),
-    io:format("DONE").
+main(Opts, _Args) ->
+    Project = guild_cmd_support:project_from_opts(Opts),
+    guild_app:init_support([exec]),
+    Bin = guild_app:priv_bin("guild-package"),
+    Args = [Bin, guild_project:project_dir(Project)],
+    Env = package_env(Project, Opts),
+    handle_exit(guild_exec:run(Args, [{env, Env}])).
+
+package_env(Project, Opts) ->
+    project_env(Project) ++ cmd_env(Opts).
+
+project_env(Project) ->
+    Attrs = guild_project:section_attrs(Project, ["package"]),
+    [{"package_" ++ Name, Val} || {Name, Val} <- Attrs].
+
+cmd_env(Opts) ->
+    OptsEnv = [{clean, "CLEAN", "1"}],
+    {_, Env} = lists:foldl(fun apply_cmd_env/2, {Opts, []}, OptsEnv),
+    Env.
+
+apply_cmd_env({Flag, Name, Val}, {Opts, Env}) ->
+    case proplists:get_bool(Flag, Opts) of
+        true -> {Opts, [{Name, Val}|Env]};
+        false -> {Opts, Env}
+    end.
+
+handle_exit({ok, []}) ->
+    ok;
+handle_exit({error, [{exit_status, Status}]}) ->
+    {error, exec:status(Status)}.
