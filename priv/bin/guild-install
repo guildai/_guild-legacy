@@ -1,0 +1,11 @@
+#!/bin/bash -eu
+
+set -o pipefail
+
+pkg="$1"
+dest="$2"
+
+echo "Installing $pkg"
+mkdir -p "$dest"
+tar -C "$dest" -xjf "$pkg"
+echo "Use '\$PKGHOME/$(basename $dest)' as the dataset directory in your Guild project file"
