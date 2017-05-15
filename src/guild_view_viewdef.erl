@@ -21,7 +21,9 @@
 %% ===================================================================
 
 viewdef(Model, Project) ->
-    {ok, ViewSection} = view_section(Model, Project),
+    viewdef_for_section(view_section(Model, Project), Model, Project).
+
+viewdef_for_section({ok, ViewSection}, Model, Project) ->
     Fields = fields(ViewSection, Model, Project),
     Series = series(ViewSection, Model, Project),
     Compare = compare_fields(ViewSection, Project),
@@ -29,6 +31,12 @@ viewdef(Model, Project) ->
        fields => proplists_to_maps(Fields),
        series => proplists_to_maps(Series),
        compare => proplists_to_maps(Compare)
+     };
+viewdef_for_section(error, _Model, _Project) ->
+    #{
+       fields => [],
+       series => [],
+       compare => []
      }.
 
 view_section(Model, Project) ->
