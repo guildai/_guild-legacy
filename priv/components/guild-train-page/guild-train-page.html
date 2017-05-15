@@ -51,7 +51,7 @@ limitations under the License.
           <div class="col-lg-8 col-xl-9">
             <div class="row row-20">
               <template is="dom-repeat" items="[[viewdef.fields]]" as="field">
-                <div class="component col-12 col-sm-6 col-xl-4 col-xxl-3">
+                <div class$="component [[fieldColClasses(viewdef.fields)]]">
                   <guild-field env="[[env]]" field="[[field]]"></guild-field>
                 </div>
               </template>
@@ -117,6 +117,18 @@ limitations under the License.
            cs.forEach(function(c) {
                c.children[0].active = val;
            });
+       },
+
+       fieldColClasses: function(fields) {
+           if (fields.length == 2) {
+               return "col-12 col-sm-6";
+           } else if (fields.length == 3) {
+               return "col-12 col-md-4";
+           } else if (fields.length == 4) {
+               return "col-12 col-sm-6 col-xl-3";
+           } else {
+               return "col-12 col-sm-6 col-xl-4 col-xxl-3";
+           }
        }
    });
   </script>
