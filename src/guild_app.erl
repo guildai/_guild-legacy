@@ -17,7 +17,7 @@
 -export([init/0, init_support/1, start_child/1]).
 
 -export([priv_dir/0, priv_dir/1, priv_bin/1, tmp_dir/0, test_dir/0,
-         set_env/2, get_env/1, get_env/2]).
+         user_dir/0, user_dir/1, set_env/2, get_env/1, get_env/2]).
 
 -define(app, guild).
 
@@ -87,6 +87,12 @@ test_dir() ->
     filename:join(priv_dir(), "test").
 
 tmp_dir() -> "/tmp".
+
+user_dir() ->
+    filename:join(os:getenv("HOME"), ".guild").
+
+user_dir(Subdir) ->
+    filename:join(user_dir(), Subdir).
 
 set_env(Key, Val) ->
     application:set_env(?app, Key, Val).

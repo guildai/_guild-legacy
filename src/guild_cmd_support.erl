@@ -22,7 +22,7 @@
          model_or_resource_section_for_args/2, run_db_for_args/2,
          port_opt/2, exec_operation/2, operation_result/1,
          runtime_error_msg/1, runtime_for_section/2,
-         preview_op_cmd/1]).
+         preview_op_cmd/1, exec_run/2, env_from_opts/2]).
 
 -define(github_repo_url, "https://github.com/guildai/guild").
 
@@ -447,3 +447,40 @@ print_env(Env) ->
       fun({Name, Val}) -> guild_cli:out("  ~s=~s~n", [Name, Val]) end,
       lists:sort(Env)),
     guild_cli:out("~n").
+
+%% ===================================================================
+%% Exec run
+%% ===================================================================
+
+exec_run(Args, Opts) ->
+    exec_run_result(guild_exec:run(Args, Opts)).
+
+exec_run_result({ok, []}) ->
+    ok;
+exec_run_result({error, [{exit_status, Status}]}) ->
+    {error, exec:status(Status)}.
+
+%% ===================================================================
+%% Env from opts
+%% ===================================================================
+
+env_from_opts(Rules, Opts) ->
+    {_, Env} = lists:foldl(fun apply_cmd_env/2, {Opts, []}, Rules),
+    Env.
+
+apply_cmd_env({Flag, Name}, {Opts, Env}) ->
+    {Opts, maybe_opt_val(Flag, Name, Opts, Env)};
+apply_cmd_env({Flag, Name, Val}, {Opts, Env}) ->
+    {Opts, maybe_flag_val(Flag, Name, Val, Opts, Env)}.
+
+maybe_opt_val(Flag, Name, Opts, Env) ->
+    case proplists:get_value(Flag, Opts) of
+        undefined -> Env;
+        Val -> [{Name, Val}|Env]
+    end.
+
+maybe_flag_val(Flag, Name, Val, Opts, Env) ->
+    case proplists:get_bool(Flag, Opts) of
+        true -> [{Name, Val}|Env];
+        false -> Env
+    end.

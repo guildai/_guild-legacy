@@ -19,13 +19,44 @@
 parser() ->
     cli:parser(
       "guild install",
-      "[OPTION]...",
-      "Installs a Guild package.",
-      []).
+      "[OPTION]... PACKAGE [PACKAGE]...",
+      "Installs a Guild package. PACKAGE may be a package archive or a "
+      "package name. You may specify multiple packages.",
+      [],
+      [{pos_args, {1, any}}]).
 
 %% ===================================================================
 %% Main
 %% ===================================================================
 
-main(_Opts, _Args) ->
-    io:format("TODO: install a package yo~n").
+main(_Opts, Args) ->
+    guild_app:init_support([exec]),
+    Bin = guild_app:priv_bin("guild-install"),
+    lists:foreach(fun(Pkg) -> install_pkg(Pkg, Bin) end, Args).
+
+install_pkg(Pkg, Bin) ->
+    Dest = dest_for_pkg(Pkg),
+    Args = [Bin, Pkg, Dest],
+    Result = guild_cmd_support:exec_run(Args, []),
+    exit_on_error(Result).
+
+dest_for_pkg(Pkg) ->
+    Pattern = "([^/]+)\\.pkg\\.tar\\.xz",
+    case re:run(Pkg, Pattern, [{capture, [1], list}]) of
+        {match, [Name]} ->
+            user_package_path(Name);
+        nomatch ->
+            invalid_package(Pkg)
+    end.
+
+user_package_path(Name) ->
+    filename:join(guild_app:user_dir("packages"), Name).
+
+invalid_package(Pkg) ->
+    guild_cli:error(
+      io_lib:format(
+        "~s does not appear to be a valid Guild package~n",
+        [Pkg])).
+
+exit_on_error(ok) -> ok;
+exit_on_error({error, N}) -> throw({error, N}).
