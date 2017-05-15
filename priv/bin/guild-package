@@ -47,7 +47,7 @@ popd-quiet() {
 ###################################################################
 
 srcdir-init() {
-    srcdir="$project/src"
+    srcdir="$(realpath ${ALT_SRCDIR:-$project/src})"
     if [ ! -z "${CLEAN:-}" ]; then
         echo "Cleaning sources"
         rm -rf "$srcdir"
@@ -56,7 +56,21 @@ srcdir-init() {
 }
 
 ###################################################################
-# Download
+# Sources
+###################################################################
+
+maybe-sources() {
+    if [ -z "${SKIP_SOURCES:-}" ]; then
+        sources-download
+        sources-check
+        sources-extract
+    else
+        echo "Skipping sources"
+    fi
+}
+
+###################################################################
+# Sources download
 ###################################################################
 
 sources-download() {
@@ -67,10 +81,12 @@ sources-download() {
 
 source-download() {
     local src=$1
-    if [ "${src:0:4}" = "git+" ]; then
+    if [ -f "$src" ]; then
+        true
+    elif [ "${src:0:4}" = "git+" ]; then
         git-download "${src:4}"
     else
-        error "$src is not a supported source type"
+        error "$src does not exist or is not a supported source type"
     fi
 }
 
@@ -90,7 +106,7 @@ git-download() {
 }
 
 ###################################################################
-# Check
+# Sources check
 ###################################################################
 
 sources-check() {
@@ -103,7 +119,7 @@ sources-check() {
 }
 
 ###################################################################
-# Extract
+# Sources extract
 ###################################################################
 
 sources-extract() {
@@ -114,11 +130,19 @@ sources-extract() {
 
 source-extract() {
     local src=$1
-    if [ "${src:0:4}" = "git+" ]; then
+    if [ -f "$src" ]; then
+        source-file-copy "$src"
+    elif [ "${src:0:4}" = "git+" ]; then
         git-extract "${src:4}"
     else
         error "$src is not a supported source type"
     fi
+}
+
+source-file-copy() {
+    local file=$1
+    echo "Copying source $file"
+    cp "$file" "$srcdir/"
 }
 
 git-extract() {
@@ -141,14 +165,39 @@ git-extract() {
 }
 
 ###################################################################
-# Package function support
+# Package
 ###################################################################
 
-package-functions-init() {
-    source "$project/package"
+pkgdir-init() {
+    pkgdir="$project/pkg"
+    if [ -e "$pkgdir" ]; then
+        echo "Removing package directory $pkgdir"
+        rm -rf "$pkgdir"
+    fi
+    mkdir -p "$pkgdir"
 }
 
-package-function-call() {
+maybe-package() {
+    if [ -z "${SKIP_PACKAGE:-}" ]; then
+        build-functions
+        package-finalize
+    else
+        echo "Skipping package"
+    fi
+}
+
+build-functions() {
+    build-functions-init
+    build-function-call prepare
+    build-function-call build
+    build-function-call package
+}
+
+build-functions-init() {
+    source "$project/build"
+}
+
+build-function-call() {
     local name=$1
     if type -t $name > /dev/null; then
         echo "Running $name"
@@ -158,16 +207,23 @@ package-function-call() {
     fi
 }
 
-###################################################################
-# Package init / finalize
-###################################################################
-
-package-init() {
-    pkgdir="$project/pkg"
-    mkdir -p "$pkgdir"
+package-finalize() {
+    cp "$project/Guild" "$pkgdir/Guild"
 }
 
-package-finalize() {
+###################################################################
+# Archive
+###################################################################
+
+maybe-archive() {
+    if [ -z "${SKIP_PACKAGE:-}" ] && [ -z "${SKIP_ARCHIVE:-}" ]; then
+        package-archive
+    else
+        echo "Skipping archive"
+    fi
+}
+
+package-archive() {
     local pkg="$package_name-$package_version.pkg.tar.xz"
     echo "Creating $pkg"
     tar -C "$pkgdir" -cjf "$pkg" .
@@ -178,12 +234,7 @@ package-finalize() {
 ###################################################################
 
 srcdir-init
-sources-download
-sources-check
-sources-extract
-package-init
-package-functions-init
-package-function-call prepare
-package-function-call build
-package-function-call package
-package-finalize
+maybe-sources
+pkgdir-init
+maybe-package
+maybe-archive

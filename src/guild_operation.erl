@@ -128,10 +128,17 @@ init_cmd(#state{op=#op{cmd_args=Args}}=State) ->
     ResolvedArgs = guild_util:resolve_args(Args, Env),
     State#state{cmd={ResolvedArgs, Env}}.
 
-cmd_env(#state{rundir=undefined, op=#op{cmd_extra_env=Extra}}) ->
-    Extra;
-cmd_env(#state{rundir=RunDir, op=#op{cmd_extra_env=Extra}}) ->
-    [{"RUNDIR", RunDir}|Extra].
+cmd_env(State) ->
+    command_core_env(State) ++ command_extra_env(State).
+
+command_core_env(#state{rundir=undefined}) ->
+    [];
+command_core_env(#state{rundir=RunDir}) ->
+    [{"RUNDIR", RunDir},
+     {"PKGHOME", guild_app:user_dir("packages")}].
+
+command_extra_env(#state{op=#op{cmd_extra_env=Extra}}) ->
+    Extra.
 
 %% ===================================================================
 %% Rundir
