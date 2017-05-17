@@ -42,7 +42,7 @@ package_opts() ->
 %% ===================================================================
 
 main(Opts, _Args) ->
-    Project = guild_cmd_support:project_from_opts(Opts),
+    Project = guild_cmd_support:project_from_opts("GuildPkg", Opts),
     guild_app:init_support([exec]),
     Bin = guild_app:priv_bin("guild-package"),
     Args = [Bin, guild_project:project_dir(Project)],
