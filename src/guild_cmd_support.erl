@@ -15,14 +15,15 @@
 -module(guild_cmd_support).
 
 -export([project_options/0, project_options/1, project_from_opts/1,
-         project_dir_from_opts/1, project_error_msg/2,
-         project_dir_desc/1, project_dir_opt/1, latest_rundir/1,
-         rundir_from_args/3, validate_rundir/1, run_for_args/2,
-         model_section_for_name/2, model_section_for_args/2,
+         project_from_opts/2, project_dir_from_opts/1,
+         project_error_msg/2, project_dir_desc/1, project_dir_opt/1,
+         latest_rundir/1, rundir_from_args/3, validate_rundir/1,
+         run_for_args/2, model_section_for_name/2,
+         model_section_for_args/2,
          model_or_resource_section_for_args/2, run_db_for_args/2,
          port_opt/2, exec_operation/2, operation_result/1,
-         runtime_error_msg/1, runtime_for_section/2,
-         preview_op_cmd/1, exec_run/2, env_from_opts/2]).
+         runtime_error_msg/1, runtime_for_section/2, preview_op_cmd/1,
+         exec_run/2, env_from_opts/2]).
 
 -define(github_repo_url, "https://github.com/guildai/guild").
 
@@ -75,7 +76,10 @@ latest_run_options() ->
       [flag]}].
 
 project_from_opts(Opts) ->
-    Project = try_project_from_dir(project_dir_from_opts(Opts)),
+    project_from_opts(guild_project:project_basename(), Opts).
+
+project_from_opts(Name, Opts) ->
+    Project = try_project_from_dir(Name, project_dir_from_opts(Opts)),
     ProfileFlags = profile_flags(Opts, Project),
     CmdlineFlags = cmdline_flags(Opts),
     apply_flags_to_project(
@@ -86,8 +90,8 @@ project_from_opts(Opts) ->
 project_dir_from_opts(Opts) ->
     proplists:get_value(project_dir, Opts, ".").
 
-try_project_from_dir(Dir) ->
-    case guild_project:from_dir(Dir) of
+try_project_from_dir(Name, Dir) ->
+    case guild_project:from_dir(Name, Dir) of
         {ok, Project} -> Project;
         {error, Err}  -> guild_cli:cli_error(project_error_msg(Err, Dir))
     end.

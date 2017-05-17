@@ -14,19 +14,27 @@
 
 -module(guild_project).
 
--export([from_dir/1, from_str/1, attr/3, set_attr/4, section/2,
-         sections/2, section_name/1, section_attrs/2, section_attrs/1,
-         section_attr/2, section_attr/3, section_attr_union/2,
-         project_file/1, project_file_for_dir/1, project_dir/1]).
+-export([from_dir/1, from_dir/2, from_str/1, attr/3, set_attr/4,
+         section/2, sections/2, section_name/1, section_attrs/2,
+         section_attrs/1, section_attr/2, section_attr/3,
+         section_attr_union/2, project_file_for_dir/1,
+         project_file_for_dir/2, project_dir/1]).
+
+-export([project_basename/0]).
 
 -define(project_basename, "Guild").
+
+project_basename() -> ?project_basename.
 
 %% ===================================================================
 %% Init
 %% ===================================================================
 
 from_dir(Dir) ->
-    Project = load(project_file_for_dir(Dir)),
+    from_dir(?project_basename, Dir).
+
+from_dir(Name, Dir) ->
+    Project = load(project_file_for_dir(Name, Dir)),
     maybe_apply_dir(Project, Dir).
 
 maybe_apply_dir({ok, Project}, Dir) ->
@@ -43,6 +51,19 @@ load(File) ->
         {error, enoent} -> {error, {missing_project_file, File}};
         {error, Err}    -> {error, Err}
     end.
+
+%% ===================================================================
+%% Path API
+%% ===================================================================
+
+project_file_for_dir(Dir) ->
+    project_file_for_dir(?project_basename, Dir).
+
+project_file_for_dir(Name, Dir) ->
+    filename:join(Dir, Name).
+
+project_dir(Project) ->
+    proplists:get_value('$dir', Project).
 
 %% ===================================================================
 %% Attr API
@@ -125,16 +146,3 @@ section_attrs_acc([{Name, _}=Attr|Rest], Project, RestPaths, Acc) ->
       lists:keystore(Name, 1, Acc, Attr));
 section_attrs_acc([], Project, RestPaths, Acc) ->
     section_attrs_acc(Project, RestPaths, Acc).
-
-%% ===================================================================
-%% Utils
-%% ===================================================================
-
-project_file(Project) ->
-    project_file_for_dir(project_dir(Project)).
-
-project_file_for_dir(Dir) ->
-    filename:join(Dir, ?project_basename).
-
-project_dir(Project) ->
-    proplists:get_value('$dir', Project).

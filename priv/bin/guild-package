@@ -42,6 +42,18 @@ popd-quiet() {
     popd > /dev/null
 }
 
+github-repo-base() {
+    expr match "$1" '\(https://github.com/[^/]*/[^/]*\)'
+}
+
+github-treeish() {
+    expr match "$1" 'https://github.com/[^/]*/[^/]*/tree/\([^/]*\)'
+}
+
+github-path() {
+    expr match "$1" 'https://github.com/[^/]*/[^/]*/tree/[^/]*/\(.*\)'
+}
+
 ###################################################################
 # Source dir
 ###################################################################
@@ -69,9 +81,9 @@ maybe-sources() {
     fi
 }
 
-###################################################################
-# Sources download
-###################################################################
+#------------------------------------------------------------------
+# Download
+#------------------------------------------------------------------
 
 sources-download() {
     for src in $package_source; do
@@ -83,31 +95,36 @@ source-download() {
     local src=$1
     if [ -f "$src" ]; then
         true
-    elif [ "${src:0:4}" = "git+" ]; then
-        git-download "${src:4}"
+    elif [ "${src:0:18}" = "https://github.com" ]; then
+        github-download "${src}"
     else
         error "$src does not exist or is not a supported source type"
     fi
 }
 
-git-download() {
+github-download() {
     local url=$1
-    local repo_name=$(url-filename $url)
+    local repo_base=$(github-repo-base $url)
+    if [ -z "$repo_base" ]; then
+        error "$url is not a supported GitHub path"
+    fi
+    local repo_src=${repo_base}.git
+    local repo_name=$(url-filename $repo_src)
     local repo_dest=$project/$repo_name
+
+    echo "Downloading $repo_src"
     if [ ! -e "$repo_dest" ] || dir-empty "$repo_dest"; then
-        echo "Cloning $url"
-        git clone --mirror "$url" "$repo_dest"
+        git clone --mirror "$repo_src" "$repo_dest"
     else
-        echo "Updating $repo_name"
         pushd-quiet "$repo_dest"
         git fetch --all -p
         popd-quiet
     fi
 }
 
-###################################################################
-# Sources check
-###################################################################
+#------------------------------------------------------------------
+# Check
+#------------------------------------------------------------------
 
 sources-check() {
     # TODO
@@ -118,9 +135,9 @@ sources-check() {
     true
 }
 
-###################################################################
-# Sources extract
-###################################################################
+#------------------------------------------------------------------
+# Extract
+#------------------------------------------------------------------
 
 sources-extract() {
     for src in $package_source; do
@@ -131,36 +148,39 @@ sources-extract() {
 source-extract() {
     local src=$1
     if [ -f "$src" ]; then
-        source-file-copy "$src"
-    elif [ "${src:0:4}" = "git+" ]; then
-        git-extract "${src:4}"
+        local-source-copy "$src"
+    elif [ "${src:0:18}" = "https://github.com" ]; then
+        github-extract "${src}"
     else
         error "$src is not a supported source type"
     fi
 }
 
-source-file-copy() {
+local-source-copy() {
     local file=$1
     echo "Copying source $file"
     cp "$file" "$srcdir/"
 }
 
-git-extract() {
+github-extract() {
     local url=$1
-    local repo_name=$(url-filename $url)
-    local repo_src=$project/$repo_name
-    local repo_dest=$srcdir/$repo_name
-    echo "Creating working copy of $repo_name"
-    if [ ! -e "$repo_dest" ] || dir-empty "$repo_dest"; then
-        echo "Cloning $url"
-        git clone "$repo_src" "$repo_dest"
+    local repo_base=$(github-repo-base $url)
+    if [ -z "$repo_base" ]; then
+        error "$url is not a supported GitHub path"
+    fi
+    local repo_name=$(url-filename $repo_base)
+    local treeish=$(github-treeish $url)
+    treeish=${treeish:-master}
+    local path=$(github-path $url)
+
+    if [ -z "$path" ]; then
+        echo "Extracting $repo_name/$treeish"
+        git -C $repo_name archive $treeish \
+            | tar -C "$srcdir" -xf -
     else
-        echo "Updating $repo_name"
-        pushd-quiet "$repo_dest"
-        git fetch
-        # TODO support for branch=xxx, tag=xxx, commit=xxx
-        git checkout
-        popd-quiet
+        echo "Extracting $repo_name/$treeish/$path"
+        git -C $repo_name archive --prefix="$path/" $treeish:$path \
+            | tar -C "$srcdir" -xf -
     fi
 }
 
@@ -179,36 +199,48 @@ pkgdir-init() {
 
 maybe-package() {
     if [ -z "${SKIP_PACKAGE:-}" ]; then
-        build-functions
+        packager-run
         package-finalize
     else
         echo "Skipping package"
     fi
 }
 
-build-functions() {
-    build-functions-init
-    build-function-call prepare
-    build-function-call build
-    build-function-call package
+packager-run() {
+    maybe-packager-init
+    packager-call prepare
+    packager-call build
+    packager-call package default-package
 }
 
-build-functions-init() {
-    source "$project/build"
+maybe-packager-init() {
+    local packager=${package_packager:-}
+    if [ -f "$packager" ]; then
+        echo "Using $packager"
+        source "$project/packager"
+    fi
 }
 
-build-function-call() {
+packager-call() {
     local name=$1
+    local default=${2:-}
     if type -t $name > /dev/null; then
         echo "Running $name"
         pushd-quiet "$srcdir"
         eval $name
         popd-quiet
+    elif [ ! -z $default ]; then
+        eval $default
     fi
 }
 
+default-package() {
+    echo "Copying sources to package"
+    cp -a "$srcdir"/* "$pkgdir/"
+}
+
 package-finalize() {
-    cp "$project/Guild" "$pkgdir/Guild"
+    cp "$project/GuildPkg" "$pkgdir/.GuildPkg"
 }
 
 ###################################################################
