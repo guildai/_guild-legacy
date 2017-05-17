@@ -22,7 +22,7 @@
 # The project name is used whenever the project is displayed --
 # e.g. in the view title.
 #
-name                    = {{project_name}}
+name                    = {{name|default:project_dir}}
 
 # Some Guild operations like train create runs, which are stored in a
 # run root directory. By default Guild creates a "runs" project
@@ -45,11 +45,6 @@ runroot                 = runs
 #
 description = Default model
 
-# The runtime attributre is required for all operations. Currently
-# Guild only supports 'tensorflow' for this value.
-#
-runtime                 = tensorflow
-
 # The train command spec is used to train a model. This should be the
 # name of the Python module that handles training. Flags that
 # correspond to the model, that have been selected by the user with
@@ -61,7 +56,7 @@ runtime                 = tensorflow
 # including all flags, use the '--preview' option for the train
 # command.
 #
-train                   = {{train_cmd|warn_if_empty:"train command not set - edit the project and specify this value before training"}}
+train                   = {{train|warn_if_empty:"train command not set - edit the project and specify this value before training"}}
 
 # If a model requires a long preparatory phase -- commonly used for
 # downloading and preparing data for training -- you may define a
@@ -183,8 +178,4 @@ max_steps               = 10000
 # them with models.
 
 fields                  =
-
-series-a                =
-
-series-b                =
-                        
+series                  =
