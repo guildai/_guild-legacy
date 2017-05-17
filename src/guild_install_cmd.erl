@@ -53,10 +53,9 @@ user_package_path(Name) ->
     filename:join(guild_app:user_dir("packages"), Name).
 
 invalid_package(Pkg) ->
-    guild_cli:error(
+    guild_cli:cli_error(
       io_lib:format(
-        "~s does not appear to be a valid Guild package~n",
-        [Pkg])).
+        "~s does not appear to be a valid Guild package", [Pkg])).
 
 exit_on_error(ok) -> ok;
 exit_on_error({error, N}) -> throw({error, N}).

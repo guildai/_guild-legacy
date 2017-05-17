@@ -5,7 +5,7 @@
 
 [project]
 
-name                    = {{project_name}}
+name                    = {{name}}
 runroot                 = runs
 
 [model]
@@ -15,7 +15,7 @@ runtime                 = tensorflow
 # The train command is required to train your model. Specify the
 # Python package and module used to train (omit the '.py' extension).
 
-train                   = {{train_cmd|warn_if_empty:"train command not set - edit the project and specify this value before training"}}
+train                   = {{train|warn_if_empty:"train command not set - edit the project and specify this value before training"}}
 
 
 # Below are additional operations that your model scripts might
