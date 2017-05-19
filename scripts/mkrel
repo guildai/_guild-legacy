@@ -3,9 +3,10 @@
 PKG_NAME=guild
 
 # If you change ERTS_VER you MUST also change REL_OTP_APPS to specify
-# the corresponding app versions for the new version of
-# Erlang. Failing to keep these versions in sync will almost certainly
-# cause hard to diagnose bugs in Guild.
+# the corresponding app versions for the new version of Erlang. Refer
+# to OTP_SRC/otp_versions.table for application versions associated
+# with a particular release. Failing to keep these versions in sync
+# will almost certainly cause hard to diagnose bugs in Guild.
 #
 ERTS_VER=8.3   # !!!! READ ABOVE COMMENT BEFORE CHANGING !!!!
 REL_OTP_APPS=(
@@ -15,6 +16,7 @@ REL_OTP_APPS=(
     kernel-5.2
     observer-2.3.1
     runtime_tools-1.11.1
+    sasl-3.0.3
     stdlib-3.3
     syntax_tools-2.1.1
     wx-1.8
