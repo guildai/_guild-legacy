@@ -12,18 +12,14 @@ group: examples
   models.
 </p>
 
-<div class="doclist mt-4">
+<div class="doclist m-3">
   <div class="row">
     <div class="col-md-4">
       <h3><a href="https://github.com/guildai/guild-examples/tree/master/mnist" target="_blank">MNIST</a></h3>
     </div>
     <div class="col-md-8">
-{% markdown %}
-
-The classic handwritten digits dataset used to illustrate image
-classification models.
-
-{% endmarkdown %}
+      The classic handwritten digits dataset used to illustrate image
+      classification models.
     </div>
   </div>
   <div class="row">
@@ -32,12 +28,10 @@ classification models.
     </div>
     <div class="col-md-8">
 {% markdown %}
-
 A convolutional network trained on the CIFAR-10 dataset ---
 adopted from TensorFlow's {% link
 https://www.tensorflow.org/tutorials/deep_cnn/ %} Convolutional
 Neural Networks Guide{% endlink %}.
-
 {% endmarkdown %}
     </div>
   </div>
