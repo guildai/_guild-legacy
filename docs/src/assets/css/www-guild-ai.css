@@ -533,10 +533,12 @@ span.cmd-desc-item-name {
 }
 
 .doclist .row  {
+    margin-bottom: 15px;
 }
 
 .doclist h3 {
-    font-size: 1.4rem;
+    font-size: 18px;
+    font-weight: 700;
 }
 
 .ext-link-icon {
