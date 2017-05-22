@@ -14,32 +14,27 @@
 
 -module(guild_project).
 
--export([from_dir/1, from_dir/2, from_str/1, attr/3, set_attr/4,
-         section/2, sections/2, section_name/1, section_attrs/2,
-         section_attrs/1, section_attr/2, section_attr/3,
-         section_attr_union/2, project_file_for_dir/1,
-         project_file_for_dir/2, project_dir/1]).
-
--export([project_basename/0]).
-
--define(project_basename, "Guild").
-
-project_basename() -> ?project_basename.
+-export([from_dir/1, from_file/1, from_str/1, project_dir/1,
+         project_file/1, attr/3, set_attr/4, section/2, sections/2,
+         section_name/1, section_attrs/2, section_attrs/1,
+         section_attr/2, section_attr/3, section_attr_union/2]).
 
 %% ===================================================================
 %% Init
 %% ===================================================================
 
 from_dir(Dir) ->
-    from_dir(?project_basename, Dir).
+    from_file(filename:join(Dir, "Guild")).
 
-from_dir(Name, Dir) ->
-    Project = load(project_file_for_dir(Name, Dir)),
-    maybe_apply_dir(Project, Dir).
+from_file(Path) ->
+    apply_path_attrs(load(Path), Path).
 
-maybe_apply_dir({ok, Project}, Dir) ->
-    {ok, [{'$dir', Dir}|Project]};
-maybe_apply_dir({error, Err}, _Dir) ->
+apply_path_attrs({ok, Project}, Path) ->
+    Attrs =
+        [{'$file', Path},
+         {'$dir', filename:dirname(Path)}],
+    {ok, Attrs ++ Project};
+apply_path_attrs({error, Err}, _Dir) ->
     {error, Err}.
 
 from_str(Str) ->
@@ -56,14 +51,11 @@ load(File) ->
 %% Path API
 %% ===================================================================
 
-project_file_for_dir(Dir) ->
-    project_file_for_dir(?project_basename, Dir).
-
-project_file_for_dir(Name, Dir) ->
-    filename:join(Dir, Name).
-
 project_dir(Project) ->
     proplists:get_value('$dir', Project).
+
+project_file(Project) ->
+    proplists:get_value('$file', Project).
 
 %% ===================================================================
 %% Attr API
