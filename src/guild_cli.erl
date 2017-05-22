@@ -72,8 +72,8 @@ cmd_info("init")        -> {guild_init_cmd, "initialize a Guild project"};
 cmd_info("install")     -> {guild_install_cmd, "install a Guild package"};
 cmd_info("list-attrs")  -> {guild_list_attrs_cmd, "list run attributes"};
 cmd_info("list-models") -> {guild_list_models_cmd, "list project models"};
-cmd_info("list-packages") -> {guild_list_packages_cmd,
-                              "list installed packages"};
+cmd_info("list-packages") ->
+    {guild_list_packages_cmd, "list installed packages"};
 cmd_info("list-runs")   -> {guild_list_runs_cmd, "list project runs"};
 cmd_info("list-series") -> {guild_list_series_cmd, "list run series names"};
 cmd_info("package")     -> {guild_package_cmd, "create a Guild package"};
