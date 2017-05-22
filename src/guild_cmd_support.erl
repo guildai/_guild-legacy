@@ -16,9 +16,9 @@
 
 -export([project_options/0, project_options/1, project_from_opts/1,
          project_from_opts/2, project_dir_from_opts/1,
-         project_error_msg/2, project_dir_desc/1, project_dir_opt/1,
-         latest_rundir/1, rundir_from_args/3, validate_rundir/1,
-         run_for_args/2, model_section_for_name/2,
+         project_error_msg/2, project_error_msg/3, project_dir_desc/1,
+         project_dir_opt/1, latest_rundir/1, rundir_from_args/3,
+         validate_rundir/1, run_for_args/2, model_section_for_name/2,
          model_section_for_args/2,
          model_or_resource_section_for_args/2, run_db_for_args/2,
          port_opt/2, exec_operation/2, operation_result/1,
@@ -76,7 +76,7 @@ latest_run_options() ->
       [flag]}].
 
 project_from_opts(Opts) ->
-    project_from_opts(guild_project:project_basename(), Opts).
+    project_from_opts("Guild", Opts).
 
 project_from_opts(Name, Opts) ->
     Project = try_project_from_dir(Name, project_dir_from_opts(Opts)),
@@ -91,28 +91,32 @@ project_dir_from_opts(Opts) ->
     proplists:get_value(project_dir, Opts, ".").
 
 try_project_from_dir(Name, Dir) ->
-    case guild_project:from_dir(Name, Dir) of
+    case guild_project:from_file(filename:join(Dir, Name)) of
         {ok, Project} -> Project;
-        {error, Err}  -> guild_cli:cli_error(project_error_msg(Err, Dir))
+        {error, Err}  -> guild_cli:cli_error(project_error_msg(Err, Name, Dir))
     end.
 
-project_error_msg({missing_project_file, _}, Dir) ->
-    missing_project_file_msg(Dir);
-project_error_msg({attr_line, Line, Num}, Dir) ->
-    syntax_error_msg(Line, Num, Dir).
+project_error_msg(Error, Dir) ->
+    project_error_msg(Error, "Guild", Dir).
 
-missing_project_file_msg(Dir) ->
+project_error_msg({missing_project_file, _}, Name, Dir) ->
+    missing_project_file_msg(Name, Dir);
+project_error_msg({attr_line, Line, Num}, Name, Dir) ->
+    syntax_error_msg(Line, Num, Name, Dir).
+
+missing_project_file_msg(Name, Dir) ->
     io_lib:format(
-      "~s does not contain a Guild file~n"
+      "~s does not contain a ~s file~n"
       "Try 'guild init~s' to initialize a project or change directories.",
-      [project_dir_desc(Dir), project_dir_opt(Dir)]).
+      [project_dir_desc(Dir), Name, project_dir_opt(Dir)]).
 
-syntax_error_msg(Line, Num, Dir) ->
+syntax_error_msg(Line, Num, Name, Dir) ->
+    Path = filename:join(Dir, Name),
     io_lib:format(
-      "the Guild project file contains an error on line ~b~n"
+      "~s contains an error on line ~b~n"
       "~s:~b: syntax error: ~s~n"
       "Try editing the file or submit an issue at " ?github_repo_url,
-      [Num, guild_project:project_file_for_dir(Dir), Num, Line]).
+      [Path, Num, Path, Num, Line]).
 
 profile_flags(Opts, Project) ->
     case proplists:get_value(profile, Opts) of
