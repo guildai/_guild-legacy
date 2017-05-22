@@ -1,5 +1,14 @@
 #-*-conf-*-
 
+[var "name"]
+
+help            = Project name (defaults to project directory name)
+default         = {{project_dir}}
+
+[var "train"]
+
+help            = Train command
+
 ####################################################################
 #
 # This is an annotated Guild project file. Review the comments below
