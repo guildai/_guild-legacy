@@ -113,7 +113,7 @@ handle_index_page(QS) ->
     guild_http:redirect(viewdef_page1_path(QS)).
 
 viewdef_page1_path(QS) ->
-    ["/overview", maybe_qs(QS)].
+    ["/train", maybe_qs(QS)].
 
 maybe_qs("") -> "";
 maybe_qs(QS) -> ["?", QS].
