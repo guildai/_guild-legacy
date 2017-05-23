@@ -73,23 +73,18 @@ annotated_project() ->
     Project.
 
 resolve_package_template(Pkg) ->
-    PkgDir = installed_package_path(Pkg),
-    assert_source_dir(PkgDir, Pkg),
+    case guild_package_util:latest_package_path(Pkg) of
+        {ok, Path} -> try_package_template_from_path(Path, Pkg);
+        error -> missing_package_error(Pkg)
+    end.
+
+try_package_template_from_path(PkgDir, Pkg) ->
     TemplatePath = filename:join(PkgDir, "Guild.in"),
     case guild_project:from_file(TemplatePath) of
         {ok, Project} ->
             #template{pkg=Pkg, src=PkgDir, project=Project};
         {error, {missing_project_file, _}} ->
-            missing_guild_in_error(Pkg)
-    end.
-
-installed_package_path(Pkg) ->
-    filename:join([os:getenv("HOME"), ".guild/packages", Pkg]).
-
-assert_source_dir(Path, Template) ->
-    case filelib:is_dir(Path) of
-        true -> ok;
-        false -> missing_package_error(Template)
+            missing_guild_in_error(PkgDir)
     end.
 
 missing_package_error(Name) ->
@@ -99,11 +94,11 @@ missing_package_error(Name) ->
         "Try 'guild list-packages' for a list",
         [Name])).
 
-missing_guild_in_error(Name) ->
+missing_guild_in_error(PkgDir) ->
     guild_cli:cli_error(
       io_lib:format(
         "~s is not a source package (missing Guild.in)",
-        [Name])).
+        [PkgDir])).
 
 print_vars_flag(Opts) ->
     proplists:get_bool(print_vars, Opts).
@@ -320,19 +315,12 @@ required(Val, _Msg) ->
     Val.
 
 latest_package(Val) ->
-    PkgHome = guild_app:user_dir("packages"),
-    Glob = filename:join(PkgHome, [Val, "-*"]),
-    case filelib:wildcard(Glob) of
-        [] -> throw(missing_package_msg(Val));
-        Matches -> latest_package_from_paths(Matches)
+    case guild_package_util:latest_package_path(Val) of
+        {ok, Path} -> filename:basename(Path);
+        error -> missing_package_msg(Val)
     end.
 
 missing_package_msg(Name) ->
     io_lib:format(
       "there are no installed packages matching '~s'",
       [Name]).
-
-latest_package_from_paths(Paths) ->
-    Names = [filename:basename(Path) || Path <- Paths],
-    [Latest|_] = lists:reverse(lists:sort(Names)),
-    Latest.
