@@ -39,7 +39,8 @@ run() ->
     test_consult_string(),
     test_port_io(),
     test_tensorflow_port_protocol(),
-    test_tensorflow_read_image().
+    test_tensorflow_read_image(),
+    test_strip_project_sections().
 
 run(Test) ->
     guild_trace:init_from_env(os:getenv("TRACE")),
@@ -1123,4 +1124,46 @@ test_tensorflow_read_image() ->
     {ok, #{tag:=<<"images/image/1">>, bytes:=<<137,80,78,_/binary>>}}
         = Load(RunDir, 1),
 
+    ok().
+
+%% ===================================================================
+%% Strip project sections
+%% ===================================================================
+
+test_strip_project_sections() ->
+    start("strip_project_sections"),
+
+    S = fun(Bin, Path) ->
+                iolist_to_binary(guild_project_util:strip_sections(Bin, Path))
+        end,
+
+    <<>> = S("", "s1"),
+    <<>> = S("[s1]", "s1"),
+    <<>> = S("[s1]\nv1 = 123", "s1"),
+    <<>> = S("[s \"1\"]", "s"),
+
+    <<"[s2]\nv1 = 456">> = S("[s1]\nv1 = 123\n[s2]\nv1 = 456", "s1"),
+    <<"[s2]\nv1 = 456">> = S("[s2]\nv1 = 456", "s1"),
+
+    <<"# Header comment\n"
+      "\n"
+      "[s2]\n"
+      "# s2 comment\n"
+      "v1 = 321\n"
+      "\n">> = S("# Header comment\n"
+                 "\n"
+                 "[s1]\n"
+                 "\n"
+                 "v1 = 123\n"
+                 "v2 = 456 789\n"
+                 "\n"
+                 "[s2]\n"
+                 "# s2 comment\n"
+                 "v1 = 321\n"
+                 "\n"
+                 "[s1]\n"
+                 "\n"
+                 "# s1 comment\n"
+                 "v1 = 987 654\n",
+                 "s1"),
     ok().
