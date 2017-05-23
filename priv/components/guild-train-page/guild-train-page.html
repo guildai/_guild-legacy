@@ -23,9 +23,9 @@ limitations under the License.
 <link rel="import" href="../guild-run-select-page-header/guild-run-select-page-header.html">
 <link rel="import" href="../guild-styles/guild-styles.html">
 
-<link rel="import" href="guild-overview-overlay.html">
+<link rel="import" href="guild-train-overlay.html">
 
-<dom-module id="guild-overview-page">
+<dom-module id="guild-train-page">
   <template>
     <style include="guild-row-styles"></style>
     <style>
@@ -44,7 +44,7 @@ limitations under the License.
         <guild-run-select-page-header env="{{env}}"></guild-run-select-page-header>
       </div>
 
-      <guild-overview-overlay id="overlay"></guild-overview-overlay>
+      <guild-train-overlay id="overlay"></guild-train-overlay>
 
       <template is="dom-if" if="[[viewdef]]">
         <div class="row row-20">
@@ -84,7 +84,7 @@ limitations under the License.
   </template>
   <script>
    Polymer({
-       is: "guild-overview-page",
+       is: "guild-train-page",
 
        properties: {
            env: Object,
