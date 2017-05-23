@@ -40,7 +40,7 @@ parser() ->
       "in the list. If a required variable is not specified, the command "
       "will fail with an error message.",
       init_opts(),
-      [{pos_args, {0, 1}}]).
+      [{pos_args, {0, any}}]).
 
 init_opts() ->
     [{template, "--template",
@@ -96,8 +96,8 @@ missing_package_error(Name) ->
     guild_cli:cli_error(
       io_lib:format(
         "~s is not installed~n"
-        "Try 'guild install ~s'",
-        [Name, Name])).
+        "Try 'guild list-packages' for a list",
+        [Name])).
 
 missing_guild_in_error(Name) ->
     guild_cli:cli_error(
@@ -213,7 +213,7 @@ missing_required_var_error(Name, #template{pkg=Pkg}) ->
     guild_cli:cli_error(
       io_lib:format(
         "project template for ~s requires '~s' variable~n"
-        "Try 'guild init ~s --print-vars for help",
+        "Try 'guild init --template=~s --print-vars' for help",
         [Pkg, Name, Pkg])).
 
 apply_default_vars(UserVars, Template, BaseVars) ->
@@ -237,8 +237,24 @@ var_default(Attrs) ->
     proplists:get_value("default", Attrs).
 
 render_default(Val, Vars) ->
-    io:format("TODO: render default ~p~n", [{Val, Vars}]),
-    Val.
+    Mod = guild_init_var_template,
+    Opts = [return, {out_dir, false}],
+    case erlydtl:compile_template(Val, Mod, Opts) of
+        {ok, _, []} ->
+            handle_default_render(Mod:render(Vars), Val);
+        {error, Err} ->
+            handle_default_compile_error(Err, Val)
+    end.
+
+handle_default_compile_error(Err, Orig) ->
+    guild_cli:warn("~p", [Err]),
+    Orig.
+
+handle_default_render({ok, Rendered}, _) ->
+    Rendered;
+handle_default_render({error, Err}, Orig) ->
+    guild_cli:warn("~p~n", [Err]),
+    Orig.
 
 maybe_copy_template_src(#template{src=undefined}, _Dest) -> ok;
 maybe_copy_template_src(#template{src=Src}, Dest) ->
@@ -249,7 +265,8 @@ maybe_copy_template_src(#template{src=Src}, Dest) ->
 
 write_template_as_guild_file(#template{project=Project}, Vars, ProjectDir) ->
     Rendered = render_project_template(Project, Vars),
-    write_guild_file(ProjectDir, Rendered).
+    Stripped = strip_vars(Rendered),
+    write_guild_file(ProjectDir, Stripped).
 
 render_project_template(Project, Vars) ->
     ProjectSrc = guild_project:project_file(Project),
@@ -270,6 +287,9 @@ bad_template_error() ->
     guild_cli:cli_error(
       "unable to initialize project - template contains errors").
 
+strip_vars(Bin) ->
+    guild_project_util:strip_sections(Bin, ["var"]).
+
 write_guild_file(Dir, Bin) ->
     Path = filename:join(Dir, "Guild"),
     ok = filelib:ensure_dir(Path),
@@ -284,7 +304,7 @@ version() -> 1.
 inventory(filters) ->
     [warn_if_empty,
      required,
-     required_latest_package];
+     latest_package];
 inventory(tags) ->
     [].
 

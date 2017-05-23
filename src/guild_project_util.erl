@@ -14,7 +14,8 @@
 
 -module(guild_project_util).
 
--export([runroot/1, runroot/2, all_runroots/1, flags/2, run_model/2]).
+-export([runroot/1, runroot/2, all_runroots/1, flags/2, run_model/2,
+         strip_sections/2]).
 
 -define(default_runroot, "runs").
 
@@ -107,3 +108,43 @@ default_model(Project) ->
 
 named_model(Project, Name) ->
     guild_project:section(Project, ["model", Name]).
+
+%% ===================================================================
+%% Strip sections
+%% ===================================================================
+
+strip_sections(Bin, Type) ->
+    StripHeaderPattern = strip_header_pattern(Type),
+    HeaderPattern = header_start_pattern(),
+    strip_sections(split_lines(Bin), StripHeaderPattern, HeaderPattern).
+
+strip_header_pattern(Type) ->
+    {ok, Re} = re:compile(["^\\[\\s*", Type, "(\\s+.*)?\\]"]),
+    Re.
+
+header_start_pattern() ->
+    {ok, Re} = re:compile("^\\["),
+    Re.
+
+split_lines(Bin) ->
+    LinePattern = "(.+(\r\n|\n|\r|\032)*)",
+    case re:run(Bin, LinePattern, [global, {capture, [1], list}]) of
+        {match, Parts} -> Parts;
+        nomatch -> ""
+    end.
+
+strip_sections(Lines, StripHeader, AnyHeader) ->
+    strip_acc(Lines, StripHeader, AnyHeader, false, []).
+
+strip_acc([Line|Rest], StripH, AnyH, Stripping, Acc) ->
+    case {match(Line, StripH), match(Line, AnyH), Stripping} of
+        {true, _, _} -> strip_acc(Rest, StripH, AnyH, true, Acc);
+        {_, true, _} -> strip_acc(Rest, StripH, AnyH, false, [Line|Acc]);
+        {_, _, true} -> strip_acc(Rest, StripH, AnyH, true, Acc);
+        {_, _, _}    -> strip_acc(Rest, StripH, AnyH, false, [Line|Acc])
+    end;
+strip_acc([], _StripH, _AnyH, _Stripping, Acc) ->
+    lists:reverse(Acc).
+
+match(Subject, Pattern) ->
+    re:run(Subject, Pattern, [{capture, none}]) == match.
