@@ -54,7 +54,7 @@ eval_or_preview({error, Err}, _Opts) ->
 
 init_op_error(evaluatable) ->
     guild_cli:cli_error(
-      "model does not support an eval operation\n"
+      "model does not support an evaluate operation\n"
       "Try 'guild evaluate --help' for more information.");
 init_op_error(Err) ->
     guild_cli:cli_error(guild_cmd_support:runtime_error_msg(Err)).
