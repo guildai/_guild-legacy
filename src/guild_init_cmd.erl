@@ -140,8 +140,9 @@ init_project(Template, Args) ->
     ProjectDir = project_dir_from_args(Args),
     assert_project_dir_empty(ProjectDir),
     Vars = validated_template_vars(Args, ProjectDir, Template),
+    GuildBin = render_guild_file(Template, Vars),
     maybe_copy_template_src(Template, ProjectDir),
-    write_template_as_guild_file(Template, Vars, ProjectDir).
+    write_guild_file(GuildBin, ProjectDir).
 
 project_dir_from_args([Arg|Rest]) ->
     case lists:member($=, Arg) of
@@ -251,6 +252,28 @@ handle_default_render({error, Err}, Orig) ->
     guild_cli:warn("~p~n", [Err]),
     Orig.
 
+render_guild_file(#template{project=Project}, Vars) ->
+    ProjectSrc = guild_project:project_file(Project),
+    Mod = guild_init_project_template,
+    Opts = [{default_libraries, [?MODULE]}],
+    try guild_dtl_util:compile_template(ProjectSrc, Mod, Opts) of
+        ok -> handle_render_guild_file(Mod:render(Vars))
+    catch
+        error:{template_compile, _} -> bad_template_error()
+    end.
+
+handle_render_guild_file({ok, Bin}) ->
+    strip_vars(Bin);
+handle_render_guild_file({error, Msg}) ->
+    guild_cli:cli_error(Msg).
+
+strip_vars(Bin) ->
+    guild_project_util:strip_sections(Bin, ["var"]).
+
+bad_template_error() ->
+    guild_cli:cli_error(
+      "unable to initialize project - template contains errors").
+
 maybe_copy_template_src(#template{src=undefined}, _Dest) -> ok;
 maybe_copy_template_src(#template{src=Src}, Dest) ->
     guild_app:init_support([exec]),
@@ -258,34 +281,7 @@ maybe_copy_template_src(#template{src=Src}, Dest) ->
     Args = [Bin, Src, Dest],
     guild_cmd_support:exec_run(Args, []).
 
-write_template_as_guild_file(#template{project=Project}, Vars, ProjectDir) ->
-    Rendered = render_project_template(Project, Vars),
-    Stripped = strip_vars(Rendered),
-    write_guild_file(ProjectDir, Stripped).
-
-render_project_template(Project, Vars) ->
-    ProjectSrc = guild_project:project_file(Project),
-    Mod = guild_init_project_template,
-    Opts = [{default_libraries, [?MODULE]}],
-    try guild_dtl_util:compile_template(ProjectSrc, Mod, Opts) of
-        ok -> handle_render(Mod:render(Vars))
-    catch
-        error:{template_compile, _} -> bad_template_error()
-    end.
-
-handle_render({ok, Bin}) ->
-    Bin;
-handle_render({error, Msg}) ->
-    guild_cli:cli_error(Msg).
-
-bad_template_error() ->
-    guild_cli:cli_error(
-      "unable to initialize project - template contains errors").
-
-strip_vars(Bin) ->
-    guild_project_util:strip_sections(Bin, ["var"]).
-
-write_guild_file(Dir, Bin) ->
+write_guild_file(Bin, Dir) ->
     Path = filename:join(Dir, "Guild"),
     ok = filelib:ensure_dir(Path),
     ok = file:write_file(Path, Bin).
@@ -317,7 +313,7 @@ required(Val, _Msg) ->
 latest_package(Val) ->
     case guild_package_util:latest_package_path(Val) of
         {ok, Path} -> filename:basename(Path);
-        error -> missing_package_msg(Val)
+        error -> throw(missing_package_msg(Val))
     end.
 
 missing_package_msg(Name) ->
