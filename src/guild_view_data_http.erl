@@ -16,6 +16,8 @@
 
 -export([create_app/1, app/4]).
 
+-define(default_max_epochs, 400).
+
 %% ===================================================================
 %% App
 %% ===================================================================
@@ -70,20 +72,20 @@ handle_runs(View) ->
 handle_series(View, Path, Params) ->
     Run = run_for_params(Params, View),
     Pattern = http_uri:decode(Path),
-    Max = max_epoch_for_params(Params),
+    Max = max_epochs_for_params(Params),
     Series = guild_data_reader:series(Run, Pattern, Max),
     guild_http:ok_json(guild_json:encode(Series)).
 
-max_epoch_for_params(Params) ->
+max_epochs_for_params(Params) ->
     Schema = [{"max_epochs", [{any, [integer, "all"]}]}],
-    Error = fun max_epoch_validate_error/1,
+    Error = fun max_epochs_validate_error/1,
     case guild_http:validate_params(Params, Schema, Error) of
-        []           -> all;
+        []           -> ?default_max_epochs;
         [{_, "all"}] -> all;
         [{_, Max}]   -> Max
     end.
 
-max_epoch_validate_error(_) ->
+max_epochs_validate_error(_) ->
     throw(
       guild_http:bad_request(
         "max_epochs must be a valid integer or 'all'")).
