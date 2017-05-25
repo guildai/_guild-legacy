@@ -27,11 +27,13 @@ dir-empty() {
 }
 
 url-filename() {
-    local url=$1
+    echo ${1##*/}
+}
+
+url-rootname() {
     local filename
-    filename=${url##*/}
-    filename=${filename%%.*}
-    echo $filename
+    filename=$(url-filename $1)
+    echo ${filename%%.*}
 }
 
 pushd-quiet() {
@@ -97,6 +99,8 @@ source-download() {
         true
     elif [ "${src:0:18}" = "https://github.com" ]; then
         github-download "${src}"
+    elif [[ "$src" =~ ^(https|http|ftp):// ]]; then
+         curl-download "${src}"
     else
         error "$src does not exist or is not a supported source type"
     fi
@@ -109,7 +113,7 @@ github-download() {
         error "$url is not a supported GitHub path"
     fi
     local repo_src=${repo_base}.git
-    local repo_name=$(url-filename $repo_src)
+    local repo_name=$(url-rootname $repo_src)
     local repo_dest=$project/$repo_name
 
     echo "Downloading $repo_src"
@@ -119,6 +123,16 @@ github-download() {
         pushd-quiet "$repo_dest"
         git fetch --all -p
         popd-quiet
+    fi
+}
+
+curl-download() {
+    local url=$1
+    local filename=$(url-filename "$url")
+    local dest="$project/$filename"
+    if [ ! -e "$dest" ]; then
+        echo "Downloading $url"
+        curl -Lf -o "$dest" "$url"
     fi
 }
 
@@ -147,19 +161,13 @@ sources-extract() {
 
 source-extract() {
     local src=$1
-    if [ -f "$src" ]; then
-        local-source-copy "$src"
-    elif [ "${src:0:18}" = "https://github.com" ]; then
+    if [ "${src:0:18}" = "https://github.com" ]; then
         github-extract "${src}"
+    elif [[ "$src" =~ ^(https|http|ftp):// ]]; then
+        downloaded-file-extract "${src}"
     else
         error "$src is not a supported source type"
     fi
-}
-
-local-source-copy() {
-    local file=$1
-    echo "Copying source $file"
-    cp "$file" "$srcdir/"
 }
 
 github-extract() {
@@ -168,7 +176,7 @@ github-extract() {
     if [ -z "$repo_base" ]; then
         error "$url is not a supported GitHub path"
     fi
-    local repo_name=$(url-filename $repo_base)
+    local repo_name=$(url-rootname $repo_base)
     local treeish=$(github-treeish $url)
     treeish=${treeish:-master}
     local path=$(github-path $url)
@@ -183,6 +191,30 @@ github-extract() {
             | tar -C "$srcdir" -xf -
     fi
 }
+
+downloaded-file-extract() {
+    local url=$1
+    local filename=$(url-filename "$url")
+    local file="$project/$filename"
+    if [[ "$file" = *.tar.* ]]; then
+        tar-extract "$file"
+    else
+        file-copy "$file"
+    fi
+}
+
+tar-extract() {
+    local archive=$1
+    echo "Unpacking $(basename $archive)"
+    tar -C "$srcdir" -xf "$archive"
+}
+
+local-source-copy() {
+    local file=$1
+    echo "Copying source $file"
+    cp "$file" "$srcdir/"
+}
+
 
 ###################################################################
 # Package
