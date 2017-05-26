@@ -102,7 +102,7 @@ source-download() {
     elif [[ "$src" =~ ^(https|http|ftp):// ]]; then
          curl-download "${src}"
     else
-        error "$src does not exist or is not a supported source type"
+        error "package source '$src' does not exist"
     fi
 }
 
@@ -161,8 +161,10 @@ sources-extract() {
 
 source-extract() {
     local src=$1
-    if [ "${src:0:18}" = "https://github.com" ]; then
-        github-extract "${src}"
+    if [ -f "$src" ]; then
+        file-source-copy "$src"
+    elif [ "${src:0:18}" = "https://github.com" ]; then
+        github-source-extract "${src}"
     elif [[ "$src" =~ ^(https|http|ftp):// ]]; then
         downloaded-file-extract "${src}"
     else
@@ -170,7 +172,7 @@ source-extract() {
     fi
 }
 
-github-extract() {
+github-source-extract() {
     local url=$1
     local repo_base=$(github-repo-base $url)
     if [ -z "$repo_base" ]; then
@@ -197,19 +199,19 @@ downloaded-file-extract() {
     local filename=$(url-filename "$url")
     local file="$project/$filename"
     if [[ "$file" = *.tar.* ]]; then
-        tar-extract "$file"
+        tar-source-extract "$file"
     else
-        file-copy "$file"
+        file-source-copy "$file"
     fi
 }
 
-tar-extract() {
+tar-source-extract() {
     local archive=$1
     echo "Unpacking $(basename $archive)"
     tar -C "$srcdir" -xf "$archive"
 }
 
-local-source-copy() {
+file-source-copy() {
     local file=$1
     echo "Copying source $file"
     cp "$file" "$srcdir/"
