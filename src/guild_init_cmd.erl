@@ -31,8 +31,9 @@ parser() ->
       "\n"
       "By default Guild creates an annotated project file in DIR (defaults "
       "to current directory). Specify a template to create a full configured "
-      "project from a source package. TEMPLATE must be the name of an "
-      "installed source package.\n"
+      "project from a source package. TEMPLATE may be the name of an "
+      "installed source package or a directory containing a 'Guild.in' project "
+      "template.\n"
       "\n"
       "When specifying a template, specify variables using VAR=VALUE "
       "arguments. To list variables available for a template, use "
@@ -43,8 +44,12 @@ parser() ->
       [{pos_args, {0, any}}]).
 
 init_opts() ->
-    [{template, "--template",
-      "propject template", [{metavar, "TEMPLATE"}]},
+    [{template, "--template", "propject template", [{metavar, "TEMPLATE"}]},
+     {force, "--force",
+      "initialize project even when DIR is non-empty (WARNING this will "
+      "overwite existing files)", [flag]},
+     {ignore_vars, "--ignore-vars",
+      "initialize project even when required vars are not provided", [flag]},
      {print_vars, "--print-vars", "print variables used by TEMPLATE", [flag]}].
 
 %% ===================================================================
@@ -55,7 +60,7 @@ main(Opts, Args) ->
     Template = resolve_template(Opts),
     case print_vars_flag(Opts) of
         true -> print_vars(Template);
-        false -> init_project(Template, Args)
+        false -> init_project(Template, Args, Opts)
     end.
 
 resolve_template(Opts) ->
@@ -72,13 +77,25 @@ annotated_project() ->
     {ok, Project} = guild_project:from_file(Path),
     Project.
 
-resolve_package_template(Pkg) ->
-    case guild_package_util:latest_package_path(Pkg) of
-        {ok, Path} -> try_package_template_from_path(Path, Pkg);
-        error -> missing_package_error(Pkg)
+resolve_package_template(Val) ->
+    Locations =
+        [fun find_project_template/1,
+         fun find_installed_package_template/1],
+    case guild_util:find_apply(Locations, [Val]) of
+        {ok, Template} -> Template;
+        error -> bad_template_error(Val)
     end.
 
-try_package_template_from_path(PkgDir, Pkg) ->
+find_project_template(Dir) ->
+    case filelib:is_dir(Dir) of
+        true ->
+            Pkg = filename:basename(Dir),
+            {ok, package_template_from_path(Dir, Pkg)};
+        false ->
+            error
+    end.
+
+package_template_from_path(PkgDir, Pkg) ->
     TemplatePath = filename:join(PkgDir, "Guild.in"),
     case guild_project:from_file(TemplatePath) of
         {ok, Project} ->
@@ -87,18 +104,26 @@ try_package_template_from_path(PkgDir, Pkg) ->
             missing_guild_in_error(PkgDir)
     end.
 
-missing_package_error(Name) ->
-    guild_cli:cli_error(
-      io_lib:format(
-        "~s is not installed~n"
-        "Try 'guild list-packages' for a list",
-        [Name])).
-
 missing_guild_in_error(PkgDir) ->
     guild_cli:cli_error(
       io_lib:format(
         "~s is not a source package (missing Guild.in)",
         [PkgDir])).
+
+find_installed_package_template(Pkg) ->
+    case guild_package_util:latest_package_path(Pkg) of
+        {ok, Path} ->
+            {ok, package_template_from_path(Path, Pkg)};
+        error ->
+            error
+    end.
+
+bad_template_error(Val) ->
+    guild_cli:cli_error(
+      io_lib:format(
+        "'~s' does not appear to be a project template~n"
+        "Try 'guild init --help' for more information.",
+        [Val])).
 
 print_vars_flag(Opts) ->
     proplists:get_bool(print_vars, Opts).
@@ -136,10 +161,10 @@ print_spaces(_) ->
 var_help(Attrs) ->
     proplists:get_value("help", Attrs).
 
-init_project(Template, Args) ->
+init_project(Template, Args, Opts) ->
     ProjectDir = project_dir_from_args(Args),
-    assert_project_dir_empty(ProjectDir),
-    Vars = validated_template_vars(Args, ProjectDir, Template),
+    assert_project_dir_empty(ProjectDir, Opts),
+    Vars = validated_template_vars(Args, ProjectDir, Template, Opts),
     GuildBin = render_guild_file(Template, Vars),
     maybe_copy_template_src(Template, ProjectDir),
     write_guild_file(GuildBin, ProjectDir).
@@ -152,24 +177,31 @@ project_dir_from_args([Arg|Rest]) ->
 project_dir_from_args([]) ->
     filename:absname("").
 
-assert_project_dir_empty(Dir) ->
+assert_project_dir_empty(Dir, Opts) ->
     case file:list_dir(Dir) of
         {error, enoent} -> ok;
         {ok, []} -> ok;
-        {ok, _} -> project_dir_not_empty_error(Dir)
+        {ok, _} ->
+            maybe_project_dir_not_empty_error(Dir, Opts)
+    end.
+
+maybe_project_dir_not_empty_error(Dir, Opts) ->
+    case proplists:get_bool(force, Opts) of
+        true -> ok;
+        false -> project_dir_not_empty_error(Dir)
     end.
 
 project_dir_not_empty_error(Dir) ->
     guild_cli:cli_error(
       io_lib:format(
         "'~s' is not an empty directory\n"
-        "Try 'guild init' with a new or empty directory.",
+        "You may use 'guild init --force' to bypass this check.",
         [Dir])).
 
-validated_template_vars(Args, ProjectDir, Template) ->
+validated_template_vars(Args, ProjectDir, Template, Opts) ->
     BaseVars = base_vars(ProjectDir),
     UserVars = vars_from_args(Args),
-    validate_user_vars(UserVars, Template),
+    maybe_validate_user_vars(UserVars, Template, Opts),
     UserAndDefaultVars = apply_default_vars(UserVars, Template, BaseVars),
     UserAndDefaultVars ++ BaseVars.
 
@@ -186,6 +218,12 @@ acc_vars(Arg, Acc) ->
     case re:split(Arg, "=", [{parts, 2}, {return, list}]) of
         [Name, Val] -> [{Name, Val}|Acc];
         [_] -> Acc
+    end.
+
+maybe_validate_user_vars(Vars, Template, Opts) ->
+    case proplists:get_bool(ignore_vars, Opts) of
+        true -> ok;
+        false -> validate_user_vars(Vars, Template)
     end.
 
 validate_user_vars(Vars, Template) ->
@@ -209,7 +247,8 @@ missing_required_var_error(Name, #template{pkg=Pkg}) ->
     guild_cli:cli_error(
       io_lib:format(
         "project template for ~s requires '~s' variable~n"
-        "Try 'guild init --template=~s --print-vars' for help",
+        "Try 'guild init --template=~s --print-vars' for help or "
+        "'guild init --ignore-vars' to bypass this check.",
         [Pkg, Name, Pkg])).
 
 apply_default_vars(UserVars, Template, BaseVars) ->
@@ -310,6 +349,8 @@ required(Val, Msg) when Val == ""; Val == undefined ->
 required(Val, _Msg) ->
     Val.
 
+latest_package(undefined) ->
+    "";
 latest_package(Val) ->
     case guild_package_util:latest_package_path(Val) of
         {ok, Path} -> filename:basename(Path);
