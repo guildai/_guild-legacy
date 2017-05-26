@@ -135,7 +135,7 @@ command_core_env(#state{rundir=undefined}) ->
     [];
 command_core_env(#state{rundir=RunDir}) ->
     [{"RUNDIR", RunDir},
-     {"PKGHOME", guild_app:user_dir("packages")}].
+     {"PKGHOME", guild_app:pkg_dir()}].
 
 command_extra_env(#state{op=#op{cmd_extra_env=Extra}}) ->
     Extra.

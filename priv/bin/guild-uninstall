@@ -5,7 +5,7 @@ set -o pipefail
 path="$1"
 
 # Safeguard
-if [[ "$(dirname $path)" != */.guild/packages ]]; then
+if [[ "$(dirname $path)" != */.guild/pkg ]]; then
     echo "$path does not appear to be an installed package, quitting"
     exit 1
 fi
