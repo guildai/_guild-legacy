@@ -3,7 +3,7 @@
 -export([latest_package_path/1]).
 
 latest_package_path(Name) ->
-    PkgHome = guild_app:user_dir("packages"),
+    PkgHome = guild_app:user_dir("pkg"),
     Glob = filename:join(PkgHome, [Name, "-*"]),
     case filelib:wildcard(Glob) of
         [] -> error;

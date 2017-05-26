@@ -50,7 +50,7 @@ dest_for_pkg(Pkg) ->
     end.
 
 user_package_path(Name) ->
-    filename:join(guild_app:user_dir("packages"), Name).
+    filename:join(guild_app:pkg_dir(), Name).
 
 invalid_package(Pkg) ->
     guild_cli:cli_error(

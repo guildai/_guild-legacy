@@ -42,7 +42,7 @@ uninstall_matches(Pkg, Bin) ->
     lists:foreach(fun(Path) -> uninstall_pkg_path(Path, Bin) end, Paths).
 
 match_packages(Pkg) ->
-    BasePath = filename:join(guild_app:user_dir("packages"), Pkg),
+    BasePath = filename:join(guild_app:pkg_dir(), Pkg),
     Matches = filelib:wildcard([BasePath, "-*"]),
     lists:sort(Matches).
 

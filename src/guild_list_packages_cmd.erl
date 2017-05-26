@@ -39,7 +39,7 @@ installed_packages() ->
     [package_info(Dir) || Dir <- package_dirs()].
 
 package_dirs() ->
-    Home = guild_app:user_dir("packages"),
+    Home = guild_app:pkg_dir(),
     Paths = [filename:join(Home, Name) || Name <- list_dir(Home)],
     Sorted = lists:sort(Paths),
     lists:filter(fun filelib:is_dir/1, Sorted).
