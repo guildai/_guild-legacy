@@ -19,7 +19,7 @@
 -behavior(erlydtl_library).
 
 -export([version/0, inventory/1, warn_if_empty/2, required/2,
-         latest_package/1]).
+         latest_package/1, latest_package_checkpoint/1]).
 
 -record(template, {pkg, src, project}).
 
@@ -334,7 +334,8 @@ version() -> 1.
 inventory(filters) ->
     [warn_if_empty,
      required,
-     latest_package];
+     latest_package,
+     latest_package_checkpoint];
 inventory(tags) ->
     [].
 
@@ -353,11 +354,28 @@ latest_package(undefined) ->
     "";
 latest_package(Val) ->
     case guild_package_util:latest_package_path(Val) of
-        {ok, Path} -> filename:basename(Path);
-        error -> throw(missing_package_msg(Val))
+        {ok, Path} ->
+            filename:basename(Path);
+        {error, package} ->
+            throw(missing_package_msg(Val))
     end.
 
 missing_package_msg(Name) ->
     io_lib:format(
       "there are no installed packages matching '~s'",
       [Name]).
+
+latest_package_checkpoint(Val) ->
+    case guild_package_util:latest_package_checkpoint_path(Val) of
+        {ok, Path} ->
+            [filename:dirname(Path), filename:basename(Path)];
+        {error, package} ->
+            throw(missing_package_msg(Val));
+        {error, {checkpoint, Path}} ->
+            throw(missing_checkpoint_msg(Val, Path))
+    end.
+
+missing_checkpoint_msg(Pkg, Path) ->
+    io_lib:format(
+      "there are no checkpoints available for ~s (using ~s)",
+      [Pkg, Path]).
