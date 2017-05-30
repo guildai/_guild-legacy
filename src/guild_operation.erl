@@ -44,7 +44,8 @@ new(RunDirSpec, Section, Project, CmdArgs, Opts) ->
 opt_list(Name, Opts) ->
     proplists:get_value(Name, Opts, []).
 
-cmd_info(#op{cmd_args=Args, cmd_extra_env=Env}) ->
+cmd_info(#op{cmd_args=Args, cmd_extra_env=ExtraEnv}) ->
+    Env = ExtraEnv ++ system_env(),
     #{args => Args, env => Env}.
 
 %% ===================================================================
@@ -129,15 +130,18 @@ init_cmd(#state{op=#op{cmd_args=Args}}=State) ->
     State#state{cmd={ResolvedArgs, Env}}.
 
 cmd_env(State) ->
-    command_core_env(State) ++ command_extra_env(State).
+    cmd_core_env(State) ++ cmd_extra_env(State).
 
-command_core_env(#state{rundir=undefined}) ->
-    [];
-command_core_env(#state{rundir=RunDir}) ->
-    [{"RUNDIR", RunDir},
-     {"PKGHOME", guild_app:pkg_dir()}].
+cmd_core_env(State) ->
+    system_env() ++ run_env(State).
 
-command_extra_env(#state{op=#op{cmd_extra_env=Extra}}) ->
+system_env() ->
+    [{"PKGHOME", guild_app:pkg_dir()}].
+
+run_env(#state{rundir=undefined}) -> [];
+run_env(#state{rundir=RunDir}) -> [{"RUNDIR", RunDir}].
+
+cmd_extra_env(#state{op=#op{cmd_extra_env=Extra}}) ->
     Extra.
 
 %% ===================================================================

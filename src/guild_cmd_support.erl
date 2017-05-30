@@ -415,7 +415,8 @@ unsupported_runtime_error(Val) ->
 
 preview_op_cmd(Op) ->
     #{args := Args, env := Env} = guild_operation:cmd_info(Op),
-    print_cmd(Args),
+    ResolvedArgs = guild_util:resolve_args(Args, Env),
+    print_cmd(ResolvedArgs),
     print_env(Env).
 
 print_cmd(Args) ->
