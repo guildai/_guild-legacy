@@ -4,13 +4,17 @@
 
 latest_package_path(Name) ->
     PkgHome = guild_app:user_dir("pkg"),
-    Glob = filename:join(PkgHome, [Name, "-*"]),
-    case filelib:wildcard(Glob) of
-        [] -> error;
-        Matches -> {ok, latest_package_path(Matches, PkgHome)}
+    PathBase = filename:join(PkgHome, Name),
+    case filelib:is_dir(PathBase) of
+        true -> {ok, PathBase};
+        false -> latest_from_path_base(PathBase)
     end.
 
-latest_package_path(Paths, Dir) ->
-    Names = [filename:basename(Path) || Path <- Paths],
-    [Latest|_] = lists:reverse(lists:sort(Names)),
-    filename:join(Dir, Latest).
+latest_from_path_base(Base) ->
+    latest_from_paths(filelib:wildcard([Base, "-*"])).
+
+latest_from_paths([]) ->
+    {error, package};
+latest_from_paths(Paths) ->
+    [Latest|_] = lists:reverse(lists:sort(Paths)),
+    {ok, Latest}.
