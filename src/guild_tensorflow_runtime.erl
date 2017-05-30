@@ -227,8 +227,27 @@ op_spec(Section, Name) ->
 
 cmd_args(CmdSpec, Flags) ->
     Python = guild_util:find_exe("python"),
-    [Module|Args] = guild_util:split_cmd(CmdSpec),
-    [Python, "-um", Module] ++ Args ++ flag_args(Flags).
+    [First|Args] = guild_util:split_cmd(CmdSpec),
+    Script = verified_script_path(First),
+    [Python, "-u", Script] ++ Args ++ flag_args(Flags).
+
+verified_script_path(Val) ->
+    Tests =
+        [fun find_explicit_path/1,
+         fun find_path_missing_py_ext/1],
+    case guild_util:find_apply(Tests, [Val]) of
+        {ok, Path} -> Path;
+        error -> error({python_script, Val})
+    end.
+
+find_explicit_path(Val) ->
+    case filelib:is_file(Val) of
+        true -> {ok, Val};
+        false -> error
+    end.
+
+find_path_missing_py_ext(Val) ->
+    find_explicit_path(Val ++ ".py").
 
 flag_args(Flags) ->
     lists:concat(
