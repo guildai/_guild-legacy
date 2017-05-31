@@ -27,13 +27,6 @@ limitations under the License.
      .component {
          margin: 10px 0;
 
-      /* Need to explicitly set left and right padding for
-         guild-view-row to create 20px gutters as the
-         guild-view-row selects immediate children and we're using
-         a template element. */
-
-         padding-left: 10px;
-         padding-right: 10px;
      }
 
      .component:last-child {
@@ -43,7 +36,7 @@ limitations under the License.
 
     <div class="row row-20">
       <template is="dom-repeat" items="[[components]]" as="c">
-        <div class$="component [[componentColClass(c)]]">
+        <div class="component col-12">
           <template is="dom-if" if="[[c.isChart]]">
             <guild-chart-compare-component
                 env="[[env]]"
@@ -145,10 +138,6 @@ limitations under the License.
                }
            }
            throw ["cannot find component index", target];
-       },
-
-       componentColClass: function(c) {
-           return c.fullWidth ? "col-12" : "col-12 col-xl-6";
        },
 
        activeChanged: function(val) {
