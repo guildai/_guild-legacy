@@ -201,7 +201,7 @@ project_dir_not_empty_error(Dir) ->
 validated_template_vars(Args, ProjectDir, Template, Opts) ->
     BaseVars = base_vars(ProjectDir),
     UserVars = vars_from_args(Args),
-    maybe_validate_user_vars(UserVars, Template, Opts),
+    validate_user_vars(UserVars, Template, Opts),
     UserAndDefaultVars = apply_default_vars(UserVars, Template, BaseVars),
     UserAndDefaultVars ++ BaseVars.
 
@@ -220,7 +220,7 @@ acc_vars(Arg, Acc) ->
         [_] -> Acc
     end.
 
-maybe_validate_user_vars(Vars, Template, Opts) ->
+validate_user_vars(Vars, Template, Opts) ->
     case proplists:get_bool(ignore_vars, Opts) of
         true -> ok;
         false -> validate_user_vars(Vars, Template)
