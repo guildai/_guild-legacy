@@ -168,13 +168,16 @@ runroot(#state{op=#op{section=Section, project=Project}}) ->
 rundir_name(Opts, #state{started=Started}) ->
     case proplists:get_value(suffix, Opts) of
         undefined -> format_started(Started);
-        Suffix -> format_started(Started) ++ Suffix
+        Suffix -> format_started(Started) ++ format_suffix(Suffix)
     end.
 
 format_started(RunStarted) ->
     Now = guild_run:timestamp_to_now(RunStarted),
     {{Y, M, D}, {H, Mn, S}} = calendar:now_to_universal_time(Now),
     io_lib:format("~b~2..0b~2..0bT~2..0b~2..0b~2..0bZ", [Y, M, D, H, Mn, S]).
+
+format_suffix(Suffix) ->
+    re:replace(Suffix, "/", "_", [global, {return, list}]).
 
 %% ===================================================================
 %% Run meta
