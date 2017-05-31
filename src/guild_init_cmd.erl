@@ -365,15 +365,21 @@ missing_package_msg(Name) ->
       "there are no installed packages matching '~s'",
       [Name]).
 
+latest_package_checkpoint(undefined) -> "";
 latest_package_checkpoint(Val) ->
     case guild_package_util:latest_package_checkpoint_path(Val) of
         {ok, Path} ->
-            [filename:dirname(Path), filename:basename(Path)];
+            format_package_checkpoint(Path);
         {error, package} ->
             throw(missing_package_msg(Val));
         {error, {checkpoint, Path}} ->
             throw(missing_checkpoint_msg(Val, Path))
     end.
+
+format_package_checkpoint(Path) ->
+    Name = filename:basename(Path),
+    Pkg = filename:basename(filename:dirname(Path)),
+    filename:join(Pkg, Name).
 
 missing_checkpoint_msg(Pkg, Path) ->
     io_lib:format(
