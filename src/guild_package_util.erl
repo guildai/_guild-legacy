@@ -1,6 +1,6 @@
 -module(guild_package_util).
 
--export([latest_package_path/1]).
+-export([latest_package_path/1, latest_package_checkpoint_path/1]).
 
 latest_package_path(Name) ->
     PkgHome = guild_app:user_dir("pkg"),
@@ -18,3 +18,15 @@ latest_from_paths([]) ->
 latest_from_paths(Paths) ->
     [Latest|_] = lists:reverse(lists:sort(Paths)),
     {ok, Latest}.
+
+latest_package_checkpoint_path(Name) ->
+    case latest_package_path(Name) of
+        {ok, Path} -> first_checkpoint_for_dir(Path);
+        {error, Err} -> {error, Err}
+    end.
+
+first_checkpoint_for_dir(Dir) ->
+    case filelib:wildcard(filename:join(Dir, "*.ckpt")) of
+        [First|_] -> {ok, First};
+        [] -> {error, checkpoint}
+    end.
