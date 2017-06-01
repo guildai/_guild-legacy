@@ -40,6 +40,8 @@ app("GET", {"/data/flags", _, Params}, View, _) ->
     handle_flags(View, Params);
 app("GET", {"/data/attrs", _, Params}, View, _) ->
     handle_attrs(View, Params);
+app("GET", {"/data/artifacts", _, Params}, View, _) ->
+    handle_artifacts(View, Params);
 app("GET", {"/data/output", _, Params}, View, _) ->
     handle_output(View, Params);
 app("GET", {"/data/compare", _, Params}, View, _) ->
@@ -107,6 +109,15 @@ handle_attrs(View, Params) ->
     Run = run_for_params(Params, View),
     Attrs = guild_data_reader:attrs(Run),
     guild_http:ok_json(guild_json:encode(Attrs)).
+
+%% ===================================================================
+%% Artifacts
+%% ===================================================================
+
+handle_artifacts(View, Params) ->
+    _Run = run_for_params(Params, View),
+    Artifacts = [#{name => <<"foo">>}, #{name => <<"bar">>}],
+    guild_http:ok_json(guild_json:encode(Artifacts)).
 
 %% ===================================================================
 %% Output
