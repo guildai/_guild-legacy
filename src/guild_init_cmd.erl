@@ -39,12 +39,19 @@ parser() ->
       "arguments. To list variables available for a template, use "
       "--print-vars. Some variables are required and are indicated as such "
       "in the list. If a required variable is not specified, the command "
-      "will fail with an error message.",
+      "will fail with an error message.\n"
+      "\n"
+      "You may alternatively initialize a Guild package using the --package "
+      "option. This will generate a skeleton GuildPkg file and packager "
+      "script that you must edit manually to define your package."
+      "",
       init_opts(),
       [{pos_args, {0, any}}]).
 
 init_opts() ->
     [{template, "--template", "propject template", [{metavar, "TEMPLATE"}]},
+     {package, "--package",
+      "initialize a Guild package (exlusive of --template)", [flag]},
      {force, "--force",
       "initialize project even when DIR is non-empty (WARNING this will "
       "overwite existing files)", [flag]},
@@ -57,6 +64,22 @@ init_opts() ->
 %% ===================================================================
 
 main(Opts, Args) ->
+    handle_main(project_type(Opts), Opts, Args).
+
+project_type(Opts) ->
+    case proplists:get_bool(package, Opts) of
+        true -> package;
+        false -> project
+    end.
+
+handle_main(project, Opts, Args) -> project_init(Opts, Args);
+handle_main(package, Opts, Args) -> package_init(Opts, Args).
+
+%% ===================================================================
+%% Project init
+%% ===================================================================
+
+project_init(Opts, Args) ->
     Template = resolve_template(Opts),
     case print_vars_flag(Opts) of
         true -> print_vars(Template);
@@ -316,7 +339,7 @@ bad_template_error() ->
 maybe_copy_template_src(#template{src=undefined}, _Dest) -> ok;
 maybe_copy_template_src(#template{src=Src}, Dest) ->
     guild_app:init_support([exec]),
-    Bin = guild_app:priv_bin("guild-init"),
+    Bin = guild_app:priv_bin("guild-init-project"),
     Args = [Bin, Src, Dest],
     guild_cmd_support:exec_run(Args, []).
 
@@ -385,3 +408,18 @@ missing_checkpoint_msg(Pkg, Path) ->
     io_lib:format(
       "there are no checkpoints available for ~s (using ~s)",
       [Pkg, Path]).
+
+%% ===================================================================
+%% Package init
+%% ===================================================================
+
+package_init(_Opts, Args) ->
+    ProjectDir = project_dir_from_args(Args),
+    copy_package_files(ProjectDir).
+
+copy_package_files(Dest) ->
+    SrcDir = guild_app:priv_dir("projects"),
+    guild_app:init_support([exec]),
+    Bin = guild_app:priv_bin("guild-init-package"),
+    Args = [Bin, SrcDir, Dest],
+    guild_cmd_support:exec_run(Args, []).
