@@ -18,7 +18,7 @@ limitations under the License.
 <link rel="import" href="../guild-env/guild-env.html">
 
 <link rel="import" href="../guild-compare-page/guild-compare-page.html">
-<link rel="import" href="../guild-evaluate-page/guild-evaluate-page.html">
+<link rel="import" href="../guild-eval-page/guild-eval-page.html">
 <link rel="import" href="../guild-run-viewdef/guild-run-viewdef.html">
 <link rel="import" href="../guild-run/guild-run.html">
 <link rel="import" href="../guild-tensorboard-page/guild-tensorboard-page.html">
@@ -49,9 +49,9 @@ limitations under the License.
         </template>
       </guild-view-page>
 
-      <guild-view-page id="evaluate" label="Evaluate" icon="maps:my-location" env="{{env}}">
+      <guild-view-page id="eval" label="Evaluate" icon="image:filter-center-focus" env="{{env}}">
         <template>
-          <guild-evaluate-page env="{{env}}" viewdef="[[viewdef]]"></guild-evaluate-page>
+          <guild-eval-page env="{{env}}" viewdef="[[viewdef]]"></guild-eval-page>
         </template>
       </guild-view-page>
 
