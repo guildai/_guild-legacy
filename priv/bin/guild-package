@@ -200,6 +200,8 @@ downloaded-file-extract() {
     local file="$project/$filename"
     if [[ "$file" = *.tar.* ]]; then
         tar-source-extract "$file"
+    elif [[ "$file" = *.zip ]]; then
+            zip-source-extract "$file"
     else
         file-source-copy "$file"
     fi
@@ -209,6 +211,12 @@ tar-source-extract() {
     local archive=$1
     echo "Unpacking $(basename $archive)"
     tar -C "$srcdir" -xf "$archive"
+}
+
+zip-source-extract() {
+    local archive=$1
+    echo "Unpacking $(basename $archive)"
+    unzip -qo -d "$srcdir" "$archive"
 }
 
 file-source-copy() {
