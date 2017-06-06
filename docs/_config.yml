@@ -24,7 +24,7 @@ twitter:          guild_ai
 authors:          TensorHub and the Guild AI contributors
 social_logo_path:
 social_image_path:
-current_version:  0.1.0
+current_version:  0.1.1
 repo:             https://github.com/guildai/guild
 tensorflow_min:   1.1.0
 
