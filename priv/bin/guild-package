@@ -230,6 +230,16 @@ file-source-copy() {
 # Package
 ###################################################################
 
+maybe-package() {
+    if [ -z "${SKIP_PACKAGE:-}" ]; then
+        pkgdir-init
+        packager-run
+        package-finalize
+    else
+        echo "Skipping package"
+    fi
+}
+
 pkgdir-init() {
     pkgdir="$project/pkg"
     if [ -e "$pkgdir" ]; then
@@ -237,15 +247,6 @@ pkgdir-init() {
         rm -rf "$pkgdir"
     fi
     mkdir -p "$pkgdir"
-}
-
-maybe-package() {
-    if [ -z "${SKIP_PACKAGE:-}" ]; then
-        packager-run
-        package-finalize
-    else
-        echo "Skipping package"
-    fi
 }
 
 packager-run() {
@@ -309,6 +310,5 @@ package-archive() {
 
 srcdir-init
 maybe-sources
-pkgdir-init
 maybe-package
 maybe-archive
