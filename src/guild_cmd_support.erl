@@ -21,8 +21,8 @@
          validate_rundir/1, run_for_args/2, model_section_for_name/2,
          model_section_for_args/2,
          model_or_resource_section_for_args/2, run_db_for_args/2,
-         port_opt/2, exec_operation/2, operation_result/1,
-         preview_op_cmd/1, exec_run/2, env_from_opts/2]).
+         port_opt/2, exec_operation/2, exec_op/2, preview_op_cmd/1,
+         exec_run/2, env_from_opts/2]).
 
 -define(github_repo_url, "https://github.com/guildai/guild").
 
@@ -354,13 +354,17 @@ validate_port(_) -> throw({error, "invalid value for --port"}).
 
 exec_operation(Name, Op) ->
     {ok, Pid} = guild_operation_sup:start_op(Name, Op),
-    operation_result(Pid).
+    wait_for_op_result(Pid).
 
 %% ===================================================================
-%% Operation result
+%% Exec op
 %% ===================================================================
 
-operation_result(Pid) ->
+exec_op(Name, Op) ->
+    {ok, Pid} = guild_op_sup:start_op(Name, Op),
+    wait_for_op_result(Pid).
+
+wait_for_op_result(Pid) ->
     guild_proc:reg(Pid),
     OpExit = guild_proc:wait_for({proc, Pid}),
     guild_proc:wait_for({scope, optask}),

@@ -34,6 +34,7 @@ init() ->
 
 supervisors() ->
     [?sup_child(guild_operation_sup),
+     ?sup_child(guild_op_sup),
      ?sup_child(guild_optask_sup),
      ?sup_child(guild_http_sup),
      ?sup_child(guild_view_sup),

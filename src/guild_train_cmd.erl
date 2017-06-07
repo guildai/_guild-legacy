@@ -69,7 +69,7 @@ missing_requires_error(Missing) ->
       [Missing]).
 
 train(Op) ->
-    guild_cmd_support:exec_operation(guild_train_op, Op).
+    guild_cmd_support:exec_op(guild_train_op, Op).
 
 preview(Op) ->
     guild_cli:out_par(
