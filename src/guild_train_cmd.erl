@@ -40,12 +40,34 @@ train_options() ->
 %% ===================================================================
 
 main(Opts, Args) ->
-    train_or_preview(init_op(Opts, Args), Opts).
+    train_or_preview(train_op(Opts, Args), Opts).
 
-init_op(Opts, Args) ->
+train_op(Opts, Args) ->
     Project = guild_cmd_support:project_from_opts(Opts),
     Model = guild_cmd_support:model_section_for_args(Args, Project),
-    guild_tensorflow_runtime:init_train_op(Model, Project).
+    train_op_for_spec(train_spec(Model), Model, Project).
+
+train_spec(Section) ->
+      guild_project:section_attr(Section, "train").
+
+train_op_for_spec({ok, Spec}, Model, Project) when length(Spec) > 0 ->
+    validate_train_required(Model, Project),
+    train_op_for_spec_(Spec, Model, Project);
+train_op_for_spec(_, Model, _) ->
+    not_trainable_error(Model).
+
+train_op_for_spec(Spec, Model, Project) ->
+    guild_train_op:from_spec(Spec, Model, Project).
+
+not_trainable_error(Model) ->
+    guild_cli:cli_error(
+      io_lib_format(
+        "model%s does not support a train operation\n"
+        "Try 'guild train --help' for more information.",
+        [maybe_model_name(Model)])).
+
+maybe_model_name({_, []}) -> "";
+maybe_model_name({_, [Name|_]) -> io_lib:format('~s', [Name]).
 
 train_or_preview({ok, Op}, Opts) ->
     case proplists:get_bool(preview, Opts) of
@@ -56,9 +78,6 @@ train_or_preview({error, Err}, _Opts) ->
     init_op_error(Err).
 
 init_op_error(trainable) ->
-    guild_cli:cli_error(
-      "model does not support a train operation\n"
-      "Try 'guild train --help' for more information.");
 init_op_error({missing_requires, Missing}) ->
     guild_cli:cli_error(missing_requires_error(Missing)).
 

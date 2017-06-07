@@ -16,12 +16,12 @@
 
 -behavior(guild_op).
 
--export([new/4, cmd_info/1, start_link/2, rundir/1, ospid/1, stop/2]).
+-export([from_spec/3, cmd_info/1, start_link/2, rundir/1, ospid/1, stop/2]).
 
 -export([init/1, handle_task/1, handle_msg/3]).
 
--record(op, {section, project, cmd_args, cmd_extra_env,
-             app_support, tasks, stream_handler_inits}).
+-record(op, {section, project, cmd_args, cmd_extra_env, tasks,
+             stream_handler_inits}).
 
 -record(state, {op, started, cmd, rundir, exec_pid, exec_ospid,
                 stream_handlers, stdout_buf, stderr_buf}).
@@ -37,15 +37,14 @@ new(Section, Project, CmdArgs, Opts) ->
            project=Project,
            cmd_args=CmdArgs,
            cmd_extra_env=proplists:get_value(env, Opts, []),
-           app_support=proplists:get_value(app_support, Opts, []),
-           tasks=op_tasks(Opts),
+           tasks=tasks(),
            stream_handler_inits=proplists:get_value(stream_handlers, Opts, [])},
     {?MODULE, Op}.
 
 op_tasks(Opts) ->
     core_tasks() ++ proplists:get_value(tasks, Opts, []).
 
-core_tasks() ->
+tasks() ->
     [{guild_run_status_task, start_link, []},
      {guild_run_db_task, start_link, []}].
 
@@ -108,36 +107,12 @@ op_steps() ->
      fun start_exec/1,
      fun start_tasks/1].
 
-init_app_support(#state{op=#op{app_support=AppSupport}}=State) ->
-    guild_app:init_support([exec|AppSupport]),
+init_app_support(State) ->
+    guild_app:init_support([exec, json]),
     State.
 
 started_timestamp(S) ->
     S#state{started=guild_run:timestamp()}.
-
-%% ===================================================================
-%% Cmd
-%% ===================================================================
-
-init_cmd(#state{op=#op{cmd_args=Args}}=State) ->
-    Env = cmd_env(State),
-    ResolvedArgs = guild_util:resolve_args(Args, Env),
-    State#state{cmd={ResolvedArgs, Env}}.
-
-cmd_env(State) ->
-    cmd_core_env(State) ++ cmd_extra_env(State).
-
-cmd_core_env(State) ->
-    system_env() ++ run_env(State).
-
-system_env() ->
-    [{"PKGHOME", guild_app:pkg_dir()}].
-
-run_env(#state{rundir=undefined}) -> [];
-run_env(#state{rundir=RunDir}) -> [{"RUNDIR", RunDir}].
-
-cmd_extra_env(#state{op=#op{cmd_extra_env=Extra}}) ->
-    Extra.
 
 %% ===================================================================
 %% Rundir
@@ -173,6 +148,29 @@ rundir_suffix(Section) ->
 
 safe_path(Suffix) ->
     re:replace(Suffix, "/", "_", [global, {return, list}]).
+
+%% ===================================================================
+%% Cmd
+%% ===================================================================
+
+init_cmd(#state{op=#op{cmd_args=Args}}=State) ->
+    Env = cmd_env(State),
+    ResolvedArgs = guild_util:resolve_args(Args, Env),
+    State#state{cmd={ResolvedArgs, Env}}.
+
+cmd_env(State) ->
+    cmd_core_env(State) ++ cmd_extra_env(State).
+
+cmd_core_env(State) ->
+    system_env() ++ run_env(State).
+
+system_env() ->
+    [{"PKGHOME", guild_app:pkg_dir()}].
+
+run_env(#state{rundir=RunDir}) -> [{"RUNDIR", RunDir}].
+
+cmd_extra_env(#state{op=#op{cmd_extra_env=Extra}}) ->
+    Extra.
 
 %% ===================================================================
 %% Run meta

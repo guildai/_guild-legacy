@@ -62,24 +62,16 @@ train_op_for_validated_requires({error, Missing}, _Cmd, _Section, _Project) ->
     {error, {missing_requires, Missing}}.
 
 train_op(TrainSpec, Section, Project) ->
-    _DELME_RunDirSpec = train_rundir_spec(Section),
     Flags = guild_project_util:flags(Section, Project),
     Cmd = cmd_args(TrainSpec, Flags),
     Env = train_extra_env(),
     Opts =
         [{env, Env},
-         {app_support, train_app_support()},
          {tasks, train_tasks(Flags, Env)},
          {stream_handlers, train_stream_handlers()}],
     guild_train_op:new(Section, Project, Cmd, Opts).
 
-train_rundir_spec(Section) ->
-    Name = guild_model:name_for_project_section(Section, "tensorflow"),
-    {new, [{suffix, "-" ++ Name}]}.
-
 train_extra_env() -> base_extra_env().
-
-train_app_support() -> [json].
 
 train_tasks(Flags, Env) ->
     Repeat = stats_interval_opt(Flags),
