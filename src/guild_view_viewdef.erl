@@ -128,7 +128,7 @@ apply_project_series(Name, Project, BaseAttrs) ->
 compare_fields(ViewSection, Project) ->
     Lookup = fields_lookup(),
     FieldNames = compare_field_names(ViewSection),
-    [resolve_field(Name, Project, Lookup) || Name <- FieldNames].
+    [compare_field(Name, Project, Lookup) || Name <- FieldNames].
 
 compare_field_names(ViewSection) ->
     Attr = fun(Name) -> guild_project:section_attr(ViewSection, Name) end,
@@ -138,6 +138,15 @@ compare_field_names(ViewSection) ->
            fun() -> Attr("fields") end],
           [], ""),
     parse_names(Names).
+
+compare_field(Name, Project, Lookup) ->
+    apply_sources(resolve_field(Name, Project, Lookup)).
+
+apply_sources(Field) ->
+    case proplists:get_value("source", Field) of
+        undefined -> Field;
+        Source -> [{"sources", Source}|Field]
+    end.
 
 %% ===================================================================
 %% Helpers

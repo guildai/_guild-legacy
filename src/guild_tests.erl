@@ -1185,14 +1185,16 @@ test_viewdef() ->
              <<"label">> := <<"Validation Accuracy">>,
              <<"name">> := <<"accuracy">>,
              <<"reduce">> := <<"last">>,
-             <<"source">> := <<"series/tf/validation/accuracy">>},
+             <<"source">> := <<"series/tf/validation/accuracy">>,
+             <<"sources">> := <<"series/tf/validation/accuracy">>},
            #{<<"color">> := <<"red-700">>,
              <<"format">> := <<"0.000">>,
              <<"icon">> := <<"loss">>,
              <<"label">> := <<"Loss">>,
              <<"name">> := <<"loss">>,
              <<"reduce">> := <<"last">>,
-             <<"source">> := <<"series/tf/train/loss">>}
+             <<"source">> := <<"series/tf/train/loss">>,
+             <<"sources">> := <<"series/tf/train/loss">>}
           ],
       fields :=
           [
