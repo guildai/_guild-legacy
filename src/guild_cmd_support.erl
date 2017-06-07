@@ -22,8 +22,7 @@
          model_section_for_args/2,
          model_or_resource_section_for_args/2, run_db_for_args/2,
          port_opt/2, exec_operation/2, operation_result/1,
-         runtime_error_msg/1, runtime_for_section/2, preview_op_cmd/1,
-         exec_run/2, env_from_opts/2]).
+         preview_op_cmd/1, exec_run/2, env_from_opts/2]).
 
 -define(github_repo_url, "https://github.com/guildai/guild").
 
@@ -225,8 +224,7 @@ run_for_args(Args, Opts) ->
     RunDir = rundir_from_args(Args, Opts, Project),
     Run = run_for_rundir(RunDir),
     Model = model_for_run(Run, Project),
-    Runtime = guild_cmd_support:runtime_for_section(Model, Project),
-    {Run, Project, Model, Runtime}.
+    {Run, Project, Model}.
 
 run_for_rundir(RunDir) ->
     case guild_run:run_for_rundir(RunDir) of
@@ -383,31 +381,6 @@ unexpected_op_error(Err) ->
 
 signal_exit_error(Signal) ->
     {error, io_lib:format("operation interrupted with ~p", [Signal])}.
-
-%% ===================================================================
-%% Runtime error message
-%% ===================================================================
-
-runtime_error_msg({no_runtime, Section}) ->
-    io_lib:format("missing runtime definition for ~s", [Section]);
-runtime_error_msg({no_runtime, Section, Name}) ->
-    io_lib:format("missing runtime definition for ~s '~s'", [Section, Name]);
-runtime_error_msg({runtime, Name}) ->
-    io_lib:format("unsupported runtime '~s'", [Name]).
-
-%% ===================================================================
-%% Runtime for section
-%% ===================================================================
-
-runtime_for_section(Section, Project) ->
-    case guild_runtime:for_section(Section, Project) of
-        {ok, Runtime} -> Runtime;
-        {error, {unknown_runtime, Val}} ->
-            unsupported_runtime_error(Val)
-    end.
-
-unsupported_runtime_error(Val) ->
-    guild_cli:cli_error(io_lib:format("unknown runtime '~s'", [Val])).
 
 %% ===================================================================
 %% Preview op cmd

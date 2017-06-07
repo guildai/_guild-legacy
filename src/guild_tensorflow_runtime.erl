@@ -14,30 +14,17 @@
 
 -module(guild_tensorflow_runtime).
 
--export([start_link/0]).
-
--export([handle_msg/3]).
+-export([init_train_op/2, init_eval_op/3, init_prepare_op/2,
+         init_serve_op/3]).
 
 -define(default_stats_task_repeat, 10000).
 -define(eval_stop_timeout, 5000).
-
-start_link() ->
-    e2_service:start_link(?MODULE, []).
-
-handle_msg({init_train_op, Section, Project}, _From, State) ->
-    {reply, train_op_reply(Section, Project), State};
-handle_msg({init_eval_op, Run, Section, Project}, _From, State) ->
-    {reply, eval_op_reply(Run, Section, Project), State};
-handle_msg({init_prepare_op, Section, Project}, _From, State) ->
-    {reply, prepare_op_reply(Section, Project), State};
-handle_msg({init_serve_op, Run, Section, Project}, _From, State) ->
-    {reply, serve_op_reply(Run, Section, Project), State}.
 
 %% ===================================================================
 %% Train op
 %% ===================================================================
 
-train_op_reply(Section, Project) ->
+init_train_op(Section, Project) ->
     train_op_for_spec(op_spec(Section, "train"), Section, Project).
 
 train_op_for_spec({ok, Spec}, Section, Project) ->
@@ -132,7 +119,7 @@ log_collector_stderr({_, Line}) -> guild_log:internal([Line, "\n"]).
 %% Eval op
 %% ===================================================================
 
-eval_op_reply(Run, Section, Project) ->
+init_eval_op(Run, Section, Project) ->
     case op_spec(Section, "evaluate") of
         {ok, EvalSpec} -> {ok, eval_op(EvalSpec, Run, Section, Project)};
         error -> {error, evaluatable}
@@ -176,7 +163,7 @@ exec_monitor_task(ExecPid) ->
 %% Prepare op
 %% ===================================================================
 
-prepare_op_reply(Section, Project) ->
+init_prepare_op(Section, Project) ->
     case op_spec(Section, "prepare") of
         {ok, Spec} -> {ok, prepare_op(Spec, Section, Project)};
         error -> {error, preparable}
@@ -193,7 +180,7 @@ prepare_op(PrepareSpec, Section, Project) ->
 %% Serve op
 %% ===================================================================
 
-serve_op_reply(Run, Section, Project) ->
+init_serve_op(Run, Section, Project) ->
     case op_spec(Section, "serve") of
         {ok, ServeSpec} -> {ok, serve_op(ServeSpec, Run, Section, Project)};
         error -> {error, servable}

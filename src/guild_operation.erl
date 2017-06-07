@@ -38,11 +38,24 @@ new(RunDirSpec, Section, Project, CmdArgs, Opts) ->
        cmd_args=CmdArgs,
        cmd_extra_env=opt_list(env, Opts),
        app_support=opt_list(app_support, Opts),
-       tasks=opt_list(tasks, Opts),
+       tasks=op_tasks(RunDirSpec, Opts),
        stream_handler_inits=opt_list(stream_handlers, Opts)}.
 
 opt_list(Name, Opts) ->
     proplists:get_value(Name, Opts, []).
+
+op_tasks({new, _}, Opts) ->
+    new_run_core_tasks() ++ opt_list(tasks, Opts);
+op_tasks(_, Opts) ->
+    opt_list(tasks, Opts).
+
+new_run_core_tasks() ->
+    [{guild_run_status_task, start_link, []},
+     {guild_run_db_task, start_link, []}].
+
+%% ===================================================================
+%% Cmd info
+%% ===================================================================
 
 cmd_info(#op{cmd_args=Args, cmd_extra_env=ExtraEnv}) ->
     Env = ExtraEnv ++ system_env(),
@@ -97,21 +110,20 @@ op_steps(#state{op=#op{rundir_spec={new, _}}}) ->
      fun init_errors_log/1,
      fun init_stream_handlers/1,
      fun start_exec/1,
-     fun start_core_tasks/1,
-     fun start_runtime_tasks/1];
+     fun start_tasks/1];
 op_steps(#state{op=#op{rundir_spec={overlay, _}}}) ->
     [fun init_app_support/1,
      fun set_rundir/1,
      fun init_cmd/1,
      fun init_stream_handlers/1,
      fun start_exec/1,
-     fun start_runtime_tasks/1];
+     fun start_tasks/1];
 op_steps(#state{op=#op{rundir_spec=none}}) ->
     [fun init_app_support/1,
      fun init_cmd/1,
      fun init_stream_handlers/1,
      fun start_exec/1,
-     fun start_runtime_tasks/1].
+     fun start_tasks/1].
 
 init_app_support(#state{op=#op{app_support=AppSupport}}=State) ->
     guild_app:init_support([exec|AppSupport]),
@@ -258,30 +270,15 @@ cmd_working_dir(#state{op=#op{project=Project}}) ->
     guild_project:project_dir(Project).
 
 %% ===================================================================
-%% Core tasks
+%% Tasks
 %% ===================================================================
 
-start_core_tasks(State) ->
-    start_tasks(core_tasks()),
+start_tasks(#state{op=#op{tasks=Tasks}}=State) ->
+    lists:foreach(fun start_task/1, Tasks),
     State.
-
-core_tasks() ->
-    [{guild_run_status_task, start_link, []},
-     {guild_run_db_task, start_link, []}].
-
-start_tasks(Tasks) ->
-    lists:foreach(fun start_task/1, Tasks).
 
 start_task(TaskSpec) ->
     {ok, _} = guild_optask_sup:start_task(TaskSpec, self()).
-
-%% ===================================================================
-%% Runtime tasks
-%% ===================================================================
-
-start_runtime_tasks(#state{op=#op{tasks=Tasks}}=State) ->
-    start_tasks(Tasks),
-    State.
 
 %% ===================================================================
 %% Messages

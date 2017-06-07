@@ -20,9 +20,7 @@ Guild.CompareTable = new function() {
     var fieldsDataSource = function(fields) {
         var sources = new Set();
         fields.forEach(function(field) {
-            field.sources.split(",").forEach(function(source) {
-                sources.add(source);
-            });
+            sources.add(field.source);
         });
         return Array.from(sources).join(",");
     };

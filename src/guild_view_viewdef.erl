@@ -21,18 +21,18 @@
 %% ===================================================================
 
 viewdef(Model, Project) ->
-    viewdef_for_section(view_section(Model, Project), Model, Project).
+    viewdef_for_section(view_section(Model, Project), Project).
 
-viewdef_for_section({ok, ViewSection}, Model, Project) ->
-    Fields = fields(ViewSection, Model, Project),
-    Series = series(ViewSection, Model, Project),
+viewdef_for_section({ok, ViewSection}, Project) ->
+    Fields = fields(ViewSection, Project),
+    Series = series(ViewSection, Project),
     Compare = compare_fields(ViewSection, Project),
     #{
        fields => proplists_to_maps(Fields),
        series => proplists_to_maps(Series),
        compare => proplists_to_maps(Compare)
      };
-viewdef_for_section(error, _Model, _Project) ->
+viewdef_for_section(error, _Project) ->
     #{
        fields => [],
        series => [],
@@ -65,22 +65,13 @@ proplist_to_map(P) ->
 %% Fields
 %% ===================================================================
 
-fields(ViewSection, Model, Project) ->
-    Lookup = fields_lookup(Model),
+fields(ViewSection, Project) ->
+    Lookup = fields_lookup(),
     FieldDef = guild_project:section_attr(ViewSection, "fields"),
     fields_(FieldDef, Project, Lookup).
 
-fields_lookup(Model) ->
-    merge_lookups(
-      [default_fields_lookup(),
-       runtime_fields_lookup(Model)]).
-
-default_fields_lookup() ->
-    read_lookup(lookup_path("default-fields")).
-
-runtime_fields_lookup(Model) ->
-    Name = model_runtime(Model) ++ "-fields",
-    read_lookup(lookup_path(Name)).
+fields_lookup() ->
+    read_lookup(lookup_path("fields")).
 
 fields_({ok, Raw}, Project, Lookup) ->
     Names = parse_names(Raw),
@@ -104,24 +95,15 @@ apply_project_field(Name, Project, BaseAttrs) ->
 %% Series
 %% ===================================================================
 
-series(ViewSection, Model, Project) ->
-    Lookup = series_lookup(Model),
+series(ViewSection, Project) ->
+    Lookup = series_lookup(),
     case guild_project:section_attr(ViewSection, "series") of
         {ok, Series} -> series_(Series, Project, Lookup);
         error -> []
     end.
 
-series_lookup(Model) ->
-    merge_lookups(
-      [default_series_lookup(),
-       runtime_series_lookup(Model)]).
-
-default_series_lookup() ->
-    read_lookup(lookup_path("default-series")).
-
-runtime_series_lookup(Model) ->
-    Name = model_runtime(Model) ++ "-series",
-    read_lookup(lookup_path(Name)).
+series_lookup() ->
+    read_lookup(lookup_path("series")).
 
 series_(Raw, Project, Lookup) ->
     Names = parse_names(Raw),
@@ -144,19 +126,9 @@ apply_project_series(Name, Project, BaseAttrs) ->
 %% ===================================================================
 
 compare_fields(ViewSection, Project) ->
-    Runtimes = project_runtimes(Project),
-    Lookups = fields_lookups_for_runtimes(Runtimes),
+    Lookup = fields_lookup(),
     FieldNames = compare_field_names(ViewSection),
-    [compare_field(Name, Project, Lookups) || Name <- FieldNames].
-
-project_runtimes(Project) ->
-    project_runtimes_acc(
-      guild_project:sections(Project, ["model"]),
-      sets:new()).
-
-project_runtimes_acc([Model|Rest], S) ->
-    project_runtimes_acc(Rest, sets:add_element(model_runtime(Model), S));
-project_runtimes_acc([], S) -> sets:to_list(S).
+    [resolve_field(Name, Project, Lookup) || Name <- FieldNames].
 
 compare_field_names(ViewSection) ->
     Attr = fun(Name) -> guild_project:section_attr(ViewSection, Name) end,
@@ -167,56 +139,9 @@ compare_field_names(ViewSection) ->
           [], ""),
     parse_names(Names).
 
-fields_lookups_for_runtimes(Runtimes) ->
-    [fields_lookup_for_runtime(Runtime) || Runtime <- Runtimes].
-
-fields_lookup_for_runtime(Runtime) ->
-    merge_lookups(
-      [default_fields_lookup(),
-       read_lookup(lookup_path(Runtime ++ "-fields"))]).
-
-compare_field(Name, Project, [Lookup|ExtraLookups]) ->
-    Field = resolve_field(Name, Project, Lookup),
-    ExtraSources = field_extra_sources(Name, ExtraLookups),
-    apply_extra_sources(Field, ExtraSources).
-
-field_extra_sources(Name, Lookups) ->
-    field_extra_sources_acc(Name, Lookups, sets:new()).
-
-field_extra_sources_acc(Name, [Lookup|Rest], S) ->
-    Field = lookup_defaults(Name, Lookup),
-    field_extra_sources_acc(Name, Rest, maybe_apply_field_source(Field, S));
-field_extra_sources_acc(_Name, [], S) ->
-    S.
-
-maybe_apply_field_source(Field, S) ->
-    case proplists:get_value("source", Field, "") of
-        "" -> S;
-        Source -> sets:add_element(Source, S)
-    end.
-
-apply_extra_sources(Field, SourcesSet) ->
-    Sources = sets:to_list(maybe_apply_field_source(Field, SourcesSet)),
-    [{"sources", Sources}|Field].
-
 %% ===================================================================
 %% Helpers
 %% ===================================================================
-
-merge_lookups([Working, Next|Rest]) ->
-    merge_lookups([merge_lookups(Working, Next)|Rest]);
-merge_lookups([Merged]) ->
-    Merged.
-
-merge_lookups(Working, New) ->
-    merge_lookups_acc(New, Working, Working).
-
-merge_lookups_acc([{Name, NewAttrs}|Rest], Working, Acc) ->
-    CurAttrs = proplists:get_value(Name, Working, []),
-    MergedAttrs = merge_attrs(NewAttrs, CurAttrs),
-    merge_lookups_acc(Rest, Working, [{Name, MergedAttrs}|Acc]);
-merge_lookups_acc([], _Working, Acc) ->
-    Acc.
 
 lookup_path(Name) ->
     filename:join(guild_app:priv_dir("viewdefs"), Name ++ ".config").
@@ -226,9 +151,6 @@ read_lookup(Path) ->
         {ok, Lookup} -> Lookup;
         {error, enoent} -> []
     end.
-
-model_runtime(Model) ->
-    guild_project:section_attr(Model, "runtime", "tensorflow").
 
 parse_names("") -> [];
 parse_names(Raw) ->

@@ -31,7 +31,7 @@ init([Op]) ->
     {ok, #state{rundir=RunDir}}.
 
 handle_task(#state{rundir=RunDir}) ->
-    Attrs = sys_attrs() ++ gpu_attrs() ++ runtime_attrs(),
+    Attrs = sys_attrs() ++ gpu_attrs() ++ tensorflow_attrs(),
     guild_run_db:log_attrs(RunDir, Attrs),
     {stop, normal}.
 
@@ -57,7 +57,7 @@ apply_gpu_attrs(Attrs, Acc) ->
      {Key("memory"), Memory}
      |Acc].
 
-runtime_attrs() ->
+tensorflow_attrs() ->
     %% TODO: We're cheating here and hard-coding a TF function but
     %% this needs to come from the associated model via an appropriate
     %% lookup.

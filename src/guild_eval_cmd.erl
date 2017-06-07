@@ -41,8 +41,8 @@ main(Opts, Args) ->
     eval_or_preview(init_op(Opts, Args), Opts).
 
 init_op(Opts, Args) ->
-    {Run, Project, Model, Runtime} = guild_cmd_support:run_for_args(Args, Opts),
-    guild_runtime:init_eval_op(Runtime, Run, Model, Project).
+    {Run, Project, Model} = guild_cmd_support:run_for_args(Args, Opts),
+    guild_tensorflow_runtime:init_eval_op(Run, Model, Project).
 
 eval_or_preview({ok, Op}, Opts) ->
     case proplists:get_bool(preview, Opts) of
@@ -55,9 +55,7 @@ eval_or_preview({error, Err}, _Opts) ->
 init_op_error(evaluatable) ->
     guild_cli:cli_error(
       "model does not support an evaluate operation\n"
-      "Try 'guild evaluate --help' for more information.");
-init_op_error(Err) ->
-    guild_cli:cli_error(guild_cmd_support:runtime_error_msg(Err)).
+      "Try 'guild evaluate --help' for more information.").
 
 eval(Op) ->
     guild_cmd_support:exec_operation(guild_eval_op, Op).

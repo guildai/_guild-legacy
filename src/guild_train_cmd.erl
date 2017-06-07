@@ -45,8 +45,7 @@ main(Opts, Args) ->
 init_op(Opts, Args) ->
     Project = guild_cmd_support:project_from_opts(Opts),
     Model = guild_cmd_support:model_section_for_args(Args, Project),
-    Runtime = guild_cmd_support:runtime_for_section(Model, Project),
-    guild_runtime:init_train_op(Runtime, Model, Project).
+    guild_tensorflow_runtime:init_train_op(Model, Project).
 
 train_or_preview({ok, Op}, Opts) ->
     case proplists:get_bool(preview, Opts) of
@@ -61,9 +60,7 @@ init_op_error(trainable) ->
       "model does not support a train operation\n"
       "Try 'guild train --help' for more information.");
 init_op_error({missing_requires, Missing}) ->
-    guild_cli:cli_error(missing_requires_error(Missing));
-init_op_error(Err) ->
-    guild_cli:cli_error(guild_cmd_support:runtime_error_msg(Err)).
+    guild_cli:cli_error(missing_requires_error(Missing)).
 
 missing_requires_error(Missing) ->
     io_lib:format(

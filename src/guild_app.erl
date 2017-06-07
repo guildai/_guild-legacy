@@ -37,13 +37,11 @@ supervisors() ->
      ?sup_child(guild_optask_sup),
      ?sup_child(guild_http_sup),
      ?sup_child(guild_view_sup),
-     ?sup_child(guild_runtime_sup),
      ?sup_child(guild_db_sup)].
 
 core_services() ->
     [?core_child(guild_proc,     100),
      ?core_child(guild_sys,      100),
-     ?core_child(guild_runtime,  100),
      ?core_child(guild_run_db,   1000)].
 
 %% ===================================================================

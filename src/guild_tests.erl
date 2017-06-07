@@ -179,13 +179,11 @@ test_project() ->
     {ok, P} =
         M:from_str(
           "[model \"mnist_softmax\"]\n"
-          "runtime = tensorflow\n"
           "dataset = mnist\n"
           "train = mnist_softmax --train\n"
           "eval = mnist_softtmax --eval\n"
           "\n"
           "[model \"mnist_cnn\"]\n"
-          "runtime = tensorflow\n"
           "dataset = mnist\n"
           "train = mnist_cnn_train\n"
           "eval = mnist_cnn_eval\n"
@@ -195,12 +193,12 @@ test_project() ->
 
     %% Attr API
 
-    {ok, "tensorflow"} = M:attr(P, ["model", "mnist_softmax"], "runtime"),
+    {ok, "mnist"} = M:attr(P, ["model", "mnist_softmax"], "dataset"),
     error = M:attr(P, ["model", "mnist_softmax"], "no_match"),
     error = M:attr(P, ["no_match"], "runtime"),
 
-    P2 = M:set_attr(P, ["model", "mnist_softmax"], "runtime", "caffe"),
-    {ok, "caffe"} = M:attr(P2, ["model", "mnist_softmax"], "runtime"),
+    P2 = M:set_attr(P, ["model", "mnist_softmax"], "dataset", "cifar10"),
+    {ok, "cifar10"} = M:attr(P2, ["model", "mnist_softmax"], "dataset"),
 
     P3 = M:set_attr(P, ["model", "mnist_softmax"], "new_attr", "skull badger"),
     {ok, "skull badger"} = M:attr(P3, ["model", "mnist_softmax"], "new_attr"),
@@ -1187,16 +1185,14 @@ test_viewdef() ->
              <<"label">> := <<"Validation Accuracy">>,
              <<"name">> := <<"accuracy">>,
              <<"reduce">> := <<"last">>,
-             <<"source">> := <<"series/tf/validation/accuracy">>,
-             <<"sources">> := <<"series/tf/validation/accuracy">>},
+             <<"source">> := <<"series/tf/validation/accuracy">>},
            #{<<"color">> := <<"red-700">>,
              <<"format">> := <<"0.000">>,
              <<"icon">> := <<"loss">>,
              <<"label">> := <<"Loss">>,
              <<"name">> := <<"loss">>,
              <<"reduce">> := <<"last">>,
-             <<"source">> := <<"series/tf/train/loss">>,
-             <<"sources">> := <<"series/tf/train/loss">>}
+             <<"source">> := <<"series/tf/train/loss">>}
           ],
       fields :=
           [

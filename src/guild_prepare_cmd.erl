@@ -44,8 +44,7 @@ main(Opts, Args) ->
 init_op(Opts, Args) ->
     Project = guild_cmd_support:project_from_opts(Opts),
     Model = guild_cmd_support:model_or_resource_section_for_args(Args, Project),
-    Runtime = guild_cmd_support:runtime_for_section(Model, Project),
-    guild_runtime:init_prepare_op(Runtime, Model, Project).
+    guild_tensorflow_runtime:init_prepare_op(Model, Project).
 
 prepare_or_preview({ok, Op}, Opts) ->
     case proplists:get_bool(preview, Opts) of
@@ -58,9 +57,7 @@ prepare_or_preview({error, Err}, _Opts) ->
 init_op_error(preparable) ->
     guild_cli:cli_error(
       "model does not support a prepare operation\n"
-      "Try 'guild prepare --help' for more information.");
-init_op_error(Err) ->
-    guild_cli:cli_error(guild_cmd_support:runtime_error_msg(Err)).
+      "Try 'guild prepare --help' for more information.").
 
 prepare(Op) ->
     guild_cmd_support:exec_operation(guild_prepare_op, Op).
