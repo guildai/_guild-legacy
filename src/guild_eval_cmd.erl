@@ -37,7 +37,6 @@ eval_options() ->
 %% Main
 %% ===================================================================
 
-
 main(Opts, Args) ->
    eval_or_preview(eval_op(Opts, Args), Opts).
 
@@ -71,7 +70,6 @@ eval_or_preview(Op, Opts) ->
 
 eval(Op) ->
     guild_cmd_support:exec_op(guild_eval_op, Op).
-
 
 preview(Op) ->
     guild_cli:out_par("This command will use the settings below.~n~n"),
