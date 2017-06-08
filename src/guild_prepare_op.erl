@@ -49,7 +49,7 @@ gpu_count_env() ->
     integer_to_list(length(guild_sys:gpu_attrs())).
 
 stream_handlers() ->
-    guild_runtime_support:op_stream_handlers([console]).
+    guild_op_util:op_stream_handlers([console]).
 
 %% ===================================================================
 %% Cmd info

@@ -76,7 +76,7 @@ collector(Script, Repeat) ->
     {guild_collector_task, start_link, [Script, [{repeat, Repeat}]]}.
 
 stream_handlers() ->
-    guild_runtime_support:op_stream_handlers([console, run_db_output]).
+    guild_op_util:op_stream_handlers([console, run_db_output]).
 
 %% ===================================================================
 %% Cmd info

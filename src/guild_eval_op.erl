@@ -69,7 +69,7 @@ maybe_apply_monitor_task(error, Acc) ->
     Acc.
 
 stream_handlers() ->
-    guild_runtime_support:op_stream_handlers([console]).
+    guild_op_util:op_stream_handlers([console]).
 
 %% ===================================================================
 %% Cmd info
