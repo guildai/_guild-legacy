@@ -27,6 +27,12 @@ limitations under the License.
 
 <dom-module id="guild-view-app-layout">
   <template>
+    <style>
+     .toolbar-title a {
+         color: inherit;
+         text-decoration: inherit;
+     }
+    </style>
     <app-drawer-layout narrow="{{narrow}}">
       <app-drawer hidden$="[[!narrow]]">
         <guild-view-app-menu
@@ -43,7 +49,7 @@ limitations under the License.
               selected="{{selected}}"
               narrow="[[narrow]]">
             <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
-            <div>Guild View</div>
+            <div class="toolbar-title"><a href="/train">Guild View</a></div>
           </guild-view-app-toolbar>
         </app-header>
 
