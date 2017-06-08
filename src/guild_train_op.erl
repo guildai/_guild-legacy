@@ -16,52 +16,78 @@
 
 -behavior(guild_op).
 
--export([from_spec/3, cmd_info/1, start_link/2, rundir/1, ospid/1, stop/2]).
+-export([from_spec/3, cmd_info/1]).
 
 -export([init/1, handle_task/1, handle_msg/3]).
 
--record(op, {section, project, cmd_args, cmd_extra_env, tasks,
-             stream_handler_inits}).
+-record(op, {section, project, cmd, tasks, stream_handlers}).
 
 -record(state, {op, started, cmd, rundir, exec_pid, exec_ospid,
                 stream_handlers, stdout_buf, stderr_buf}).
 
+-define(default_stats_task_repeat, 10000).
+
 %% ===================================================================
-%% New
+%% Init
 %% ===================================================================
 
-new(Section, Project, CmdArgs, Opts) ->
-    Op =
-        #op{
-           section=Section,
-           project=Project,
-           cmd_args=CmdArgs,
-           cmd_extra_env=proplists:get_value(env, Opts, []),
-           tasks=tasks(),
-           stream_handler_inits=proplists:get_value(stream_handlers, Opts, [])},
-    {?MODULE, Op}.
+from_spec(Spec, Section, Project) ->
+    Flags = guild_project_util:flags(Section, Project),
+    CmdArgs = guild_op_util:python_cmd(Spec, Flags),
+    CmdEnv = static_env(),
+    {?MODULE,
+     #op{
+        section=Section,
+        project=Project,
+        cmd={CmdArgs, CmdEnv},
+        tasks=tasks(Flags),
+        stream_handlers=stream_handlers()}}.
 
-op_tasks(Opts) ->
-    core_tasks() ++ proplists:get_value(tasks, Opts, []).
+static_env() ->
+    [{"PKGHOME", guild_app:pkg_dir()},
+     {"GPU_COUNT", gpu_count_env()}].
 
-tasks() ->
+gpu_count_env() ->
+    integer_to_list(length(guild_sys:gpu_attrs())).
+
+tasks(Flags) ->
+    base_tasks(Flags) ++ collector_tasks(Flags).
+
+base_tasks(Flags) ->
     [{guild_run_status_task, start_link, []},
-     {guild_run_db_task, start_link, []}].
+     {guild_run_db_task, start_link, []},
+     {guild_log_flags_task, start_link, [Flags]},
+     {guild_log_system_attrs_task, start_link, []}].
+
+collector_tasks(Flags) ->
+    Repeat = stats_interval_opt(Flags),
+    [collector("tensorflow-collector", Repeat),
+     collector("op-stats", Repeat),
+     collector("sys-stats", Repeat),
+     collector("gpu-stats", Repeat)].
+
+stats_interval_opt(Flags) ->
+    case proplists:get_value("stats_interval", Flags) of
+        undefined -> ?default_stats_task_repeat;
+        I -> list_to_integer(I) * 1000
+    end.
+
+collector(Script, Repeat) ->
+    {guild_collector_task, start_link, [Script, [{repeat, Repeat}]]}.
+
+stream_handlers() ->
+    guild_runtime_support:op_stream_handlers([console, run_db_output]).
 
 %% ===================================================================
 %% Cmd info
 %% ===================================================================
 
-cmd_info(#op{cmd_args=Args, cmd_extra_env=ExtraEnv}) ->
-    Env = ExtraEnv ++ system_env(),
+cmd_info(#op{cmd={Args, Env}}) ->
     #{args => Args, env => Env}.
 
 %% ===================================================================
-%% Start / init
+%% Init
 %% ===================================================================
-
-start_link(Name, Op) ->
-    e2_task:start_link(?MODULE, Op, [{registered, Name}]).
 
 init(Op) ->
     guild_proc:reg(operation, self()),
@@ -73,19 +99,6 @@ init_state(Op) ->
        op=Op,
        stdout_buf=guild_util:new_input_buffer(),
        stderr_buf=guild_util:new_input_buffer()}.
-
-%% ===================================================================
-%% API
-%% ===================================================================
-
-rundir(Op) ->
-    gproc:get_value({p, l, rundir}, Op).
-
-ospid(Op) ->
-    gproc:get_value({p, l, ospid}, Op).
-
-stop(Op, Timeout) ->
-    e2_task:call(Op, {stop, Timeout}).
 
 %% ===================================================================
 %% Task impl
@@ -121,7 +134,7 @@ started_timestamp(S) ->
 init_rundir(State) ->
     RunDir = rundir_path(State),
     guild_rundir:init(RunDir),
-    gproc:add_local_property(rundir, RunDir),
+    gproc:add_local_property(cwd, RunDir),
     State#state{rundir=RunDir}.
 
 rundir_path(State) ->
@@ -153,24 +166,15 @@ safe_path(Suffix) ->
 %% Cmd
 %% ===================================================================
 
-init_cmd(#state{op=#op{cmd_args=Args}}=State) ->
-    Env = cmd_env(State),
+init_cmd(#state{op=#op{cmd={Args, BaseEnv}}}=State) ->
+    Env = system_env() ++ run_env(State) ++ BaseEnv,
     ResolvedArgs = guild_util:resolve_args(Args, Env),
     State#state{cmd={ResolvedArgs, Env}}.
-
-cmd_env(State) ->
-    cmd_core_env(State) ++ cmd_extra_env(State).
-
-cmd_core_env(State) ->
-    system_env() ++ run_env(State).
 
 system_env() ->
     [{"PKGHOME", guild_app:pkg_dir()}].
 
 run_env(#state{rundir=RunDir}) -> [{"RUNDIR", RunDir}].
-
-cmd_extra_env(#state{op=#op{cmd_extra_env=Extra}}) ->
-    Extra.
 
 %% ===================================================================
 %% Run meta
@@ -229,8 +233,8 @@ init_errors_log(#state{rundir=RunDir}=State) ->
 %% Init stream handlers
 %% ===================================================================
 
-init_stream_handlers(#state{op=#op{stream_handler_inits=Inits}}=S) ->
-    Handlers = [HandlerInit(self()) || HandlerInit <- Inits],
+init_stream_handlers(#state{op=#op{stream_handlers=HandlerInits}}=S) ->
+    Handlers = [Init(self()) || Init <- HandlerInits],
     S#state{stream_handlers=Handlers}.
 
 %% ===================================================================

@@ -56,5 +56,5 @@ handle_msg({'DOWN', _, process, Pid, _}, noreply, #state{exec_pid=Pid}=State) ->
 
 handle_exec_exit(#state{op=Op, op_stop_timeout=Timeout, exec_ospid=OSPid}) ->
     guild_cli:out("Guild stopping operation (process ~b exited)~n", [OSPid]),
-    guild_operation:stop(Op, Timeout),
+    guild_op:stop(Op, Timeout),
     {stop, normal}.

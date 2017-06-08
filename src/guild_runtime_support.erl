@@ -55,7 +55,7 @@ println(Device, Bin) ->
     io:format(Device, "~s~n", [Bin]).
 
 run_db_output_handler(Op) ->
-    RunDir = guild_operation:rundir(Op),
+    RunDir = guild_op:cwd(Op),
     fun(Out) -> log_output_to_db(RunDir, Out) end.
 
 log_output_to_db(RunDir, {Stream, Lines}) ->

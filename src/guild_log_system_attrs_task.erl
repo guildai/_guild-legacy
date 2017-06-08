@@ -11,6 +11,10 @@
 %% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 %% See the License for the specific language governing permissions and
 %% limitations under the License.
+%%
+%% guild_log_system_attrs_task
+%%
+%% Writes system attributes to the rundb for the operation.
 
 -module(guild_log_system_attrs_task).
 
@@ -27,7 +31,7 @@ start_link(Op) ->
 
 init([Op]) ->
     guild_proc:reg(optask, self()),
-    RunDir = guild_operation:rundir(Op),
+    RunDir = guild_op:cwd(Op),
     {ok, #state{rundir=RunDir}}.
 
 handle_task(#state{rundir=RunDir}) ->

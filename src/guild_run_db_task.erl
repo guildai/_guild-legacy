@@ -11,6 +11,11 @@
 %% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 %% See the License for the specific language governing permissions and
 %% limitations under the License.
+%%
+%% guild_run_db_task
+%%
+%% Initializes the rundb for an operation. Closes the db when the op
+%% terminates.
 
 -module(guild_run_db_task).
 
@@ -31,7 +36,7 @@ init([Op]) ->
     {ok, init_state(Op)}.
 
 init_state(Op) ->
-    RunDir = guild_operation:rundir(Op),
+    RunDir = guild_op:cwd(Op),
     #state{op=Op, rundir=RunDir}.
 
 handle_task(State) ->

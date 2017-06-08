@@ -16,7 +16,7 @@
 
 -behavior(e2_task).
 
--export([start_link/3, start_builtin/3]).
+-export([start_link/3]).
 
 -export([init/1, handle_task/1, handle_msg/3]).
 
@@ -31,13 +31,11 @@
 %% Start / init
 %% ===================================================================
 
-start_link(Op, Cmd, Opts) ->
+start_link(Op, CollectorScript, Opts) ->
+    Cmd = local_exe_cmd(CollectorScript),
     {TaskOpts, CollectorOpts} = e2_task_impl:split_options(?MODULE, Opts),
     SafeTaskOpts = ensure_repeat(TaskOpts),
     e2_task:start_link(?MODULE, [Op, Cmd, CollectorOpts], SafeTaskOpts).
-
-start_builtin(Op, LocalExe, TaskOpts) ->
-    start_link(Op, local_exe_cmd(LocalExe), TaskOpts).
 
 local_exe_cmd(Exe) ->
     {[guild_app:priv_bin(Exe)], []}.
@@ -55,8 +53,8 @@ init([Op, Cmd, Opts]) ->
     {ok, init_state(Op, Cmd, Opts)}.
 
 init_state(Op, Cmd, Opts) ->
-    RunDir = guild_operation:rundir(Op),
-    OpOsPid = guild_operation:ospid(Op),
+    RunDir = guild_op:cwd(Op),
+    OpOsPid = guild_op:ospid(Op),
     #state{
        op=Op,
        cmd=Cmd,

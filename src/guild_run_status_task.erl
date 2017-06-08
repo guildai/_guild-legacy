@@ -11,6 +11,17 @@
 %% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 %% See the License for the specific language governing permissions and
 %% limitations under the License.
+%%
+%% guild_run_status_task
+%%
+%% Writes op status information as guild attrs.
+%%
+%% Expected behavior in time order:
+%%
+%% - Monitor op process
+%% - Write LOCK containing our (beam process) PID
+%% - On op exit (DOWN) write op exit attrs (status and stopped) and
+%%   delete LOCK
 
 -module(guild_run_status_task).
 
@@ -35,7 +46,7 @@ init([Op]) ->
     {ok, init_state(Op)}.
 
 init_state(Op) ->
-    RunDir = guild_operation:rundir(Op),
+    RunDir = guild_op:cwd(Op),
     #state{op=Op, rundir=RunDir}.
 
 %% ===================================================================
