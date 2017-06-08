@@ -1,6 +1,6 @@
 -module(guild_op_support).
 
--export([python_cmd/2, op_stream_handlers/1]).
+-export([python_cmd/2, op_stream_handlers/1, required_missing/2]).
 
 %% ===================================================================
 %% Op stream handlers
@@ -74,3 +74,35 @@ filter_line_for_db(_) -> true.
 handle_log_to_db_result(ok) -> ok;
 handle_log_to_db_result({error, Err}) ->
     guild_log:internal("Error writing output to db: ~p~n", [Err]).
+
+%% ===================================================================
+%% Required missing
+%% ===================================================================
+
+required_missing(Section, Project) ->
+    required_missing_(
+      guild_project:section_attr(Section, "train_requires"),
+      Project).
+
+required_missing_({ok, Required}, Project) ->
+    case first_missing(required_paths(Required, Project)) of
+        undefined -> false;
+        Path -> {true, Path}
+    end;
+required_missing_(error, _Project) ->
+    false.
+
+required_paths(Required, Project) ->
+    Dir = guild_project:project_dir(Project),
+    [filename:absname(Path, Dir) || Path <- split_required(Required)].
+
+split_required(Required) ->
+    re:split(Required, "\s*,\s*", [{return, list}]).
+
+first_missing([Path|Rest]) ->
+    case filelib:is_file(Path) of
+        true -> first_missing(Rest);
+        false -> Path
+    end;
+first_missing([]) ->
+    undefined.

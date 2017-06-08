@@ -40,12 +40,14 @@ train_options() ->
 %% ===================================================================
 
 main(Opts, Args) ->
-    train_or_preview(train_op(Opts, Args), Opts).
+    {Op, Model, Project} = train_op(Opts, Args),
+    train_or_preview(Op, Model, Project, Opts).
 
 train_op(Opts, Args) ->
     Project = guild_cmd_support:project_from_opts(Opts),
     Model = guild_cmd_support:model_section_for_args(Args, Project),
-    train_op_for_spec(train_spec(Model), Model, Project).
+    Op = train_op_for_spec(train_spec(Model), Model, Project),
+    {Op, Model, Project}.
 
 train_spec(Section) ->
       guild_project:section_attr(Section, "train").
@@ -65,24 +67,28 @@ not_trainable_error(Model) ->
 maybe_model_name({_, []}) -> "";
 maybe_model_name({_, [Name|_]}) -> io_lib:format('~s', [Name]).
 
-train_or_preview(Op, Opts) ->
+train_or_preview(Op, Model, Project, Opts) ->
     case proplists:get_bool(preview, Opts) of
-        false -> train(Op);
+        false -> train(Op, Model, Project);
         true  -> preview(Op)
     end.
 
-train(Op) ->
-    validate_train_required('Model', 'Project'),
+train(Op, Model, Project) ->
+    validate_train_required(Model, Project),
     guild_cmd_support:exec_op(guild_train_op, Op).
 
-validate_train_required(_Model, _Project) ->
-    xxx.
+validate_train_required(Model, Project) ->
+    case guild_op_support:required_missing(Model, Project) of
+        {true, Missing} -> missing_required_error(Missing);
+        false -> ok
+    end.
 
-%% missing_requires_error(Missing) ->
-%%     io_lib:format(
-%%       "missing required '~s'\n"
-%%       "Do you need to run 'guild prepare' first?",
-%%       [Missing]).
+missing_required_error(Missing) ->
+    guild_cli:cli_error(
+      io_lib:format(
+        "missing required '~s'\n"
+        "Do you need to run 'guild prepare' first?",
+        [Missing])).
 
 preview(Op) ->
     guild_cli:out_par(
