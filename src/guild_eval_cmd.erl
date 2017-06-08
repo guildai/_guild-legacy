@@ -37,28 +37,41 @@ eval_options() ->
 %% Main
 %% ===================================================================
 
+
 main(Opts, Args) ->
-    eval_or_preview(init_op(Opts, Args), Opts).
+   eval_or_preview(eval_op(Opts, Args), Opts).
 
-init_op(Opts, Args) ->
+eval_op(Opts, Args) ->
     {Run, Project, Model} = guild_cmd_support:run_for_args(Args, Opts),
-    guild_tensorflow_runtime:init_eval_op(Run, Model, Project).
+    eval_op_for_spec(eval_spec(Model), Run, Model, Project).
 
-eval_or_preview({ok, Op}, Opts) ->
+eval_spec(Section) ->
+      guild_project:section_attr(Section, "evaluate").
+
+eval_op_for_spec({ok, Spec}, Run, Model, Project) when length(Spec) > 0 ->
+    guild_eval_op:from_spec(Spec, Run, Model, Project);
+eval_op_for_spec(_, _, Model, _) ->
+    not_evaluatable_error(Model).
+
+not_evaluatable_error(Model) ->
+    guild_cli:cli_error(
+      io_lib:format(
+        "model~s does not support an evaluate operation\n"
+        "Try 'guild evaluate --help' for more information.",
+        [maybe_model_name(Model)])).
+
+maybe_model_name({_, []}) -> "";
+maybe_model_name({_, [Name|_]}) -> io_lib:format('~s', [Name]).
+
+eval_or_preview(Op, Opts) ->
     case proplists:get_bool(preview, Opts) of
         false -> eval(Op);
         true  -> preview(Op)
-    end;
-eval_or_preview({error, Err}, _Opts) ->
-    init_op_error(Err).
-
-init_op_error(evaluatable) ->
-    guild_cli:cli_error(
-      "model does not support an evaluate operation\n"
-      "Try 'guild evaluate --help' for more information.").
+    end.
 
 eval(Op) ->
-    guild_cmd_support:exec_operation(guild_eval_op, Op).
+    guild_cmd_support:exec_op(guild_eval_op, Op).
+
 
 preview(Op) ->
     guild_cli:out_par("This command will use the settings below.~n~n"),

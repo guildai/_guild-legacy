@@ -167,12 +167,9 @@ safe_path(Suffix) ->
 %% ===================================================================
 
 init_cmd(#state{op=#op{cmd={Args, BaseEnv}}}=State) ->
-    Env = system_env() ++ run_env(State) ++ BaseEnv,
+    Env = run_env(State) ++ BaseEnv,
     ResolvedArgs = guild_util:resolve_args(Args, Env),
     State#state{cmd={ResolvedArgs, Env}}.
-
-system_env() ->
-    [{"PKGHOME", guild_app:pkg_dir()}].
 
 run_env(#state{rundir=RunDir}) -> [{"RUNDIR", RunDir}].
 
@@ -242,7 +239,7 @@ init_stream_handlers(#state{op=#op{stream_handlers=HandlerInits}}=S) ->
 %% ===================================================================
 
 start_exec(#state{cmd={Cmd, Env}}=State) ->
-    WorkingDir = cmd_working_dir(State),
+    WorkingDir = project_dir(State),
     Opts =
         [{env, Env},
          {cd, WorkingDir},
@@ -251,7 +248,7 @@ start_exec(#state{cmd={Cmd, Env}}=State) ->
     gproc:add_local_property(ospid, OSPid),
     State#state{exec_pid=Pid, exec_ospid=OSPid}.
 
-cmd_working_dir(#state{op=#op{project=Project}}) ->
+project_dir(#state{op=#op{project=Project}}) ->
     guild_project:project_dir(Project).
 
 %% ===================================================================
