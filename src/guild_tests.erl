@@ -27,7 +27,6 @@ run() ->
     test_input_buffer(),
     test_proc_waiting(),
     test_exec(),
-    test_operation(),
     test_split_cmd(),
     test_split_keyvals(),
     test_run_db(),
@@ -430,201 +429,6 @@ test_exec_bin() ->
     filename:absname("priv/test/bin/test-exec").
 
 %% ===================================================================
-%% Operation
-%% ===================================================================
-
-test_operation() ->
-    start("operation"),
-
-    {ok, _} = application:ensure_all_started(guild),
-
-    %% A Guild operation is an external command associated with a
-    %% project section that implements a particular stage of a model's
-    %% lifecycle.
-    %%
-    %% Operations are associated with runs. They can either create a
-    %% new run or overlay an existing run.
-    %%
-    %% In addition to executing the external operation command, an
-    %% operation supports a number of other steps:
-    %%
-    %% - Set up the rundir, creating a new one or using an existing
-    %% - Write run metadata including the section name, start status,
-    %%   exit status, etc.
-    %% - Snapshot the project at the time the run was started
-    %% - Configure logging of internal Guild errors to the rundir
-    %% - Set up operation IO handlers (stream handlers)
-    %% - Starts a number of operation tasks (op tasks)
-    %%
-    %% When we create an operation, we provide a rundir spec (see
-    %% below), the applicable project section and project, the command
-    %% arguments and addition options. These options include a command
-    %% environment (env), Guild app support needed by the operation
-    %% (e.g. json support), a list of op tasks, and a list of stream
-    %% handlers.
-
-    %% Let's start with the rundir spec, which specifies how the
-    %% operation should handle the rundir. There are two scenarios:
-    %%
-    %% - Create a new rundir
-    %% - Use an existing rundir
-    %%
-    %% When creating a new rundir, provide a spec in the form {new,
-    %% Opts}. Opts may contain an a suffix option that specifies the
-    %% suffix to use when creating a new rundir.
-    %%
-    %% If an operation applies to an existing run, the rundir spec
-    %% should be {overlay, RunDir}. In this case the operation will use
-    %% the existing rundir.
-    %%
-    %% In this test let's create a new rundir.
-
-    RunDirSpec = {new, "-test"},
-
-    %% Next we provide information about the applicable project
-    %% section. This is used to identify the runroot, which is section
-    %% dependent, as well as write information about section including
-    %% a snapshot of the project itself.
-
-    ProjectDir = init_sample_project(),
-    {ok, Project} = guild_project:from_dir(ProjectDir),
-    {ok, Section} = guild_project:section(Project, ["model"]),
-
-    %% Next we'll define the command args. In this case we'll use a
-    %% test operation.
-
-    CmdArgs = [test_exec_bin(), "arg1", "arg2"],
-
-    %% We can also provide an environment for the command. In this
-    %% case our test operaation will look for SLEEP for an interval to
-    %% sleep.
-
-    CmdEnv = [{"SLEEP", "0.5"}],
-
-    %% Op tasks are started just after the operation command is
-    %% executed and supervised until the command has completed or they
-    %% are stopped explicitly. A task is associated with the command
-    %% and will typically stop once the operation has exited, but that
-    %% behavior is task specific.
-    %%
-    %% For these tests we'll create a test task that writes files to
-    %% a file in rundir.
-
-    Task1 = {guild_test_task, start_link, [100]},
-
-    %% Finally we'll register a single stream handler. We register a
-    %% factory, which returns a handler for an operation process - in
-    %% some cases a handler may need to know details about an
-    %% operation that are only available once the operation has started.
-    %%
-    %% In this test we'll use a stream handler that uses an output
-    %% buffer to capture the operation's streams.
-
-    {ok, Output} = guild_test_buffer:start_link(),
-    StreamHandlerInit =
-        fun(_Op) -> fun(Msg) -> guild_test_buffer:add(Output, Msg) end end,
-
-    %% With this we can finally create our op. We first create an op
-    %% structure.
-
-    Opts =
-        [{env, CmdEnv},
-         {tasks, [Task1]},
-         {stream_handlers, [StreamHandlerInit]}],
-    Op = guild_operation:new(RunDirSpec, Section, Project, CmdArgs, Opts),
-
-    %% Lets confirm our state before running the operation.
-
-    [] = guild_optask_sup:tasks(),
-    [] = guild_test_buffer:get_all(Output),
-
-    %% We start the operation using the op supervisor.
-
-    {ok, OpPid} = guild_operation_sup:start_op(test_op, Op),
-
-    %% After a short time we should see some op tasks, one of which is
-    %% our task (an operation starts other core tasks in addition to
-    %% what we specify).
-
-    timer:sleep(200),
-    [_|_] = guild_optask_sup:tasks(),
-
-    %% With the operation underway, we can get the run directory it
-    %% created.
-
-    RunDir = guild_operation:rundir(OpPid),
-
-    %% To synchronize the call we'll wait for the process to terminate
-    %% or timeout.
-
-    guild_proc:reg(OpPid),
-    {OpPid, normal}  = guild_proc:wait_for({proc, OpPid}),
-
-    %% Here's our operation output.
-
-    [{stderr, [{T1, [<<"test start">>]}]},
-     {stdout, [{T2, [<<"args: arg1 arg2">>]}]},
-     {stderr, [{T3, [<<"test stop">>]}]}]
-        = guild_test_buffer:get_all(Output),
-
-    %% Each output block (one or more lines, as read together from the
-    %% external process) is tagged with an epoch microsecond timestamp.
-
-    Now = erlang:system_time(micro_seconds),
-    true = T1 =< T2,
-    true = T2 =< T3,
-    true = T3 =< Now,
-
-    %% Our task should have performed some work during the
-    %% operation. As this activity isn't strictly coordinated (the
-    %% tasks perform work at regular intervals) we can't assert
-    %% precise results. Our test task writes sample files
-    %% approximately every 100 milliseconds and our test operation is
-    %% configured to sleep for 500 milliseconds (see SLEEP env of
-    %% "0.5" seconds above) - we should expect to see 4 to 5 sample
-    %% files.
-    %%
-    %% In addition the operation creates a guild.d directory, which
-    %% contains details about the operation.
-
-    ["guild.d",
-     "test-00",
-     "test-01",
-     "test-02",
-     "test-03",
-     "test-04"|_] = list_dir_sorted(RunDir),
-
-    %% Op tasks should terminate cleanly once the operation is
-    %% stopped. We'll wait a moment to let the task stop.
-
-    timer:sleep(10),
-
-    [] = guild_optask_sup:tasks(),
-
-    %% Cleanup
-
-    ok = guild_test_buffer:stop(Output),
-    ok = guild_util:delete_tmp_dir(ProjectDir),
-
-    ok().
-
-init_sample_project() ->
-    {ok, ProjectDir} = guild_util:make_tmp_dir(),
-    SampleSrc = filename:join(guild_app:test_dir(), "sample-project"),
-    "" = os:cmd("rsync -a \"" ++ SampleSrc ++ "/\" \"" ++ ProjectDir ++ "\""),
-    ProjectDir.
-
-init_rundir() ->
-    RunDir = "/tmp/guild_test.rundir",
-    [] = os:cmd("rm -rf \"" ++ RunDir ++ "\""),
-    [] = os:cmd("mkdir \"" ++ RunDir ++ "\""),
-    RunDir.
-
-list_dir_sorted(Dir) ->
-    {ok, L} = file:list_dir(Dir),
-    lists:sort(L).
-
-%% ===================================================================
 %% Split cmd
 %% ===================================================================
 
@@ -790,6 +594,12 @@ test_run_db() ->
     ok = M:close(RunDir),
 
     ok().
+
+init_rundir() ->
+    RunDir = "/tmp/guild_test.rundir",
+    [] = os:cmd("rm -rf \"" ++ RunDir ++ "\""),
+    [] = os:cmd("mkdir \"" ++ RunDir ++ "\""),
+    RunDir.
 
 %% ===================================================================
 %% Reduce to
