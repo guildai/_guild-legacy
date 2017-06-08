@@ -39,28 +39,39 @@ prepare_options() ->
 %% ===================================================================
 
 main(Opts, Args) ->
-    prepare_or_preview(init_op(Opts, Args), Opts).
+   prepare_or_preview(prepare_op(Opts, Args), Opts).
 
-init_op(Opts, Args) ->
+prepare_op(Opts, Args) ->
     Project = guild_cmd_support:project_from_opts(Opts),
     Model = guild_cmd_support:model_or_resource_section_for_args(Args, Project),
-    guild_tensorflow_runtime:init_prepare_op(Model, Project).
+    prepare_op_for_spec(prepare_spec(Model), Model, Project).
 
-prepare_or_preview({ok, Op}, Opts) ->
+prepare_spec(Section) ->
+      guild_project:section_attr(Section, "prepare").
+
+prepare_op_for_spec({ok, Spec}, Model, Project) when length(Spec) > 0 ->
+    guild_prepare_op:from_spec(Spec, Model, Project);
+prepare_op_for_spec(_, Model, _) ->
+    not_preparable_error(Model).
+
+not_preparable_error(Model) ->
+    guild_cli:cli_error(
+      io_lib:format(
+        "section~s does not support a prepare operation\n"
+        "Try 'guild evaluate --help' for more information.",
+        [maybe_section_name(Model)])).
+
+maybe_section_name({_, []}) -> "";
+maybe_section_name({_, [Name|_]}) -> io_lib:format('~s', [Name]).
+
+prepare_or_preview(Op, Opts) ->
     case proplists:get_bool(preview, Opts) of
         false -> prepare(Op);
         true  -> preview(Op)
-    end;
-prepare_or_preview({error, Err}, _Opts) ->
-    init_op_error(Err).
-
-init_op_error(preparable) ->
-    guild_cli:cli_error(
-      "model does not support a prepare operation\n"
-      "Try 'guild prepare --help' for more information.").
+    end.
 
 prepare(Op) ->
-    guild_cmd_support:exec_operation(guild_prepare_op, Op).
+    guild_cmd_support:exec_op(guild_prepare_op, Op).
 
 preview(Op) ->
     guild_cli:out_par("This command will use the settings below.~n~n"),
