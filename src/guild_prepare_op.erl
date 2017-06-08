@@ -31,7 +31,7 @@
 
 from_spec(Spec, Section, Project) ->
     Flags = guild_project_util:flags(Section, Project),
-    CmdArgs = guild_op_util:python_cmd(Spec, Flags),
+    CmdArgs = guild_op_support:python_cmd(Spec, Flags),
     CmdEnv = static_env(),
     {?MODULE,
      #op{
@@ -49,7 +49,7 @@ gpu_count_env() ->
     integer_to_list(length(guild_sys:gpu_attrs())).
 
 stream_handlers() ->
-    guild_op_util:op_stream_handlers([console]).
+    guild_op_support:op_stream_handlers([console]).
 
 %% ===================================================================
 %% Cmd info

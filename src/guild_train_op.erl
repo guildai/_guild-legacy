@@ -33,7 +33,7 @@
 
 from_spec(Spec, Section, Project) ->
     Flags = guild_project_util:flags(Section, Project),
-    CmdArgs = guild_op_util:python_cmd(Spec, Flags),
+    CmdArgs = guild_op_support:python_cmd(Spec, Flags),
     CmdEnv = static_env(),
     {?MODULE,
      #op{
@@ -76,7 +76,7 @@ collector(Script, Repeat) ->
     {guild_collector_task, start_link, [Script, [{repeat, Repeat}]]}.
 
 stream_handlers() ->
-    guild_op_util:op_stream_handlers([console, run_db_output]).
+    guild_op_support:op_stream_handlers([console, run_db_output]).
 
 %% ===================================================================
 %% Cmd info

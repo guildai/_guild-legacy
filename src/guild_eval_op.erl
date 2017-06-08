@@ -33,7 +33,7 @@
 
 from_spec(Spec, Run, Section, Project) ->
     Flags = guild_project_util:flags(Section, Project),
-    CmdArgs = guild_op_util:python_cmd(Spec, Flags),
+    CmdArgs = guild_op_support:python_cmd(Spec, Flags),
     CmdEnv = env(Run),
     {?MODULE,
      #op{
@@ -69,7 +69,7 @@ maybe_apply_monitor_task(error, Acc) ->
     Acc.
 
 stream_handlers() ->
-    guild_op_util:op_stream_handlers([console]).
+    guild_op_support:op_stream_handlers([console]).
 
 %% ===================================================================
 %% Cmd info

@@ -1,4 +1,4 @@
--module(guild_op_util).
+-module(guild_op_support).
 
 -export([python_cmd/2, op_stream_handlers/1]).
 
