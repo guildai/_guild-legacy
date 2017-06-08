@@ -16,7 +16,7 @@ resolved_script_path(Val) ->
     guild_util:find_apply2(Checks, [Val]).
 
 explicit_path(Val) ->
-    case filelib:is_file(Val) of
+    case filelib:is_regular(Val) of
         true -> {stop, Val};
         false -> continue
     end.
