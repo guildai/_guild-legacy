@@ -19,7 +19,6 @@ limitations under the License.
 
 <link rel="import" href="../guild-compare-page/guild-compare-page.html">
 <link rel="import" href="../guild-eval-page/guild-eval-page.html">
-<link rel="import" href="../guild-run-viewdef/guild-run-viewdef.html">
 <link rel="import" href="../guild-run/guild-run.html">
 <link rel="import" href="../guild-tensorboard-page/guild-tensorboard-page.html">
 <link rel="import" href="../guild-train-page/guild-train-page.html">
@@ -37,7 +36,6 @@ limitations under the License.
     <app-location route="{{route}}"></app-location>
     <guild-view-route route="{{route}}" selected="{{page}}"></guild-view-route>
     <guild-env env="{{env}}" route="{{route}}"></guild-env>
-    <guild-run-viewdef env="[[env]]" viewdef="{{viewdef}}"></guild-run-viewdef>
 
     <guild-view-fullscreen></guild-view-fullscreen>
 
@@ -81,8 +79,7 @@ limitations under the License.
        properties: {
            route: Object,
            page: String,
-           env: Object,
-           viewdef: Object
+           env: Object
        },
 
        observers: [

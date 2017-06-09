@@ -1,1 +1,58 @@
 #-*-conf-*-
+
+###################################################################
+# Views
+###################################################################
+
+[train-view]
+
+content         = fields series output
+sidebar         = flags attrs artifacts
+
+[evaluate-view]
+
+# What goes here?
+
+[compare-view]
+
+# What goes here?
+
+###################################################################
+# Components
+###################################################################
+
+[component "fields"]
+
+element = guild-fields
+
+[component "series"]
+
+element = guild-series
+
+[component "output"]
+
+element = guild-output
+
+[component "flags"]
+
+element = guild-flags
+
+[component "attrs"]
+
+element = guild-attrs
+
+[component "artifacts"]
+
+element = guild-artifacts
+
+###################################################################
+# Templates
+###################################################################
+
+[template "accuracy-field"]
+
+color     = green-700
+icon      = accuracy
+label     = Accuracy
+reduce    = last
+format    = 0.00%
