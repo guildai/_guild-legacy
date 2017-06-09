@@ -146,7 +146,7 @@ start_exec(#state{cmd={Cmd, Env}}=State) ->
     State#state{exec_pid=Pid, exec_ospid=OSPid}.
 
 project_dir(#state{op=#op{project=Project}}) ->
-    guild_project:project_dir(Project).
+    guild_project:dir(Project).
 
 %% ===================================================================
 %% Tasks

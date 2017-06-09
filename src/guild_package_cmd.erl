@@ -45,7 +45,7 @@ main(Opts, _Args) ->
     Project = guild_cmd_support:project_from_opts("GuildPkg", Opts),
     guild_app:init_support([exec]),
     Bin = guild_app:priv_bin("guild-package"),
-    Args = [Bin, guild_project:project_dir(Project)],
+    Args = [Bin, guild_project:dir(Project)],
     Env = package_env(Project, Opts),
     guild_cmd_support:exec_run(Args, [{env, Env}]).
 

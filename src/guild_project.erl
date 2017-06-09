@@ -14,7 +14,7 @@
 
 -module(guild_project).
 
--export([from_dir/1, from_file/1, from_str/1, project_dir/1,
+-export([from_dir/1, from_file/1, from_str/1, dir/1,
          project_file/1, attr/3, set_attr/4, section/2, sections/2,
          section_name/1, section_attrs/2, section_attrs/1,
          section_attr/2, section_attr/3, section_attr_union/2]).
@@ -51,7 +51,7 @@ load(File) ->
 %% Path API
 %% ===================================================================
 
-project_dir(Project) ->
+dir(Project) ->
     proplists:get_value('$dir', Project).
 
 project_file(Project) ->

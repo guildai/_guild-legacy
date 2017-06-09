@@ -34,7 +34,7 @@ start_link(Project, Settings) ->
 
 init_state(Project, Settings) ->
     #state{
-       pdir=guild_project:project_dir(Project),
+       pdir=guild_project:dir(Project),
        run_roots=guild_project_util:all_runroots(Project),
        settings=Settings
       }.
@@ -95,7 +95,7 @@ project_title_from_config(P) ->
     guild_project:attr(P, ["project"], "name").
 
 project_title_from_dir(P) ->
-    Dir = guild_project:project_dir(P),
+    Dir = guild_project:dir(P),
     {ok, dir_basename(Dir)}.
 
 dir_basename(".") -> filename:basename(filename:absname(""));

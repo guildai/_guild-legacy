@@ -34,7 +34,7 @@ runroot(Section, Project) ->
            fun() -> user_configured_runroot() end,
            fun() -> {ok, ?default_runroot} end],
           []),
-    filename:absname(Root, guild_project:project_dir(Project)).
+    filename:absname(Root, guild_project:dir(Project)).
 
 section_runroot(undefined) ->
     error;
@@ -60,7 +60,7 @@ all_runroots(Project) ->
 
 apply_project_sections_runroot(Project, Set) ->
     Sections = guild_project:sections(Project, []),
-    ProjectDir = guild_project:project_dir(Project),
+    ProjectDir = guild_project:dir(Project),
     Apply =
         fun(Section, Acc) ->
             apply_project_section_runroot(Section, ProjectDir, Acc)

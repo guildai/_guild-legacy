@@ -93,7 +93,7 @@ required_missing_(error, _Project) ->
     false.
 
 required_paths(Required, Project) ->
-    Dir = guild_project:project_dir(Project),
+    Dir = guild_project:dir(Project),
     [filename:absname(Path, Dir) || Path <- split_required(Required)].
 
 split_required(Required) ->

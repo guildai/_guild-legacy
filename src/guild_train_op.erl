@@ -205,7 +205,7 @@ format_env_attr(Env) ->
 snapshot_project(#state{rundir=RunDir,
                         op=#op{section=Section, project=Project}}=State) ->
     Bin = guild_app:priv_bin("snapshot-project"),
-    ProjectDir = guild_project:project_dir(Project),
+    ProjectDir = guild_project:dir(Project),
     GuildDir = guild_rundir:guild_dir(RunDir),
     Sources = section_sources(Section, Project),
     guild_exec:run_quiet([Bin, ProjectDir, GuildDir, Sources]),
@@ -249,7 +249,7 @@ start_exec(#state{cmd={Cmd, Env}}=State) ->
     State#state{exec_pid=Pid, exec_ospid=OSPid}.
 
 project_dir(#state{op=#op{project=Project}}) ->
-    guild_project:project_dir(Project).
+    guild_project:dir(Project).
 
 %% ===================================================================
 %% Tasks
