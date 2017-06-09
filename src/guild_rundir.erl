@@ -27,12 +27,7 @@ path_for_project_section(Section, Project, Time) ->
     filename:join(RunRoot, Name).
 
 rundir_name(Time, Section) ->
-    format_time(Time) ++ rundir_suffix(Section).
-
-format_time(Time) ->
-    Now = guild_run:timestamp_to_now(Time),
-    {{Y, M, D}, {H, Mn, S}} = calendar:now_to_universal_time(Now),
-    io_lib:format("~b~2..0b~2..0bT~2..0b~2..0b~2..0bZ", [Y, M, D, H, Mn, S]).
+    guild_util:format_dir_timestamp(Time) ++ rundir_suffix(Section).
 
 rundir_suffix(Section) ->
     case guild_model:name_for_project_section(Section) of

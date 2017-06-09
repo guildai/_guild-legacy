@@ -72,5 +72,8 @@ eval(Op) ->
     guild_cmd_support:exec_op(guild_eval_op, Op).
 
 preview(Op) ->
-    guild_cli:out_par("This command will use the settings below.~n~n"),
+    guild_cli:out_par(
+      "This command will use the settings below. Note that EVALDIR is "
+      "created dynamically for new evaluate operations and will be used "
+      "wherever '$EVALDIR' appears below.~n~n"),
     guild_cmd_support:preview_op_cmd(Op).

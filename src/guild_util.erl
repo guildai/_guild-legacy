@@ -22,7 +22,7 @@
          format_cmd_args/1, make_tmp_dir/0, random_name/0,
          delete_tmp_dir/1, resolve_args/2, resolve_keyvals/2,
          consult_string/1, format_exec_error/1, latest_mtime/1,
-         free_port/0]).
+         free_port/0, format_dir_timestamp/1]).
 
 -include_lib("kernel/include/file.hrl").
 
@@ -475,3 +475,12 @@ maybe_too_many_attempts(N) when N >= ?max_free_port_attempts ->
     error(too_many_free_port_attempts);
 maybe_too_many_attempts(_) ->
     ok.
+
+%% ===================================================================
+%% Format dir timetamp
+%% ===================================================================
+
+format_dir_timestamp(Time) ->
+    Now = guild_run:timestamp_to_now(Time),
+    {{Y, M, D}, {H, Mn, S}} = calendar:now_to_universal_time(Now),
+    io_lib:format("~b~2..0b~2..0bT~2..0b~2..0b~2..0bZ", [Y, M, D, H, Mn, S]).

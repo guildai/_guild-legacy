@@ -94,5 +94,5 @@ preview(Op) ->
     guild_cli:out_par(
       "This command will use the settings below. Note that RUNDIR is "
       "created dynamically for new runs and will be used wherever '$RUNDIR' "
-      "is used below.~n~n"),
+      "appears below.~n~n"),
     guild_cmd_support:preview_op_cmd(Op).

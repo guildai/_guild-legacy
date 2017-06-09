@@ -22,8 +22,8 @@
 
 -record(op, {run, section, project, cmd, tasks, stream_handlers}).
 
--record(state, {op, cmd, exec_pid, exec_ospid, stream_handlers,
-                stdout_buf, stderr_buf}).
+-record(state, {op, started, evaldir, cmd, exec_pid, exec_ospid,
+                stream_handlers, stdout_buf, stderr_buf}).
 
 -define(eval_stop_timeout, 5000).
 
@@ -103,6 +103,8 @@ handle_task(State) ->
 
 op_steps() ->
     [fun init_app_support/1,
+     fun started_timestamp/1,
+     fun init_evaldir/1,
      fun init_cmd/1,
      fun init_stream_handlers/1,
      fun start_exec/1,
@@ -112,16 +114,31 @@ init_app_support(State) ->
     guild_app:init_support([exec, json]),
     State.
 
+started_timestamp(S) ->
+    S#state{started=guild_run:timestamp()}.
+
+%% ===================================================================
+%% Evaldir
+%% ===================================================================
+
+init_evaldir(#state{op=#op{run=Run}, started=Started}=State) ->
+    EvalDir = guild_evaldir:path_for_run(Run, Started),
+    guild_evaldir:init(EvalDir),
+    gproc:add_local_property(cwd, EvalDir),
+    State#state{evaldir=EvalDir}.
+
 %% ===================================================================
 %% Cmd
 %% ===================================================================
 
 init_cmd(#state{op=#op{cmd={Args, BaseEnv}}}=State) ->
-    Env = run_env(State) ++ BaseEnv,
+    Env = eval_env(State) ++ BaseEnv,
     ResolvedArgs = guild_util:resolve_args(Args, Env),
     State#state{cmd={ResolvedArgs, Env}}.
 
-run_env(#state{op=#op{run=Run}}) -> [{"RUNDIR", guild_run:dir(Run)}].
+eval_env(#state{op=#op{run=Run}, evaldir=EvalDir}) ->
+    [{"RUNDIR", guild_run:dir(Run)},
+     {"EVALDIR", EvalDir}].
 
 %% ===================================================================
 %% Init stream handlers
