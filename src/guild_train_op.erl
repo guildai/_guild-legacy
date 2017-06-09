@@ -22,7 +22,7 @@
 
 -record(op, {section, project, cmd, tasks, stream_handlers}).
 
--record(state, {op, started, cmd, rundir, exec_pid, exec_ospid,
+-record(state, {op, started, rundir, cmd, exec_pid, exec_ospid,
                 stream_handlers, stdout_buf, stderr_buf}).
 
 -define(default_stats_task_repeat, 10000).
@@ -132,35 +132,11 @@ started_timestamp(S) ->
 %% ===================================================================
 
 init_rundir(State) ->
-    RunDir = rundir_path(State),
+    #state{op=#op{section=Section, project=Project}, started=Started} = State,
+    RunDir = guild_rundir:path_for_project_section(Section, Project, Started),
     guild_rundir:init(RunDir),
     gproc:add_local_property(cwd, RunDir),
     State#state{rundir=RunDir}.
-
-rundir_path(State) ->
-    RunRoot = runroot(State),
-    Name = rundir_name(State),
-    filename:join(RunRoot, Name).
-
-runroot(#state{op=#op{section=Section, project=Project}}) ->
-    guild_project_util:runroot(Section, Project).
-
-rundir_name(#state{started=Started, op=#op{section=Section}}) ->
-    format_started(Started) ++ rundir_suffix(Section).
-
-format_started(RunStarted) ->
-    Now = guild_run:timestamp_to_now(RunStarted),
-    {{Y, M, D}, {H, Mn, S}} = calendar:now_to_universal_time(Now),
-    io_lib:format("~b~2..0b~2..0bT~2..0b~2..0b~2..0bZ", [Y, M, D, H, Mn, S]).
-
-rundir_suffix(Section) ->
-    case guild_model:name_for_project_section(Section) of
-        {ok, Name} -> "-" ++ safe_path(Name);
-        error -> ""
-    end.
-
-safe_path(Suffix) ->
-    re:replace(Suffix, "/", "_", [global, {return, list}]).
 
 %% ===================================================================
 %% Cmd

@@ -14,7 +14,38 @@
 
 -module(guild_rundir).
 
--export([guild_dir/1, guild_file/2, meta_dir/1, init/1, write_attrs/2]).
+-export([path_for_project_section/3, guild_dir/1, guild_file/2, meta_dir/1,
+         init/1, write_attrs/2]).
+
+%% ===================================================================
+%% Path for project section
+%% ===================================================================
+
+path_for_project_section(Section, Project, Time) ->
+    RunRoot = guild_project_util:runroot(Section, Project),
+    Name = rundir_name(Time, Section),
+    filename:join(RunRoot, Name).
+
+rundir_name(Time, Section) ->
+    format_time(Time) ++ rundir_suffix(Section).
+
+format_time(Time) ->
+    Now = guild_run:timestamp_to_now(Time),
+    {{Y, M, D}, {H, Mn, S}} = calendar:now_to_universal_time(Now),
+    io_lib:format("~b~2..0b~2..0bT~2..0b~2..0b~2..0bZ", [Y, M, D, H, Mn, S]).
+
+rundir_suffix(Section) ->
+    case guild_model:name_for_project_section(Section) of
+        {ok, Name} -> "-" ++ safe_path(Name);
+        error -> ""
+    end.
+
+safe_path(Suffix) ->
+    re:replace(Suffix, "/", "_", [global, {return, list}]).
+
+%% ===================================================================
+%% Subdirs and files
+%% ===================================================================
 
 guild_dir(RunDir) ->
     filename:join(RunDir, "guild.d").
@@ -24,6 +55,10 @@ guild_file(RunDir, Name) ->
 
 meta_dir(RunDir) ->
     filename:join(guild_dir(RunDir), "meta").
+
+%% ===================================================================
+%% Init
+%% ===================================================================
 
 init(RunDir) ->
     init_rundir_skel(RunDir).
