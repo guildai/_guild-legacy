@@ -1046,40 +1046,52 @@ test_viewdef() ->
 test_project_include() ->
     start("project_include"),
 
-    [] = guild_project:apply_include([], []),
+    Apply = fun guild_project:apply_include/2,
+
+    [] = Apply([], []),
 
     P1 = [{["a"], [{"x", "X"}]}],
-    P1 = guild_project:apply_include(P1, []),
+
+    P1 = Apply(P1, []),
 
     T1_1 = [{["a"], [{"x", "X2"}]}],
-    [{["a"], [{"x", "X2"}]}] = guild_project:apply_include(P1, T1_1),
+
+    [{["a"], [{"x", "X"}]}] = Apply(P1, T1_1),
 
     T1_2 = [{["a"], [{"y", "Y"}]}],
-    [{["a"], [{"x", "X"}, {"y", "Y"}]}] = guild_project:apply_include(P1, T1_2),
+
+    [{["a"], [{"y", "Y"}, {"x", "X"}]}] = Apply(P1, T1_2),
 
     T1_3 = [{["b"], [{"z", "Z"}]}],
-    [{["b"], [{"z", "Z"}]}, {["a"], [{"x", "X"}]}]
-        = guild_project:apply_include(P1, T1_3),
+
+    [{["b"], [{"z", "Z"}]}, {["a"], [{"x", "X"}]}] = Apply(P1, T1_3),
 
     P2 =
         [{["a"],      [{"x", "X"}]},
          {["a", "1"], [{"x1", "X1"}]},
          {["b"],      [{"y", "Y"}, {"z", "Z"}]}],
-    P2 = guild_project:apply_include(P2, []),
+
+    P2 = Apply(P2, []),
 
     T2_1 = [{["c"], [{"w", "W"}]}],
+
     [{["c"],      [{"w", "W"}]},
      {["a"],      [{"x", "X"}]},
      {["a", "1"], [{"x1", "X1"}]},
-     {["b"],      [{"y", "Y"}, {"z", "Z"}]}]
-        = guild_project:apply_include(P2, T2_1),
+     {["b"],      [{"y", "Y"}, {"z", "Z"}]}] = Apply(P2, T2_1),
 
     T2_2 =
-        [{["a"], [{"x", "Y"}, {"y", "Z"}]},
+        [{["a"],      [{"x", "Y"}, {"y", "Z"}]},
          {["a", "1"], [{"x1", "Y1"}]}],
-    [{["a"],      [{"x", "Y"}, {"y", "Z"}]},
-     {["a", "1"], [{"x1", "Y1"}]},
-     {["b"],      [{"y", "Y"}, {"z", "Z"}]}]
-        = guild_project:apply_include(P2, T2_2),
+
+    [{["a"],      [{"y", "Z"}, {"x", "X"}]},
+     {["a", "1"], [{"x1", "X1"}]},
+     {["b"],      [{"y", "Y"}, {"z", "Z"}]}] = Apply(P2, T2_2),
+
+    %% Only sections are applied
+
+    P3 = [{file, "foo"}, {["a"], [{"x", "X"}]}],
+    T3 = [{file, "bar"}, {["a"], [{"x", "Y"}]}],
+    [{file, "foo"}, {["a"], [{"x", "X"}]}] = Apply(P3, T3),
 
     ok().

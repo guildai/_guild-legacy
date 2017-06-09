@@ -208,8 +208,8 @@ handle_settings(View) ->
 %% ===================================================================
 
 handle_project(View) ->
-    ProjectSummary = guild_view:project_summary(View),
-    guild_http:ok_json(guild_json:encode(ProjectSummary)).
+    Project = guild_view:project(View),
+    guild_http:ok_json(guild_json:encode(Project)).
 
 %% ===================================================================
 %% Viewdef

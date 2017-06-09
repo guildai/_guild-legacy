@@ -146,8 +146,10 @@ section_attrs_acc([], Project, RestPaths, Acc) ->
 apply_include(Project, Include) ->
     add_or_merge_sections(Include, Project).
 
-add_or_merge_sections([Section|Rest], Working) ->
+add_or_merge_sections([{Key, _}=Section|Rest], Working) when is_list(Key) ->
     add_or_merge_sections(Rest, add_or_merge_section(Section, Working));
+add_or_merge_sections([_Meta|Rest], Working) ->
+    add_or_merge_sections(Rest, Working);
 add_or_merge_sections([], Working) -> Working.
 
 add_or_merge_section({Path, _}=Section, Project) ->
@@ -157,23 +159,19 @@ add_or_merge_section({Path, _}=Section, Project) ->
     end.
 
 merge_section({Path, NewAttrs}, {Path, CurAttrs}, Project) ->
-    MergedAttrs = merge_attrs(NewAttrs, CurAttrs),
+    MergedAttrs = add_missing_attrs(NewAttrs, CurAttrs),
     replace_section({Path, MergedAttrs}, Project).
 
-merge_attrs([Attr|Rest], Working) ->
-    merge_attrs(Rest, add_or_replace_attr(Attr, Working));
-merge_attrs([], Working) ->
+add_missing_attrs([Attr|Rest], Working) ->
+    add_missing_attrs(Rest, add_missing_attr(Attr, Working));
+add_missing_attrs([], Working) ->
     Working.
 
-add_or_replace_attr(NewAttr, Attrs) ->
-    add_or_replace_attr_acc(NewAttr, Attrs, []).
-
-add_or_replace_attr_acc({Name, _}=New, [{Name, _}|Rest], Acc) ->
-    lists:reverse([New|Acc]) ++ Rest;
-add_or_replace_attr_acc(New, [Cur|Rest], Acc) ->
-    add_or_replace_attr_acc(New, Rest, [Cur|Acc]);
-add_or_replace_attr_acc(New, [], Acc) ->
-    lists:reverse([New|Acc]).
+add_missing_attr({Name, _}=Attr, Working) ->
+    case lists:keymember(Name, 1, Working) of
+        true -> Working;
+        false -> [Attr|Working]
+    end.
 
 replace_section(Section, Project) ->
     replace_section_acc(Section, Project, []).

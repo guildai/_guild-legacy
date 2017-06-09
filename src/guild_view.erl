@@ -14,8 +14,8 @@
 
 -module(guild_view).
 
--export([start_link/2, project_summary/1, formatted_runs/1,
-         resolve_run/2, all_runs/1, settings/1, viewdef/2]).
+-export([start_link/2, project/1, formatted_runs/1, resolve_run/2,
+         all_runs/1, settings/1, viewdef/2]).
 
 -export([handle_msg/3]).
 
@@ -43,8 +43,8 @@ init_state(Project, Settings) ->
 %% API
 %% ===================================================================
 
-project_summary(View) ->
-    e2_service:call(View, {fun project_summary_/1, []}).
+project(View) ->
+    e2_service:call(View, {fun project_/1, []}).
 
 formatted_runs(View) ->
     e2_service:call(View, {fun formatted_runs_/1, []}).
@@ -72,12 +72,28 @@ handle_msg({F, A}, _From, State) ->
 %% Project summary
 %% ===================================================================
 
-project_summary_(State) ->
-    project_attrs(load_project(State)).
+project_(State) ->
+    format_project(apply_viewdef_include(load_project(State))).
 
 load_project(#state{pdir=Dir}) ->
     {ok, Project} = guild_project:from_dir(Dir),
     Project.
+
+apply_viewdef_include(P) ->
+    guild_project:apply_include(P, viewdef_project_include()).
+
+viewdef_project_include() ->
+    {ok, Include} = guild_project:from_file(guild_include_path()),
+    Include.
+
+guild_include_path() ->
+    filename:join(guild_app:priv_dir("viewdef"), "GuildInclude").
+
+format_project(P) ->
+    [formatted_meta_section(P)|format_project_sections(P)].
+
+formatted_meta_section(P) ->
+    [[<<"__meta__">>], project_attrs(P)].
 
 project_attrs(Project) ->
     #{
@@ -106,6 +122,15 @@ project_description(P) ->
         {ok, Desc} -> Desc;
         error -> ""
     end.
+
+format_project_sections(P) ->
+    Sections = guild_project:sections(P, []),
+    [format_project_section(S) || S <- Sections].
+
+format_project_section({Path, Attrs}) ->
+    PathBin = [list_to_binary(Part) || Part <- Path],
+    AttrsBin = [{list_to_binary(K), list_to_binary(V)} || {K, V} <- Attrs],
+    [PathBin, maps:from_list(AttrsBin)].
 
 %% ===================================================================
 %% Formatted runs
