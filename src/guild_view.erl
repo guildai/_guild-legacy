@@ -69,7 +69,7 @@ handle_msg({F, A}, _From, State) ->
     {reply, apply(F, A ++ [State]), State}.
 
 %% ===================================================================
-%% Project summary
+%% Project
 %% ===================================================================
 
 project_(State) ->
@@ -90,10 +90,25 @@ guild_include_path() ->
     filename:join(guild_app:priv_dir("viewdef"), "GuildInclude").
 
 format_project(P) ->
-    [formatted_meta_section(P)|format_project_sections(P)].
+    apply_project_meta(P, format_project_sections(P)).
 
-formatted_meta_section(P) ->
-    [[<<"__meta__">>], project_attrs(P)].
+format_project_sections(P) ->
+    Sections = guild_project:sections(P, []),
+    Formatted = [format_project_section(S) || S <- Sections],
+    maps:from_list(Formatted).
+
+format_project_section({Path, Attrs}) ->
+    {section_path_key(Path), format_section_attrs(Attrs)}.
+
+section_path_key(Path) ->
+    iolist_to_binary(lists:join($\t, Path)).
+
+format_section_attrs(Attrs) ->
+    AttrsBin = [{list_to_binary(K), list_to_binary(V)} || {K, V} <- Attrs],
+    maps:from_list(AttrsBin).
+
+apply_project_meta(P, Formatted) ->
+    Formatted#{<<"__meta__">> => project_attrs(P)}.
 
 project_attrs(Project) ->
     #{
@@ -123,14 +138,6 @@ project_description(P) ->
         error -> ""
     end.
 
-format_project_sections(P) ->
-    Sections = guild_project:sections(P, []),
-    [format_project_section(S) || S <- Sections].
-
-format_project_section({Path, Attrs}) ->
-    PathBin = [list_to_binary(Part) || Part <- Path],
-    AttrsBin = [{list_to_binary(K), list_to_binary(V)} || {K, V} <- Attrs],
-    [PathBin, maps:from_list(AttrsBin)].
 
 %% ===================================================================
 %% Formatted runs
