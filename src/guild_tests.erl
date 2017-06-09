@@ -40,7 +40,8 @@ run() ->
     test_tensorflow_port_protocol(),
     test_tensorflow_read_image(),
     test_strip_project_sections(),
-    test_viewdef().
+    test_viewdef(),
+    test_project_include().
 
 run(Test) ->
     guild_trace:init_from_env(os:getenv("TRACE")),
@@ -1035,5 +1036,50 @@ test_viewdef() ->
              <<"source">> := <<"series/tf/[^/]+/loss">>,
              <<"title">> := <<"Loss">>}]}
         = guild_view_viewdef:viewdef(Model, Project),
+
+    ok().
+
+%% ===================================================================
+%% Test project include
+%% ===================================================================
+
+test_project_include() ->
+    start("project_include"),
+
+    [] = guild_project:apply_include([], []),
+
+    P1 = [{["a"], [{"x", "X"}]}],
+    P1 = guild_project:apply_include(P1, []),
+
+    T1_1 = [{["a"], [{"x", "X2"}]}],
+    [{["a"], [{"x", "X2"}]}] = guild_project:apply_include(P1, T1_1),
+
+    T1_2 = [{["a"], [{"y", "Y"}]}],
+    [{["a"], [{"x", "X"}, {"y", "Y"}]}] = guild_project:apply_include(P1, T1_2),
+
+    T1_3 = [{["b"], [{"z", "Z"}]}],
+    [{["b"], [{"z", "Z"}]}, {["a"], [{"x", "X"}]}]
+        = guild_project:apply_include(P1, T1_3),
+
+    P2 =
+        [{["a"],      [{"x", "X"}]},
+         {["a", "1"], [{"x1", "X1"}]},
+         {["b"],      [{"y", "Y"}, {"z", "Z"}]}],
+    P2 = guild_project:apply_include(P2, []),
+
+    T2_1 = [{["c"], [{"w", "W"}]}],
+    [{["c"],      [{"w", "W"}]},
+     {["a"],      [{"x", "X"}]},
+     {["a", "1"], [{"x1", "X1"}]},
+     {["b"],      [{"y", "Y"}, {"z", "Z"}]}]
+        = guild_project:apply_include(P2, T2_1),
+
+    T2_2 =
+        [{["a"], [{"x", "Y"}, {"y", "Z"}]},
+         {["a", "1"], [{"x1", "Y1"}]}],
+    [{["a"],      [{"x", "Y"}, {"y", "Z"}]},
+     {["a", "1"], [{"x1", "Y1"}]},
+     {["b"],      [{"y", "Y"}, {"z", "Z"}]}]
+        = guild_project:apply_include(P2, T2_2),
 
     ok().

@@ -14,10 +14,10 @@
 
 -module(guild_project).
 
--export([from_dir/1, from_file/1, from_str/1, dir/1,
-         project_file/1, attr/3, set_attr/4, section/2, sections/2,
-         section_name/1, section_attrs/2, section_attrs/1,
-         section_attr/2, section_attr/3, section_attr_union/2]).
+-export([from_dir/1, from_file/1, from_str/1, dir/1, project_file/1,
+         attr/3, set_attr/4, section/2, sections/2, section_name/1,
+         section_attrs/2, section_attrs/1, section_attr/2,
+         section_attr/3, section_attr_union/2, apply_include/2]).
 
 %% ===================================================================
 %% Init
@@ -138,3 +138,49 @@ section_attrs_acc([{Name, _}=Attr|Rest], Project, RestPaths, Acc) ->
       lists:keystore(Name, 1, Acc, Attr));
 section_attrs_acc([], Project, RestPaths, Acc) ->
     section_attrs_acc(Project, RestPaths, Acc).
+
+%% ===================================================================
+%% Apply include
+%% ===================================================================
+
+apply_include(Project, Include) ->
+    add_or_merge_sections(Include, Project).
+
+add_or_merge_sections([Section|Rest], Working) ->
+    add_or_merge_sections(Rest, add_or_merge_section(Section, Working));
+add_or_merge_sections([], Working) -> Working.
+
+add_or_merge_section({Path, _}=Section, Project) ->
+    case section(Project, Path) of
+        {ok, Cur} -> merge_section(Section, Cur, Project);
+        error -> [Section|Project]
+    end.
+
+merge_section({Path, NewAttrs}, {Path, CurAttrs}, Project) ->
+    MergedAttrs = merge_attrs(NewAttrs, CurAttrs),
+    replace_section({Path, MergedAttrs}, Project).
+
+merge_attrs([Attr|Rest], Working) ->
+    merge_attrs(Rest, add_or_replace_attr(Attr, Working));
+merge_attrs([], Working) ->
+    Working.
+
+add_or_replace_attr(NewAttr, Attrs) ->
+    add_or_replace_attr_acc(NewAttr, Attrs, []).
+
+add_or_replace_attr_acc({Name, _}=New, [{Name, _}|Rest], Acc) ->
+    lists:reverse([New|Acc]) ++ Rest;
+add_or_replace_attr_acc(New, [Cur|Rest], Acc) ->
+    add_or_replace_attr_acc(New, Rest, [Cur|Acc]);
+add_or_replace_attr_acc(New, [], Acc) ->
+    lists:reverse([New|Acc]).
+
+replace_section(Section, Project) ->
+    replace_section_acc(Section, Project, []).
+
+replace_section_acc({Path, _}=Section, [{Path, _}|Rest], Acc) ->
+    replace_section_acc(Section, Rest, [Section|Acc]);
+replace_section_acc(Section, [Other|Rest], Acc) ->
+    replace_section_acc(Section, Rest, [Other|Acc]);
+replace_section_acc(_, [], Acc) ->
+    lists:reverse(Acc).
