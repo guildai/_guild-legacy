@@ -143,6 +143,10 @@ limitations under the License.
        behaviors: [Guild.DataListener],
 
        properties: {
+           deepCompare: {
+               type: Boolean,
+               value: false
+           },
            data: {
                type: Object,
                notify: true
@@ -150,7 +154,10 @@ limitations under the License.
        },
 
        handleData: function(data) {
-           this.data = data;
+           if (!this.deepCompare ||
+               JSON.stringify(data) != JSON.stringify(this.data)) {
+               this.data = data;
+           }
        }
    });
   </script>
