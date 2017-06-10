@@ -14,36 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<dom-module id="guild-fields">
+<dom-module id="guild-series">
   <template>
-    <template is="dom-repeat" items="[[fields]]" as="field">
-      <div class$="component [[fieldColClasses(xxx.fields)]]">
-        <guild-field env="[[env]]" field="[[field]]"></guild-field>
-      </div>
-    </template>
+    Series go here yo
   </template>
   <script>
    Polymer({
-       is: "guild-fields",
+       is: "guild-series",
 
        properties: {
            env: Object,
-           fields: {
+           series: {
                type: Array,
-               computed: "computeFields(env.project"
+               computed: "computeSeries(env.project)"
            }
        },
 
-       fieldColClasses: function(fields) {
-           if (fields.length == 2) {
-               return "col-12 col-sm-6";
-           } else if (fields.length == 3) {
-               return "col-12 col-md-4";
-           } else if (fields.length == 4) {
-               return "col-12 col-sm-6 col-xl-3";
-           } else {
-               return "col-12 col-sm-6 col-xl-4 col-xxl-3";
-           }
+       computeSeries: function(project) {
+           console.log(project);
+           return [];
        }
    });
   </script>
