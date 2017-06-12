@@ -26,12 +26,12 @@ limitations under the License.
            env: Object,
            series: {
                type: Array,
-               computed: "computeSeries(env.project)"
+               computed: "computeSeries(env.project, env.selectedRun2)"
            }
        },
 
-       computeSeries: function(project) {
-           console.log(project);
+       computeSeries: function(project, run) {
+           console.log("TODO compute series", project, run);
            return [];
        }
    });
