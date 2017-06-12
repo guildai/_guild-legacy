@@ -56,3 +56,19 @@ icon      = accuracy
 label     = Accuracy
 reduce    = last
 format    = 0.00%
+
+[template "steps-field"]
+
+color     = blue-700
+icon      = steps
+label     = Steps
+reduce    = steps
+format    = 0,0
+
+[template "time-field"]
+
+color     = yellow-700
+icon      = time
+label     = Time
+reduce    = duration
+format    = 00:00:00

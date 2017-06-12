@@ -64,18 +64,19 @@ limitations under the License.
            },
            content: {
                type: Array,
-               computed: "computeContent(env.project, env.selectedRun2)"
-           }
+               computed: "computeContent(env.project, env.selectedRun, env.runs)"
+           },
+           lastContentRun: Number
        },
 
        observers: [
-           "checkDeletedRun(content, env.selectedRun2)",
-           "refreshContent(content)"
+           "checkDeletedRun(env.selectedRun, env.runs, content)",
+           "refreshPage(content)"
        ],
 
-       checkDeletedRun: function(content, run) {
+       checkDeletedRun: function(selected, runs, content) {
+           var deleted = !Guild.Run.runForId(selected, runs);
            if (content) {
-               var deleted = !run;
                if (deleted) {
                    this.$.overlay.open();
                } else {
@@ -93,7 +94,12 @@ limitations under the License.
            });
        },
 
-       computeContent: function(project, run) {
+       computeContent: function(project, selected, runs) {
+           if (this.lastContentRun == selected) {
+               return this.content;
+           }
+           this.lastContentRun = selected;
+           var run = Guild.Run.runForId(selected, runs);
            if (run) {
                var view = this.util.viewForRun(project, run);
                return {
@@ -101,10 +107,10 @@ limitations under the License.
                    sidebar: this.initViewContent(view, "sidebar", project)
                }
            } else {
-               return {
-                   main: [],
-                   sidebar: []
-               }
+               // Run is deleted - continue to show old content
+               // (user is informed with msg and content not accessible
+               // under an overlay)
+               return this.content;
            }
        },
 
@@ -129,12 +135,12 @@ limitations under the License.
            this.importHref(href);
        },
 
-       refreshContent: function(content) {
-           this.refreshContentTarget("main", content.main);
-           this.refreshContentTarget("sidebar", content.sidebar);
+       refreshPage: function(content) {
+           this.refreshTarget("main", content.main);
+           this.refreshTarget("sidebar", content.sidebar);
        },
 
-       refreshContentTarget: function(targetId, content) {
+       refreshTarget: function(targetId, content) {
            var target = document.getElementById(targetId);
            this.util.removeChildren(target);
            for (var i = 0; i < content.length; i++) {

@@ -14,16 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+<link rel="import" href="../guild-field/guild-field.html">
+<link rel="import" href="../guild-styles/guild-styles.html">
+
 <dom-module id="guild-fields">
   <template>
-    Fields go here yo
-    <!--
-    <template is="dom-repeat" items="[[fields]]" as="field">
-      <div class$="component [[fieldColClasses(xxx.fields)]]">
-        <guild-field env="[[env]]" field="[[field]]"></guild-field>
-      </div>
-    </template>
-    -->
+    <style include="guild-row-styles"></style>
+    <div class="row row-20">
+      <template is="dom-repeat" items="[[fields]]" as="field">
+        <div class$="[[fieldColClasses(fields)]]">
+          <guild-field env="[[env]]" field="[[field]]"></guild-field>
+        </div>
+      </template>
+    </div>
   </template>
   <script>
    Polymer({
@@ -33,12 +36,23 @@ limitations under the License.
            env: Object,
            fields: {
                type: Array,
-               computed: "computeFields(env.project, env.selectedRun2)"
-           }
+               computed: "computeFields(env.project, env.selectedRun, env.runs)"
+           },
+           lastFieldsRun: Number
        },
 
-       computeFields: function(project, run) {
-           console.log("TODO compute fields", project, run);
+       computeFields: function(project, selected, runs) {
+           if (this.lastFieldsRun == selected) {
+               return this.fields;
+           }
+           this.lastFieldsRun = selected;
+           var run = Guild.Run.runForId(selected, runs);
+           var fields = Guild.Project.orderedNamedSections(
+               project, "field", run.model);
+           return fields.map(function(field) {
+               return Guild.Project.applyTemplate(
+                   field.template, field, project);
+           });
        },
 
        fieldColClasses: function(fields) {

@@ -26,13 +26,18 @@ limitations under the License.
            env: Object,
            series: {
                type: Array,
-               computed: "computeSeries(env.project, env.selectedRun2)"
+               computed: "computeSeries(env.project, env.selectedRun, env.runs)"
            }
        },
 
-       computeSeries: function(project, run) {
-           console.log("TODO compute series", project, run);
-           return [];
+       computeSeries: function(project, selected, runs) {
+           if (this.series == undefined) {
+               var run = Guild.Run.runForId(selected, runs);
+               //console.log("TODO compute series", project, run);
+               return [];
+           } else {
+               return this.series;
+           }
        }
    });
   </script>
