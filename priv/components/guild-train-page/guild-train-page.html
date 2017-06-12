@@ -64,19 +64,18 @@ limitations under the License.
            },
            content: {
                type: Array,
-               computed: "computeContent(env.project, env.selectedRun, env.runs)"
-           },
-           lastContentRun: Number
+               computed: "computeContent(env.project, env.selectedRun2)"
+           }
        },
 
        observers: [
-           "checkDeletedRun(content, env.selectedRun, env.runs)",
+           "checkDeletedRun(content, env.selectedRun2)",
            "refreshContent(content)"
        ],
 
-       checkDeletedRun: function(content, selected, runs) {
+       checkDeletedRun: function(content, run) {
            if (content) {
-               var deleted = !Guild.Run.runForId(selected, runs);
+               var deleted = !run;
                if (deleted) {
                    this.$.overlay.open();
                } else {
@@ -94,14 +93,7 @@ limitations under the License.
            });
        },
 
-       computeContent: function(project, selected, runs) {
-           if (selected == this.lastContentRun) {
-               // Getting a spurious second call to computeContent - maintain
-               // our last run to skip the second round.
-               return this.content;
-           }
-           this.lastContentRun = selected;
-           var run = Guild.Run.runForId(selected, runs);
+       computeContent: function(project, run) {
            if (run) {
                var view = this.util.viewForRun(project, run);
                return {

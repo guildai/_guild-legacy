@@ -50,7 +50,8 @@ limitations under the License.
                        settings: undefined,
                        project: undefined,
                        runs: undefined,
-                       selectedRun: undefined
+                       selectedRun: undefined,
+                       selectedRun2: undefined
                    }
                }
            },
@@ -66,7 +67,9 @@ limitations under the License.
        ],
 
        runsChanged: function(runs, route) {
-           this.set("env.selectedRun", this.util.selectedRun(runs, route))
+           var selectedId = this.util.selectedRunId(runs, route);
+           this.set("env.selectedRun", selectedId)
+           this.set("env.selectedRun2", Guild.Run.runForId(selectedId, runs));
        },
 
        selectedRunChanged: function(selected, route) {
@@ -78,7 +81,7 @@ limitations under the License.
 
        util: new function() {
 
-           this.selectedRun = function(runs, route) {
+           this.selectedRunId = function(runs, route) {
                var runId = route.__queryParams.run;
                if (runId) {
                    return parseInt(runId) || null;
