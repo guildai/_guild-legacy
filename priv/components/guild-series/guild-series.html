@@ -14,9 +14,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+<link rel="import" href="../guild-chart/guild-chart.html">
+<link rel="import" href="../guild-styles/guild-styles.html">
+
 <dom-module id="guild-series">
   <template>
-    Series go here yo
+    <style include="guild-row-styles"></style>
+    <style>
+     .series-col {
+         margin-bottom: 18px;
+     }
+    </style>
+    <div class="row row-20">
+      <template is="dom-repeat" items="[[series]]" as="chartSeries">
+        <div class="series-col col-12 col-xl-6">
+          <guild-chart env="[[env]]" series="[[chartSeries]]"></guild-chart>
+        </div>
+      </template>
+    </div>
   </template>
   <script>
    Polymer({
@@ -27,17 +42,28 @@ limitations under the License.
            series: {
                type: Array,
                computed: "computeSeries(env.project, env.selectedRun, env.runs)"
-           }
+           },
+           lastSeriesRun: Number
+       },
+
+       attached: function() {
+           // Let parent know we provide our own bottom spacing
+           // (see .series-col)
+           this.parentElement.classList.add("bottom-spaced");
        },
 
        computeSeries: function(project, selected, runs) {
-           if (this.series == undefined) {
-               var run = Guild.Run.runForId(selected, runs);
-               //console.log("TODO compute series", project, run);
-               return [];
-           } else {
+           if (this.lastSeriesRun == selected) {
                return this.series;
            }
+           this.lastSeriesRun = selected;
+           var run = Guild.Run.runForId(selected, runs);
+           var series = Guild.Project.orderedNamedSections(
+               project, "series", run.model);
+           return series.map(function(chartSeries) {
+               return Guild.Project.applyTemplate(
+                   chartSeries.template, chartSeries, project);
+           });
        }
    });
   </script>
