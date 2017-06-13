@@ -87,6 +87,16 @@ test_inifile() ->
           "bar = 123\n"
           "baz = 456"),
 
+    %% Single section with one name
+    {ok, [{["foo", "bar"], [{"a1", "A1"}]}]} =
+        P("[foo \"bar\"]\n"
+          "a1 = A1\n"),
+
+    %% Single section with two names
+    {ok, [{["foo", "bar", "baz"], [{"a1", "A1"}]}]} =
+        P("[foo \"bar\" \"baz\"]\n"
+          "a1 = A1\n"),
+
     %% Single section, two attrs, various white space
     {ok, [{["foo"], [{"bar", "123"}, {"baz", "456"}]}]} =
         P("\n"
@@ -146,6 +156,7 @@ test_inifile() ->
 
     %% Malformed section
     {error, {section_line, 1}} = P("[foo\n"),
+    {error, {section_line, 1}} = P("[foo bar]\n"),
     {error, {section_line, 3}} = P("[foo]\n\n[bar\n"),
 
     %% Malformed attr

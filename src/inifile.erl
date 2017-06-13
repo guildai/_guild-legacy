@@ -55,10 +55,14 @@ parse_line(Line0, Rest0, PS0) ->
     end.
 
 parse_section_line(Line, #ps{lnum=Num}) ->
-    Pattern = "\\[\\s*([^ ]+)(?:\\s+\"([^\"]*)\")?\\s*\\]",
+    Pattern =
+        "^\\[\\s*([^ ]+)"
+        "(?:\\s+\"(.+?)\")?"
+        "(?:\\s+\"(.+?)\")?"
+        "\\s*]$",
     case re:run(Line, Pattern, [{capture, all_but_first, list}]) of
         {match, Keys} -> {ok, {Keys, []}};
-        nomatch       -> {error, {section_line, Num}}
+        nomatch -> {error, {section_line, Num}}
     end.
 
 handle_section_parse({ok, Section}, Rest, PS) ->
