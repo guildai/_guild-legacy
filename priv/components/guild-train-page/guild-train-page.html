@@ -145,7 +145,7 @@ limitations under the License.
        },
 
        refreshTarget: function(targetId, content) {
-           var target = document.getElementById(targetId);
+           var target = this.$[targetId];
            this.util.removeChildren(target);
            for (var i = 0; i < content.length; i++) {
                var row = this.initContentRow(content[i]);
