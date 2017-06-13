@@ -40,7 +40,6 @@ run() ->
     test_tensorflow_port_protocol(),
     test_tensorflow_read_image(),
     test_strip_project_sections(),
-    test_viewdef(),
     test_project_include().
 
 run(Test) ->
@@ -976,67 +975,6 @@ test_strip_project_sections() ->
                  "# s1 comment\n"
                  "v1 = 987 654\n",
                  "s1"),
-    ok().
-
-%% ===================================================================
-%% Test viewdef
-%% ===================================================================
-
-test_viewdef() ->
-    start("viewdef"),
-
-    SampleDir = filename:join(guild_app:test_dir(), "sample-project"),
-    {ok, Project} = guild_project:from_dir(SampleDir),
-    {ok, Model} = guild_project:section(Project, ["model"]),
-
-    #{compare :=
-          [#{<<"color">> := <<"green-700">>,
-             <<"format">> := <<"0.00%">>,
-             <<"icon">> := <<"accuracy">>,
-             <<"label">> := <<"Validation Accuracy">>,
-             <<"name">> := <<"accuracy">>,
-             <<"reduce">> := <<"last">>,
-             <<"source">> := <<"series/tf/validation/accuracy">>,
-             <<"sources">> := <<"series/tf/validation/accuracy">>},
-           #{<<"color">> := <<"red-700">>,
-             <<"format">> := <<"0.000">>,
-             <<"icon">> := <<"loss">>,
-             <<"label">> := <<"Loss">>,
-             <<"name">> := <<"loss">>,
-             <<"reduce">> := <<"last">>,
-             <<"source">> := <<"series/tf/train/loss">>,
-             <<"sources">> := <<"series/tf/train/loss">>}
-          ],
-      fields :=
-          [
-           #{<<"color">> := <<"green-700">>,
-             <<"format">> := <<"0.00%">>,
-             <<"icon">> := <<"accuracy">>,
-             <<"label">> := <<"Validation Accuracy">>,
-             <<"name">> := <<"accuracy">>,
-             <<"reduce">> := <<"last">>,
-             <<"source">> := <<"series/tf/validation/accuracy">>},
-           #{<<"color">> := <<"red-700">>,
-             <<"format">> := <<"0.000">>,
-             <<"icon">> := <<"loss">>,
-             <<"label">> := <<"Loss">>,
-             <<"name">> := <<"loss">>,
-             <<"reduce">> := <<"last">>,
-             <<"source">> := <<"series/tf/train/loss">>}
-          ],
-      series :=
-          [#{<<"format">> := <<"0.00%">>,
-             <<"label">> := <<>>,
-             <<"name">> := <<"accuracy">>,
-             <<"source">> := <<"series/tf/[^/]+/accuracy">>,
-             <<"title">> := <<"Accuracy">>},
-           #{<<"format">> := <<"0.000">>,
-             <<"label">> := <<>>,
-             <<"name">> := <<"loss">>,
-             <<"source">> := <<"series/tf/[^/]+/loss">>,
-             <<"title">> := <<"Loss">>}]}
-        = guild_view_viewdef:viewdef(Model, Project),
-
     ok().
 
 %% ===================================================================
