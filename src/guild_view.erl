@@ -111,7 +111,7 @@ project_attrs(Project) ->
     #{
        title => ?bin(project_title(Project)),
        description => ?bin(project_description(Project)),
-       section_order => project_sections_order(Project)
+       sectionOrder => project_sections_order(Project)
      }.
 
 project_title(P) ->
