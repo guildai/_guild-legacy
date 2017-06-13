@@ -65,60 +65,39 @@ limitations under the License.
            active: {
                type: Boolean,
                observer: "activeChanged"
-           },
-           content: {
-               type: Array,
-               computed: "computeContent(env.project, env.selectedRun, env.runs)"
-           },
-           lastContentRun: Number
+           }
        },
 
        observers: [
-           "checkDeletedRun(env.selectedRun, env.runs, content)",
-           "refreshPage(content)"
+           "refreshPage(env.project, env.selectedRun, env.runs)"
        ],
 
-       checkDeletedRun: function(selected, runs, content) {
-           var deleted = !Guild.Run.runForId(selected, runs);
-           if (content) {
-               if (deleted) {
-                   this.$.overlay.open();
-               } else {
-                   this.$.overlay.close();
-               }
-           } else {
-               this.$.overlay.close();
-           }
-       },
-
-       activeChanged: function(val) {
-           var cs = Polymer.dom(this.root).querySelectorAll(".component");
-           cs.forEach(function(c) {
-               c.children[0].active = val;
-           });
-       },
-
-       computeContent: function(project, selected, runs) {
-           if (this.lastContentRun == selected) {
-               return this.content;
-           }
-           this.lastContentRun = selected;
+       refreshPage: function(project, selected, runs) {
            var run = Guild.Run.runForId(selected, runs);
-           if (run) {
-               var view = this.util.viewForRun(project, run);
-               return {
-                   main: this.initViewContent(view, "content", project),
-                   sidebar: this.initViewContent(view, "sidebar", project)
+           if (this.lastContentRun != run) {
+               this.lastContentRun = selected;
+               if (run) {
+                   var view = this.util.viewForRun(project, run);
+                   this.refreshTarget("main", view, "content", project);
+                   this.refreshTarget("sidebar", view, "sidebar", project);
+                   this.$.overlay.close();
+               } else {
+                   this.$.overlay.open();
                }
-           } else {
-               // Run is deleted - continue to show old content
-               // (user is informed with msg and content not accessible
-               // under an overlay)
-               return this.content;
            }
        },
 
-       initViewContent: function(section, type, project) {
+       refreshTarget: function(targetId, view, componentsAttr, project) {
+           var content = this.initContent(view, componentsAttr, project);
+           var target = this.$[targetId];
+           this.util.removeChildren(target);
+           for (var i = 0; i < content.length; i++) {
+               var row = this.initContentRow(content[i]);
+               Polymer.dom(target).appendChild(row);
+           }
+       },
+
+       initContent: function(section, type, project) {
            var refs = (section[type] || "").split(/\s+/);
            var content = [];
            for (var i = 0; i < refs.length; i++) {
@@ -139,20 +118,6 @@ limitations under the License.
            this.importHref(href);
        },
 
-       refreshPage: function(content) {
-           this.refreshTarget("main", content.main);
-           this.refreshTarget("sidebar", content.sidebar);
-       },
-
-       refreshTarget: function(targetId, content) {
-           var target = this.$[targetId];
-           this.util.removeChildren(target);
-           for (var i = 0; i < content.length; i++) {
-               var row = this.initContentRow(content[i]);
-               Polymer.dom(target).appendChild(row);
-           }
-       },
-
        initContentRow: function(content) {
            var row = this.create("div");
            row.className = "row row-20";
@@ -161,6 +126,13 @@ limitations under the License.
            row.appendChild(col);
            col.appendChild(content);
            return row;
+       },
+
+       activeChanged: function(val) {
+           var cs = Polymer.dom(this.root).querySelectorAll(".component");
+           cs.forEach(function(c) {
+               c.children[0].active = val;
+           });
        },
 
        util: new function() {
