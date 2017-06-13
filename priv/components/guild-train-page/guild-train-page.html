@@ -31,8 +31,12 @@ limitations under the License.
          margin-bottom: 20px;
      }
 
-     .component {
+     .mb-18 {
          margin-bottom: 18px;
+     }
+
+     .bottom-spaced {
+         margin-bottom: 0;
      }
     </style>
 
@@ -144,16 +148,16 @@ limitations under the License.
            var target = document.getElementById(targetId);
            this.util.removeChildren(target);
            for (var i = 0; i < content.length; i++) {
-               var row = this.contentRow(content[i]);
+               var row = this.initContentRow(content[i]);
                Polymer.dom(target).appendChild(row);
            }
        },
 
-       contentRow: function(content) {
+       initContentRow: function(content) {
            var row = this.create("div");
            row.className = "row row-20";
            var col = this.create("div");
-           col.className = "component col-12";
+           col.className = "col-12 mb-18";
            row.appendChild(col);
            col.appendChild(content);
            return row;

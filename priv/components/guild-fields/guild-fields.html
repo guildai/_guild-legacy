@@ -20,9 +20,14 @@ limitations under the License.
 <dom-module id="guild-fields">
   <template>
     <style include="guild-row-styles"></style>
+    <style>
+     .field-col {
+         margin-bottom: 18px;
+     }
+    </style>
     <div class="row row-20">
       <template is="dom-repeat" items="[[fields]]" as="field">
-        <div class$="[[fieldColClasses(fields)]]">
+        <div class$="field-col [[fieldColClasses(fields)]]">
           <guild-field env="[[env]]" field="[[field]]"></guild-field>
         </div>
       </template>
@@ -39,6 +44,12 @@ limitations under the License.
                computed: "computeFields(env.project, env.selectedRun, env.runs)"
            },
            lastFieldsRun: Number
+       },
+
+       attached: function() {
+           // Let parent know we provide our own bottom spacing
+           // (see .field-col)
+           this.parentElement.classList.add("bottom-spaced");
        },
 
        computeFields: function(project, selected, runs) {
