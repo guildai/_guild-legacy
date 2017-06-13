@@ -65,8 +65,11 @@ limitations under the License.
            var fields = Guild.Project.orderedNamedSections(
                project, "field", run.model);
            return fields.map(function(field) {
-               return Guild.Project.applyTemplate(
-                   field.template, field, project);
+               return Guild.Project.applyFieldAttrs(
+                   "template",
+                   field.template,
+                   field,
+                   project);
            });
        },
 

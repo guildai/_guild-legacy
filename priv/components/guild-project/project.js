@@ -38,9 +38,9 @@ Guild.Project = new function() {
         return sections;
     };
 
-    this.applyTemplate = function(name, target, project) {
+    this.applyFieldAttrs = function(type, name, target, project) {
         var applied = Object.assign({}, target);
-        var template = project["template" + "\t" + name];
+        var template = project[type + "\t" + name];
         if (template) {
             Object.keys(template).forEach(function(key) {
                 if (target[key] == undefined) {
