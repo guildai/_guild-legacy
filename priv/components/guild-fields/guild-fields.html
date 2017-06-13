@@ -43,6 +43,10 @@ limitations under the License.
                type: Array,
                computed: "computeFields(env.project, env.selectedRun, env.runs)"
            },
+           active: {
+               type: Boolean,
+               observer: "activeChanged"
+           },
            lastFieldsRun: Number
        },
 
@@ -76,7 +80,15 @@ limitations under the License.
            } else {
                return "col-12 col-sm-6 col-xl-4 col-xxl-3";
            }
+       },
+
+       activeChanged: function(val) {
+           var fields = Polymer.dom(this.root).querySelectorAll("guild-field");
+           fields.forEach(function(f) {
+               f.active = val;
+           });
        }
+
    });
   </script>
 </dom-module>

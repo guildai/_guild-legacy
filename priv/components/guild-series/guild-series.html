@@ -43,6 +43,10 @@ limitations under the License.
                type: Array,
                computed: "computeSeries(env.project, env.selectedRun, env.runs)"
            },
+           active: {
+               type: Boolean,
+               observer: "activeChanged"
+           },
            lastSeriesRun: Number
        },
 
@@ -63,6 +67,13 @@ limitations under the License.
            return series.map(function(chartSeries) {
                return Guild.Project.applyTemplate(
                    chartSeries.template, chartSeries, project);
+           });
+       },
+
+       activeChanged: function(val) {
+           var charts = Polymer.dom(this.root).querySelectorAll("guild-chart");
+           charts.forEach(function(c) {
+               c.active = val;
            });
        }
    });
