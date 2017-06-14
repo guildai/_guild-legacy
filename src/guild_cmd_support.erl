@@ -70,7 +70,7 @@ flag_options() ->
       [{metavar, "NAME[=VAL]"}]}].
 
 latest_run_options() ->
-    [{latest, "--latest-run",
+    [{latest, "-L, --latest-run",
       "use the most recent run",
       [flag]}].
 
