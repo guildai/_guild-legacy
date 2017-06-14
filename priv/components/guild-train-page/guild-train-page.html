@@ -74,16 +74,17 @@ limitations under the License.
 
        refreshPage: function(project, selected, runs) {
            var run = Guild.Run.runForId(selected, runs);
-           if (this.lastContentRun != run.id) {
-               this.lastContentRun = run.id;
-               if (run) {
+           if (run) {
+               if (this.lastContentRun != run.id) {
+                   this.lastContentRun = run.id;
                    var view = this.util.viewForRun(project, run);
                    this.refreshTarget("main", view, "content", project);
                    this.refreshTarget("sidebar", view, "sidebar", project);
                    this.$.overlay.close();
-               } else {
-                   this.$.overlay.open();
                }
+           } else {
+               // run was deleted
+               this.$.overlay.open();
            }
        },
 
