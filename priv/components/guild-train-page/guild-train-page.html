@@ -74,8 +74,8 @@ limitations under the License.
 
        refreshPage: function(project, selected, runs) {
            var run = Guild.Run.runForId(selected, runs);
-           if (this.lastContentRun != run) {
-               this.lastContentRun = selected;
+           if (this.lastContentRun != run.id) {
+               this.lastContentRun = run.id;
                if (run) {
                    var view = this.util.viewForRun(project, run);
                    this.refreshTarget("main", view, "content", project);
