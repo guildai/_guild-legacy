@@ -131,14 +131,9 @@ limitations under the License.
                dt.on("search.dt", this.handleSearch.bind(this));
                return dt;
            } else {
-               /* HACK We currently define fields per model, which
-               means fields can change depending on the set of
-               selected runs. Semantically the dependency on fields is
-               correct here - but until we support a proper reset of
-               the datatable, we're returning this.dt. */
-               console.warn(
-                   "fields changed but dt is not reinitialized",
-                   [fields, this.fields]);
+               // Compare fields are now defined per project so we
+               // should not get here.
+               console.warn("fields changed!", [fields, this.fields]);
                return this.dt;
            }
        },

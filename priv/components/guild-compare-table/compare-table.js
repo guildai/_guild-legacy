@@ -20,9 +20,9 @@ Guild.CompareTable = new function() {
     var fieldsDataSource = function(fields) {
         var sources = new Set();
         fields.forEach(function(field) {
-            field.sources.split(",").forEach(function(source) {
-                sources.add(source);
-            });
+            if (field.source) {
+                sources.add(field.source);
+            }
         });
         return Array.from(sources).join(",");
     };
@@ -234,11 +234,7 @@ Guild.CompareTable = new function() {
     var itemFields = function(item, fieldDefs) {
         var fields = {};
         fieldDefs.forEach(function(field, index) {
-            // field.sources here is spelled correctly - we're assuming
-            // for the time being that field.sources will only every be
-            // a single source and can be used to lookup corresponding
-            // data in item.
-            var data = item[field.sources];
+            var data = item[field.source];
             var name = "f" + index;
             fields[name] = fieldValue(data, field);
         });

@@ -25,6 +25,17 @@ Guild.Project = new function() {
         return project[type + "\t" + name] || project[type];
     };
 
+    this.orderedSections = function(project, type) {
+        var sections = [];
+        project.__meta__.sectionOrder.forEach(function(key) {
+            var keyParts = key.split("\t");
+            if (keyParts[0] == type) {
+                sections.push(project[key]);
+            }
+        });
+        return sections;
+    };
+
     this.orderedNamedSections = function(project, type, name) {
         var sections = [];
         project.__meta__.sectionOrder.forEach(function(key) {
@@ -38,13 +49,13 @@ Guild.Project = new function() {
         return sections;
     };
 
-    this.applyFieldAttrs = function(type, name, target, project) {
+    this.applySectionAttrs = function(sectionType, sectionName, target, project) {
         var applied = Object.assign({}, target);
-        var template = project[type + "\t" + name];
-        if (template) {
-            Object.keys(template).forEach(function(key) {
-                if (target[key] == undefined) {
-                    applied[key] = template[key];
+        var section = project[sectionType + "\t" + sectionName];
+        if (section) {
+            Object.keys(section).forEach(function(key) {
+                if (target[key] === undefined) {
+                    applied[key] = section[key];
                 }
             });
         }

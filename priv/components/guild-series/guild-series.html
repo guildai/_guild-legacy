@@ -65,7 +65,7 @@ limitations under the License.
            var series = Guild.Project.orderedNamedSections(
                project, "series", run.model);
            return series.map(function(chartSeries) {
-               return Guild.Project.applyFieldAttrs(
+               return Guild.Project.applySectionAttrs(
                    "template",
                    chartSeries.template,
                    chartSeries,
