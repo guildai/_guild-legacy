@@ -18,8 +18,7 @@
 
 -export([from_project_spec/3]).
 
--export([cmd_preview/1, init/1, cmd/1, opdir/1, meta/1,
-         tasks/1]).
+-export([cmd_preview/1, init/1, cmd/1, opdir/1, meta/1, tasks/1]).
 
 -record(op, {section, project, flags, cmd}).
 
@@ -34,20 +33,13 @@
 from_project_spec(Spec, Section, Project) ->
     Flags = guild_project_util:flags(Section, Project),
     CmdArgs = guild_op_support:python_cmd(Spec, Flags),
-    CmdEnv = static_env(),
+    CmdEnv = guild_op_support:static_env(),
     {?MODULE,
      #op{
         section=Section,
         project=Project,
         flags=Flags,
         cmd={CmdArgs, CmdEnv}}}.
-
-static_env() ->
-    [{"PKGHOME", guild_app:pkg_dir()},
-     {"GPU_COUNT", gpu_count_env()}].
-
-gpu_count_env() ->
-    integer_to_list(length(guild_sys:gpu_attrs())).
 
 %% ===================================================================
 %% Init (process state)
@@ -77,16 +69,13 @@ rundir(#op{section=Section, project=Project}, Started) ->
 %% Cmd
 %% ===================================================================
 
-cmd(#state{op=#op{cmd={Args, BaseEnv}}}=State) ->
+cmd(#state{op=#op{cmd={Args, BaseEnv}, project=Project}}=State) ->
     Env = run_env(State) ++ BaseEnv,
     ResolvedArgs = guild_util:resolve_args(Args, Env),
-    Cwd = project_dir(State),
+    Cwd = guild_project:dir(Project),
     {ok, ResolvedArgs, Env, Cwd, State}.
 
 run_env(#state{rundir=RunDir}) -> [{"RUNDIR", RunDir}].
-
-project_dir(#state{op=#op{project=Project}}) ->
-    guild_project:dir(Project).
 
 %% ===================================================================
 %% Meta
