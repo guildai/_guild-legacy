@@ -50,7 +50,7 @@ prepare_spec(Section) ->
       guild_project:section_attr(Section, "prepare").
 
 prepare_op_for_spec({ok, Spec}, Model, Project) when length(Spec) > 0 ->
-    guild_prepare_op:from_spec(Spec, Model, Project);
+    guild_prepare_op:from_project_spec(Spec, Model, Project);
 prepare_op_for_spec(_, Model, _) ->
     not_preparable_error(Model).
 

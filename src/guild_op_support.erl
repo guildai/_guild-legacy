@@ -1,6 +1,18 @@
 -module(guild_op_support).
 
--export([python_cmd/2, op_stream_handlers/1, required_missing/2]).
+-export([static_env/0, python_cmd/2, op_stream_handlers/1,
+         required_missing/2]).
+
+%% ===================================================================
+%% Static env
+%% ===================================================================
+
+static_env() ->
+    [{"PKGHOME", guild_app:pkg_dir()},
+     {"GPU_COUNT", gpu_count_env()}].
+
+gpu_count_env() ->
+    integer_to_list(length(guild_sys:gpu_attrs())).
 
 %% ===================================================================
 %% Op stream handlers
