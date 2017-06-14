@@ -31,7 +31,7 @@ start_link(Op) ->
 
 init([Op]) ->
     guild_proc:reg(optask, self()),
-    RunDir = guild_op:cwd(Op),
+    RunDir = guild_op:opdir(Op),
     {ok, #state{rundir=RunDir}}.
 
 handle_task(#state{rundir=RunDir}) ->

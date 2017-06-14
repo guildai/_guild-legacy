@@ -391,7 +391,7 @@ signal_exit_error(Signal) ->
 %% ===================================================================
 
 preview_op_cmd(Op) ->
-    #{args := Args, env := Env} = guild_op:cmd_info(Op),
+    {Args, Env} = guild_op:cmd_preview(Op),
     ResolvedArgs = guild_util:resolve_args(Args, Env),
     print_cmd(ResolvedArgs),
     print_env(Env).

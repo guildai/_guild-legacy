@@ -30,7 +30,7 @@ start_link(OpPid, Repeat) ->
 init([Op]) ->
     erlang:monitor(process, Op),
     guild_proc:reg(optask, self()),
-    Dir = guild_op:cwd(Op),
+    Dir = guild_op:opdir(Op),
     {ok, #state{dir=Dir, n=0}}.
 
 handle_task(#state{dir=Dir, n=N}=S) when N < ?max_writes ->

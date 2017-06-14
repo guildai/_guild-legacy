@@ -53,7 +53,7 @@ init([Op, Cmd, Opts]) ->
     {ok, init_state(Op, Cmd, Opts)}.
 
 init_state(Op, Cmd, Opts) ->
-    RunDir = guild_op:cwd(Op),
+    RunDir = guild_op:opdir(Op),
     OpOsPid = guild_op:ospid(Op),
     #state{
        op=Op,

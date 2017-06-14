@@ -46,7 +46,7 @@ init([Op]) ->
     {ok, init_state(Op)}.
 
 init_state(Op) ->
-    RunDir = guild_op:cwd(Op),
+    RunDir = guild_op:opdir(Op),
     #state{op=Op, rundir=RunDir}.
 
 %% ===================================================================

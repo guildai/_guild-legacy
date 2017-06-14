@@ -16,22 +16,22 @@
 
 -behavior(guild_op).
 
--export([from_spec/3, cmd_info/1]).
+-export([from_project_spec/3]).
 
--export([init/1, handle_task/1, handle_msg/3]).
+-export([cmd_preview/1, init/1, cmd/1, opdir/1, meta/1,
+         tasks/1]).
 
--record(op, {section, project, cmd, tasks, stream_handlers}).
+-record(op, {section, project, flags, cmd}).
 
--record(state, {op, started, rundir, cmd, exec_pid, exec_ospid,
-                stream_handlers, stdout_buf, stderr_buf}).
+-record(state, {op, started, rundir}).
 
 -define(default_stats_task_repeat, 10000).
 
 %% ===================================================================
-%% Init
+%% Init (static)
 %% ===================================================================
 
-from_spec(Spec, Section, Project) ->
+from_project_spec(Spec, Section, Project) ->
     Flags = guild_project_util:flags(Section, Project),
     CmdArgs = guild_op_support:python_cmd(Spec, Flags),
     CmdEnv = static_env(),
@@ -39,9 +39,8 @@ from_spec(Spec, Section, Project) ->
      #op{
         section=Section,
         project=Project,
-        cmd={CmdArgs, CmdEnv},
-        tasks=tasks(Flags),
-        stream_handlers=stream_handlers()}}.
+        flags=Flags,
+        cmd={CmdArgs, CmdEnv}}}.
 
 static_env() ->
     [{"PKGHOME", guild_app:pkg_dir()},
@@ -50,117 +49,57 @@ static_env() ->
 gpu_count_env() ->
     integer_to_list(length(guild_sys:gpu_attrs())).
 
-tasks(Flags) ->
-    base_tasks(Flags) ++ collector_tasks(Flags).
-
-base_tasks(Flags) ->
-    [{guild_run_status_task, start_link, []},
-     {guild_run_db_task, start_link, []},
-     {guild_log_flags_task, start_link, [Flags]},
-     {guild_log_system_attrs_task, start_link, []}].
-
-collector_tasks(Flags) ->
-    Repeat = stats_interval_opt(Flags),
-    [collector("tensorflow-collector", Repeat),
-     collector("op-stats", Repeat),
-     collector("sys-stats", Repeat),
-     collector("gpu-stats", Repeat)].
-
-stats_interval_opt(Flags) ->
-    case proplists:get_value("stats_interval", Flags) of
-        undefined -> ?default_stats_task_repeat;
-        I -> list_to_integer(I) * 1000
-    end.
-
-collector(Script, Repeat) ->
-    {guild_collector_task, start_link, [Script, [{repeat, Repeat}]]}.
-
-stream_handlers() ->
-    guild_op_support:op_stream_handlers([console, run_db_output]).
-
 %% ===================================================================
-%% Cmd info
-%% ===================================================================
-
-cmd_info(#op{cmd={Args, Env}}) ->
-    #{args => Args, env => Env}.
-
-%% ===================================================================
-%% Init
+%% Init (process state)
 %% ===================================================================
 
 init(Op) ->
-    guild_proc:reg(operation, self()),
-    process_flag(trap_exit, true),
-    {ok, init_state(Op)}.
-
-init_state(Op) ->
-    #state{
-       op=Op,
-       stdout_buf=guild_util:new_input_buffer(),
-       stderr_buf=guild_util:new_input_buffer()}.
+    {ok, #state{op=Op, started=guild_run:timestamp()}}.
 
 %% ===================================================================
-%% Task impl
+%% Cmd preview
 %% ===================================================================
 
-handle_task(State) ->
-    Next = guild_util:fold_apply(op_steps(), State),
-    {wait_for_msg, Next}.
-
-op_steps() ->
-    [fun init_app_support/1,
-     fun started_timestamp/1,
-     fun init_rundir/1,
-     fun init_cmd/1,
-     fun init_run_meta/1,
-     fun snapshot_project/1,
-     fun init_errors_log/1,
-     fun init_stream_handlers/1,
-     fun start_exec/1,
-     fun start_tasks/1].
-
-init_app_support(State) ->
-    guild_app:init_support([exec, json]),
-    State.
-
-started_timestamp(S) ->
-    S#state{started=guild_run:timestamp()}.
+cmd_preview(#op{cmd=Cmd}) -> Cmd.
 
 %% ===================================================================
-%% Rundir
+%% Op dir
 %% ===================================================================
 
-init_rundir(State) ->
-    #state{op=#op{section=Section, project=Project}, started=Started} = State,
-    RunDir = guild_rundir:path_for_project_section(Section, Project, Started),
-    guild_rundir:init(RunDir),
-    gproc:add_local_property(cwd, RunDir),
-    State#state{rundir=RunDir}.
+opdir(#state{op=Op, started=Started}=State) ->
+    RunDir = rundir(Op, Started),
+    {ok, RunDir, State#state{rundir=RunDir}}.
+
+rundir(#op{section=Section, project=Project}, Started) ->
+    guild_rundir:path_for_project_section(Section, Project, Started).
 
 %% ===================================================================
 %% Cmd
 %% ===================================================================
 
-init_cmd(#state{op=#op{cmd={Args, BaseEnv}}}=State) ->
+cmd(#state{op=#op{cmd={Args, BaseEnv}}}=State) ->
     Env = run_env(State) ++ BaseEnv,
     ResolvedArgs = guild_util:resolve_args(Args, Env),
-    State#state{cmd={ResolvedArgs, Env}}.
+    Cwd = project_dir(State),
+    {ok, ResolvedArgs, Env, Cwd, State}.
 
 run_env(#state{rundir=RunDir}) -> [{"RUNDIR", RunDir}].
 
+project_dir(#state{op=#op{project=Project}}) ->
+    guild_project:dir(Project).
+
 %% ===================================================================
-%% Run meta
+%% Meta
 %% ===================================================================
 
-init_run_meta(#state{rundir=RunDir}=State) ->
-    guild_rundir:write_attrs(RunDir, run_attrs(State)),
-    State.
+meta(State) ->
+    {ok, run_attrs(State), State}.
 
-run_attrs(#state{op=#op{section=Section}, started=Started, cmd={Cmd, Env}}) ->
+run_attrs(#state{op=#op{section=Section, cmd={CmdArgs, Env}},
+                 started=Started}) ->
     [section_name_attr(Section),
      {started, Started},
-     {cmd, format_cmd_attr(Cmd)},
+     {cmd, format_cmd_attr(CmdArgs)},
      {env, format_env_attr(Env)}].
 
 section_name_attr({[Type], _}) ->
@@ -175,104 +114,26 @@ format_env_attr(Env) ->
     [[Name, "=", Val, "\n"] || {Name, Val} <- Env].
 
 %% ===================================================================
-%% Snapshot project
-%% ===================================================================
-
-snapshot_project(#state{rundir=RunDir,
-                        op=#op{section=Section, project=Project}}=State) ->
-    Bin = guild_app:priv_bin("snapshot-project"),
-    ProjectDir = guild_project:dir(Project),
-    GuildDir = guild_rundir:guild_dir(RunDir),
-    Sources = section_sources(Section, Project),
-    guild_exec:run_quiet([Bin, ProjectDir, GuildDir, Sources]),
-    State.
-
-section_sources({SectionPath, _}, Project) ->
-    Attrs =
-        guild_project:section_attr_union(
-          Project, [SectionPath, ["project"]]),
-    proplists:get_value("sources", Attrs, "").
-
-%% ===================================================================
-%% Errors log
-%% ===================================================================
-
-init_errors_log(#state{rundir=RunDir}=State) ->
-    Path = guild_rundir:guild_file(RunDir, "errors.log"),
-    error_logger:logfile({open, Path}),
-    State.
-
-%% ===================================================================
-%% Init stream handlers
-%% ===================================================================
-
-init_stream_handlers(#state{op=#op{stream_handlers=HandlerInits}}=S) ->
-    Handlers = [Init(self()) || Init <- HandlerInits],
-    S#state{stream_handlers=Handlers}.
-
-%% ===================================================================
-%% Start exec
-%% ===================================================================
-
-start_exec(#state{cmd={Cmd, Env}}=State) ->
-    WorkingDir = project_dir(State),
-    Opts =
-        [{env, Env},
-         {cd, WorkingDir},
-         stdout, stderr],
-    {ok, Pid, OSPid} = guild_exec:run_link(Cmd, Opts),
-    gproc:add_local_property(ospid, OSPid),
-    State#state{exec_pid=Pid, exec_ospid=OSPid}.
-
-project_dir(#state{op=#op{project=Project}}) ->
-    guild_project:dir(Project).
-
-%% ===================================================================
 %% Tasks
 %% ===================================================================
 
-start_tasks(#state{op=#op{tasks=Tasks}}=State) ->
-    lists:foreach(fun start_task/1, Tasks),
-    State.
+tasks(#state{op=#op{section=Section, project=Project, flags=Flags}}=State) ->
+    Repeat = stats_interval_opt(Flags),
+    Tasks =
+        [{guild_log_flags_task, start_link, [Flags]},
+         {guild_log_system_attrs_task, start_link, []},
+         {guild_snapshot_project_task, start_link, [Section, Project]},
+         collector("tensorflow-collector", Repeat),
+         collector("op-stats", Repeat),
+         collector("sys-stats", Repeat),
+         collector("gpu-stats", Repeat)],
+    {ok, Tasks, State}.
 
-start_task(TaskSpec) ->
-    {ok, _} = guild_optask_sup:start_task(TaskSpec, self()).
+stats_interval_opt(Flags) ->
+    case proplists:get_value("stats_interval", Flags) of
+        undefined -> ?default_stats_task_repeat;
+        I -> list_to_integer(I) * 1000
+    end.
 
-%% ===================================================================
-%% Messages
-%% ===================================================================
-
-handle_msg({Stream, OSPid, Bin}, _From, #state{exec_ospid=OSPid}=State) ->
-    handle_input(Stream, Bin, State);
-handle_msg({'EXIT', Pid, Reason}, _From, #state{exec_pid=Pid}) ->
-    handle_exec_exit(Reason);
-handle_msg({stop, Timeout}, _From, State) ->
-    handle_stop(Timeout, State).
-
-handle_input(Stream, Bin, State) ->
-    {Lines, Next} = stream_input(Stream, Bin, State),
-    handle_stream_lines(Stream, Lines, State),
-    {noreply, Next}.
-
-stream_input(stdout, Bin, #state{stdout_buf=Buf}=S) ->
-    {Lines, NextBuf} = guild_util:input(Buf, Bin),
-    {Lines, S#state{stdout_buf=NextBuf}};
-stream_input(stderr, Bin, #state{stderr_buf=Buf}=S) ->
-    {Lines, NextBuf} = guild_util:input(Buf, Bin),
-    {Lines, S#state{stderr_buf=NextBuf}}.
-
-handle_stream_lines(Stream, Lines, #state{stream_handlers=Handlers}) ->
-    dispatch_to_stream_handlers({Stream, Lines}, Handlers).
-
-dispatch_to_stream_handlers(Msg, Handlers) ->
-    lists:foreach(fun(H) -> call_stream_handler(H, Msg) end, Handlers).
-
-call_stream_handler(F, Msg) when is_function(F) -> F(Msg);
-call_stream_handler({M, F, A}, Msg) -> M:F([Msg|A]).
-
-handle_exec_exit(Reason) ->
-    {stop, Reason}.
-
-handle_stop(Timeout, #state{exec_pid=Pid}=State) ->
-    exec:stop_and_wait(Pid, Timeout),
-    {stop, normal, ok, State}.
+collector(Script, Repeat) ->
+    {guild_collector_task, start_link, [Script, [{repeat, Repeat}]]}.

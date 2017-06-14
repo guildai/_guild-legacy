@@ -53,7 +53,7 @@ train_spec(Section) ->
       guild_project:section_attr(Section, "train").
 
 train_op_for_spec({ok, Spec}, Model, Project) when length(Spec) > 0 ->
-    guild_train_op:from_spec(Spec, Model, Project);
+    guild_train_op:from_project_spec(Spec, Model, Project);
 train_op_for_spec(_, Model, _) ->
     not_trainable_error(Model).
 
