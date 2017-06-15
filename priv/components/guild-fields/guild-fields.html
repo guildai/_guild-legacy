@@ -74,7 +74,9 @@ limitations under the License.
        },
 
        fieldColClasses: function(fields) {
-           if (fields.length == 2) {
+           if (fields.length == 1) {
+               return "col-12";
+           } else if (fields.length == 2) {
                return "col-12 col-sm-6";
            } else if (fields.length == 3) {
                return "col-12 col-md-4";
