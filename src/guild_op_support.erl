@@ -1,7 +1,9 @@
 -module(guild_op_support).
 
 -export([static_env/0, python_cmd/2, op_stream_handlers/1,
-         required_missing/2]).
+         required_missing/2, default_collector_tasks/1]).
+
+-define(default_stats_task_repeat, 10000).
 
 %% ===================================================================
 %% Static env
@@ -118,3 +120,23 @@ first_missing([Path|Rest]) ->
     end;
 first_missing([]) ->
     undefined.
+
+%% ===================================================================
+%% Default collector tasks
+%% ===================================================================
+
+default_collector_tasks(Flags) ->
+    Repeat = stats_interval_opt(Flags),
+    [collector("tensorflow-collector", Repeat),
+     collector("op-stats", Repeat),
+     collector("sys-stats", Repeat),
+     collector("gpu-stats", Repeat)].
+
+stats_interval_opt(Flags) ->
+    case proplists:get_value("stats_interval", Flags) of
+        undefined -> ?default_stats_task_repeat;
+        I -> list_to_integer(I) * 1000
+    end.
+
+collector(Script, Repeat) ->
+    {guild_collector_task, start_link, [Script, [{repeat, Repeat}]]}.

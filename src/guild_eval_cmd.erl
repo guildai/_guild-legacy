@@ -48,7 +48,7 @@ eval_spec(Section) ->
       guild_project:section_attr(Section, "evaluate").
 
 eval_op_for_spec({ok, Spec}, Run, Model, Project) when length(Spec) > 0 ->
-    guild_eval_op:from_spec(Spec, Run, Model, Project);
+    guild_eval_op:from_project_spec(Spec, Run, Model, Project);
 eval_op_for_spec(_, _, Model, _) ->
     not_evaluatable_error(Model).
 
