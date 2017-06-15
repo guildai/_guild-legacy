@@ -106,23 +106,13 @@ format_env_attr(Env) ->
 %% Tasks
 %% ===================================================================
 
-tasks(#state{op=#op{section=Section, project=Project, flags=Flags}}=State) ->
-    Repeat = stats_interval_opt(Flags),
+tasks(#state{op=#op{flags=Flags}}=State) ->
     Tasks =
-        [{guild_log_flags_task, start_link, [Flags]},
-         {guild_log_system_attrs_task, start_link, []},
-         {guild_snapshot_project_task, start_link, [Section, Project]},
-         collector("tensorflow-collector", Repeat),
-         collector("op-stats", Repeat),
-         collector("sys-stats", Repeat),
-         collector("gpu-stats", Repeat)],
+        train_tasks(State)
+        ++ guild_op_support:default_collector_tasks(Flags),
     {ok, Tasks, State}.
 
-stats_interval_opt(Flags) ->
-    case proplists:get_value("stats_interval", Flags) of
-        undefined -> ?default_stats_task_repeat;
-        I -> list_to_integer(I) * 1000
-    end.
-
-collector(Script, Repeat) ->
-    {guild_collector_task, start_link, [Script, [{repeat, Repeat}]]}.
+train_tasks(#state{op=#op{section=Section, project=Project, flags=Flags}}) ->
+        [{guild_log_flags_task, start_link, [Flags]},
+         {guild_log_system_attrs_task, start_link, []},
+         {guild_snapshot_project_task, start_link, [Section, Project]}].
