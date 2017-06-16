@@ -160,8 +160,8 @@ test_inifile() ->
     {error, {section_line, 3}} = P("[foo]\n\n[bar\n"),
 
     %% Malformed attr
-    {error, {attr_line, 2}} = P("[foo]\nbar"),
-    {error, {attr_line, 3}} = P("[foo]\nbar=123\nbaz"),
+    {error, {attr_line, ["bar"], 2}} = P("[foo]\nbar"),
+    {error, {attr_line, ["baz"], 3}} = P("[foo]\nbar=123\nbaz"),
 
     %% Line continuation at eof
     {error, {eof, 2}} = P("[foo]\nbar = 123 \\"),

@@ -103,7 +103,7 @@ parse_attr_line(Line, #ps{lnum=Num}) ->
     Pattern = "([^\\s]+)\\s*[:=]\\s*(.*)",
     case re:run(Line, Pattern, [{capture, all_but_first, list}]) of
         {match, [Name, Val]} -> {ok, {Name, Val}};
-        nomatch              -> {error, {attr_line, Num}}
+        nomatch              -> {error, {attr_line, Line, Num}}
     end.
 
 handle_attr_parse({ok, _}, _Rest, #ps{sec=undefined, lnum=Num}) ->
