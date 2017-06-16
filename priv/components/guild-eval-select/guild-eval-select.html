@@ -14,34 +14,40 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<link rel="import" href="../guild-eval-select/guild-eval-select.html">
-<link rel="import" href="../guild-imports/bootstrap-grid.html">
-<link rel="import" href="../guild-run-select-page-header/guild-run-select-page-header.html">
-<link rel="import" href="../guild-styles/guild-styles.html">
-
 <link rel="import" href="../paper-tabs/paper-tabs.html">
 
-<dom-module id="guild-eval-page">
+<dom-module id="guild-eval-select">
   <template>
-    <style include="guild-row-styles"></style>
     <style>
-     guild-run-select-page-header {
+     :host {
+         background-color: #fff;
+         border-bottom: 1px solid #d7d7d7;
          flex: 1;
+         display: flex;
+     }
+
+     paper-tabs {
+         font-size: 14px;
+         height: 40px;
+         color: #333;
+         --paper-tabs-selection-bar: {
+             border-bottom: 1px solid #aaa;
+         }
+     }
+
+     paper-tab {
+         --paper-tab-ink: #fff;
      }
     </style>
-
-    <div class="container-fluid">
-      <div class="row">
-        <guild-run-select-page-header env="{{env}}"></guild-run-select-page-header>
-      </div>
-      <div class="row">
-        <guild-eval-select env="{{env}}"></guild-eval-select>
-      </div>
-    </div>
+    <paper-tabs selected="0">
+      <paper-tab>Combined results</paper-tab>
+      <paper-tab>Jun 14 18:11:10</paper-tab>
+      <paper-tab>Jun 14 16:14:31</paper-tab>
+    </paper-tabs>
   </template>
   <script>
    Polymer({
-       is: "guild-eval-page",
+       is: "guild-eval-select",
 
        properties: {
            env: Object
