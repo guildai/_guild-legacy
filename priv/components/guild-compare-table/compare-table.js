@@ -135,7 +135,7 @@ Guild.CompareTable = new function() {
     };
 
     var runLink = function(val, run) {
-        var link = "/overview?run=" + run.id;
+        var link = "/train?run=" + run.id;
         return "<a href='" + link + "' class='date'>" + val + "</a>";
     };
 
