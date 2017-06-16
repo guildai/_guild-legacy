@@ -34,9 +34,12 @@ split_lines(Bin) ->
     re:split(Bin, "\r\n|\n|\r|\032", [{return, list}]).
 
 parse_lines([Line|Rest], PS) ->
-    parse_line(strip_trailing_spaces(Line), Rest, PS);
+    parse_line(strip_leading_and_trailing_spaces(Line), Rest, PS);
 parse_lines([], PS) ->
     {ok, finalize_parse(PS)}.
+
+strip_leading_and_trailing_spaces(Str) ->
+    string:strip(Str, both).
 
 parse_line("", Rest, PS) ->
     parse_lines(Rest, incr_lnum(PS));
@@ -120,7 +123,5 @@ finalize_parse(#ps{sec=undefined, secs=Acc}) ->
     lists:reverse(Acc);
 finalize_parse(#ps{sec=Sec, secs=Acc}) ->
     lists:reverse([finalize_section(Sec)|Acc]).
-
-strip_trailing_spaces(Str) -> string:strip(Str, right).
 
 incr_lnum(#ps{lnum=N}=PS) -> PS#ps{lnum=N + 1}.
