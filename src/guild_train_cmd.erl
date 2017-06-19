@@ -64,8 +64,8 @@ not_trainable_error(Model) ->
         "Try 'guild train --help' for more information.",
         [maybe_model_name(Model)])).
 
-maybe_model_name({_, []}) -> "";
-maybe_model_name({_, [Name|_]}) -> io_lib:format('~s', [Name]).
+maybe_model_name({["model"], _}) -> "";
+maybe_model_name({["model", Name|_], _}) -> io_lib:format(" '~s'", [Name]).
 
 train_or_preview(Op, Model, Project, Opts) ->
     case proplists:get_bool(preview, Opts) of
