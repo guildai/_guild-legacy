@@ -151,6 +151,17 @@ test_inifile() ->
           "  4, 5, 6, \\\n"
           "  8, 9, 10\n"),
 
+    %% Meta
+
+    {ok, [{'$meta',
+           [["var", "foo", "a sample var", "required"],
+            ["var", "bar", "another sample var"]]},
+          {["s1"], [{"v1", "123"}]}]} =
+        P("#+var foo \"a sample var\" required\n"
+          "#+var bar \"another sample var\"\n"
+          "[s1]\n"
+          "v1 = 123\n"),
+
     %% Attr without a section
     {error, {no_section_for_attr, 1}} = P("foo = bar"),
     {error, {no_section_for_attr, 3}} = P("\n\nfoo = bar"),

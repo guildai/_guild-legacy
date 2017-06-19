@@ -16,7 +16,7 @@
 
 -export([load/1, parse/1]).
 
--record(ps, {sec, secs, lnum}).
+-record(ps, {sec, secs, meta, lnum}).
 
 load(File) ->
     case file:read_file(File) of
@@ -28,7 +28,7 @@ parse(Bin) ->
     parse_lines(split_lines(Bin), init_parse_state()).
 
 init_parse_state() ->
-    #ps{sec=undefined, secs=[], lnum=1}.
+    #ps{sec=undefined, secs=[], meta=[], lnum=1}.
 
 split_lines(Bin) ->
     re:split(Bin, "\r\n|\n|\r|\032", [{return, list}]).
@@ -45,6 +45,8 @@ parse_line("", Rest, PS) ->
     parse_lines(Rest, incr_lnum(PS));
 parse_line(";"++_, Rest, PS) ->
     parse_lines(Rest, incr_lnum(PS));
+parse_line("#+"++Meta, Rest, PS) ->
+    parse_lines(Rest, incr_lnum(add_meta(Meta, PS)));
 parse_line("#"++_, Rest, PS) ->
     parse_lines(Rest, incr_lnum(PS));
 parse_line("["++_=Line, Rest, PS) ->
@@ -56,6 +58,21 @@ parse_line(Line0, Rest0, PS0) ->
         {error, Err} ->
             {error, Err}
     end.
+
+add_meta(Raw, #ps{meta=Meta}=PS) ->
+    PS#ps{meta=[parse_meta(Raw)|Meta]}.
+
+parse_meta(S) ->
+    [meta_token(Part) || Part <- split_meta(S)].
+
+split_meta(S) ->
+    Pattern = "\"(.*)\"|([^\s]+)",
+    Opts = [global, {capture, all_but_first, list}],
+    {match, Parts} = re:run(S, Pattern, Opts),
+    Parts.
+
+meta_token(["", Word]) -> Word;
+meta_token([Quoted]) -> Quoted.
 
 parse_section_line(Line, #ps{lnum=Num}) ->
     Pattern =
@@ -119,9 +136,17 @@ handle_attr_parse({error, Err}, _Rest, _PS) ->
 add_attr(Attr, #ps{sec={Name, Attrs}}=PS) ->
     PS#ps{sec={Name, [Attr|Attrs]}}.
 
-finalize_parse(#ps{sec=undefined, secs=Acc}) ->
+finalize_parse(PS) ->
+    apply_meta(finalize_sections(PS), PS).
+
+finalize_sections(#ps{sec=undefined, secs=Acc}) ->
     lists:reverse(Acc);
-finalize_parse(#ps{sec=Sec, secs=Acc}) ->
+finalize_sections(#ps{sec=Sec, secs=Acc}) ->
     lists:reverse([finalize_section(Sec)|Acc]).
+
+apply_meta(Sections, #ps{meta=[]}) ->
+    Sections;
+apply_meta(Sections, #ps{meta=Meta}) ->
+    [{'$meta', lists:reverse(Meta)}|Sections].
 
 incr_lnum(#ps{lnum=N}=PS) -> PS#ps{lnum=N + 1}.
