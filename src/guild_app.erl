@@ -41,7 +41,8 @@ supervisors() ->
      ?sup_child(guild_db_sup)].
 
 core_services() ->
-    [?core_child(guild_proc,     100),
+    [?core_child(guild_globals,  brutal_kill),
+     ?core_child(guild_proc,     100),
      ?core_child(guild_sys,      100),
      ?core_child(guild_run_db,   1000)].
 
