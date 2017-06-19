@@ -19,7 +19,10 @@ limitations under the License.
 <link rel="import" href="../guild-run-select-page-header/guild-run-select-page-header.html">
 <link rel="import" href="../guild-styles/guild-styles.html">
 
-<link rel="import" href="../paper-tabs/paper-tabs.html">
+<!-- For prototyping - cleanup -->
+<link rel="import" href="../guild-component-panel/guild-component-panel.html">
+<link rel="import" href="../vz-keyval-table/vz-keyval-table.html">
+<link rel="import" href="../vz-field/vz-field.html">
 
 <dom-module id="guild-eval-page">
   <template>
@@ -27,6 +30,14 @@ limitations under the License.
     <style>
      guild-run-select-page-header {
          flex: 1;
+     }
+
+     guild-eval-select {
+         margin-bottom: 20px;
+     }
+
+     .component {
+         margin-bottom: 18px;
      }
     </style>
 
@@ -37,6 +48,38 @@ limitations under the License.
       <div class="row">
         <guild-eval-select env="{{env}}"></guild-eval-select>
       </div>
+
+      <div class="row row-20">
+        <div id="main" class="col-lg-8 col-xl-9">
+
+          <div class="row">
+            <div class="col-12">
+              <vz-field
+                  label="Test accuracy"
+                  value="98.23%"
+                  color="green-700"
+                  icon="maps:my-location">
+              </vz-field>
+            </div>
+          </div>
+
+        </div>
+        <div id="sidebar" class="col-12 col-lg-4 col-xl-3">
+
+          <div class="component">
+            <guild-component-panel heading="Flags">
+              <vz-keyval-table data="[[flagsTEMP]]"></vz-keyval-table>
+            </guild-component-panel>
+          </div>
+
+          <div class="component">
+            <guild-component-panel heading="Attributes">
+              <vz-keyval-table data="[[attrsTEMP]]"></vz-keyval-table>
+            </guild-component-panel>
+          </div>
+
+        </div>
+      </div>
     </div>
   </template>
   <script>
@@ -44,7 +87,29 @@ limitations under the License.
        is: "guild-eval-page",
 
        properties: {
-           env: Object
+           env: Object,
+
+           flagsTEMP: {
+               value: function() {
+                   return {
+                       "Foo": "123",
+                       "Bar": "456"
+                   }
+               }
+           },
+
+           attrsTEMP: {
+               value: function() {
+                   return {
+                       "cpu_cores": "8",
+                       "cpu_model": "Intel(R) Core(TM) i7-6820HQ CPU @ 2.70GHz",
+                       "gpu0_memory": "2002 MB",
+                       "gpu0_name": "GeForce 940MX",
+                       "mem_total": "32040 MB",
+                       "tensorflow_version": "1.2.0"
+                   }
+               }
+           }
        }
    });
   </script>
