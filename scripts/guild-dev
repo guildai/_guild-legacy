@@ -31,5 +31,6 @@ export GUILD_GIT_COMMIT=`cd $SCRIPTDIR && git log -1 --oneline | cut -d' ' -f1`
 export ERL_LIBS=$SCRIPTDIR/../build/default/lib
 export EMU=beam
 export PROGNAME=$0
+export ERL_CRASH_DUMP=/dev/null
 
 exec $BINDIR/erlexec +B -boot start_clean -noshell -run guild main -extra "$@"
