@@ -56,7 +56,8 @@ init_opts() ->
       "initialize project even when DIR is non-empty (WARNING this will "
       "overwite existing files)", [flag]},
      {ignore_vars, "--ignore-vars",
-      "initialize project even when required vars are not provided", [flag]},
+      "initialize project even when required vars are not provided or "
+      "contain invalid package references", [flag]},
      {print_vars, "--print-vars", "print variables used by TEMPLATE", [flag]}].
 
 %% ===================================================================
@@ -151,6 +152,10 @@ bad_template_error(Val) ->
 print_vars_flag(Opts) ->
     proplists:get_bool(print_vars, Opts).
 
+%% ===================================================================
+%% Print vars
+%% ===================================================================
+
 print_vars(Template) ->
     lists:foreach(fun print_var/1, var_defs(Template)).
 
@@ -184,13 +189,18 @@ print_spaces(_) ->
 var_help(Attrs) ->
     proplists:get_value("help", Attrs).
 
+%% ===================================================================
+%% Init project
+%% ===================================================================
+
 init_project(Template, Args, Opts) ->
     ProjectDir = project_dir_from_args(Args),
     assert_project_dir_empty(ProjectDir, Opts),
     Vars = validated_template_vars(Args, ProjectDir, Template, Opts),
-    GuildBin = render_guild_file(Template, Vars),
+    GuildBin = render_guild_file(Template, Vars, Opts),
     maybe_copy_template_src(Template, ProjectDir),
-    write_guild_file(GuildBin, ProjectDir).
+    write_guild_file(GuildBin, ProjectDir),
+    maybe_ignored_errors_msg().
 
 project_dir_from_args([Arg|Rest]) ->
     case lists:member($=, Arg) of
@@ -314,15 +324,27 @@ handle_default_render({error, Err}, Orig) ->
     guild_cli:warn("~p~n", [Err]),
     Orig.
 
-render_guild_file(#template{project=Project}, Vars) ->
+render_guild_file(#template{project=Project}, Vars, Opts) ->
     ProjectSrc = guild_project:project_file(Project),
+    Mod = compile_guild_file(ProjectSrc),
+    render_guild_file_(Mod, Vars, Opts).
+
+compile_guild_file(ProjectSrc) ->
     Mod = guild_init_project_template,
     Opts = [{default_libraries, [?MODULE]}],
     try guild_dtl_util:compile_template(ProjectSrc, Mod, Opts) of
-        ok -> handle_render_guild_file(Mod:render(Vars))
+        ok -> Mod
     catch
         error:{template_compile, _} -> bad_template_error()
     end.
+
+bad_template_error() ->
+    guild_cli:cli_error(
+      "unable to initialize project - template contains errors").
+
+render_guild_file_(Mod, Vars, Opts) ->
+    guild_globals:put(guild_init_cmd_opts, Opts),
+    handle_render_guild_file(Mod:render(Vars)).
 
 handle_render_guild_file({ok, Bin}) ->
     strip_vars(Bin);
@@ -331,10 +353,6 @@ handle_render_guild_file({error, Msg}) ->
 
 strip_vars(Bin) ->
     guild_project_util:strip_sections(Bin, ["var"]).
-
-bad_template_error() ->
-    guild_cli:cli_error(
-      "unable to initialize project - template contains errors").
 
 maybe_copy_template_src(#template{src=undefined}, _Dest) -> ok;
 maybe_copy_template_src(#template{src=Src}, Dest) ->
@@ -347,6 +365,17 @@ write_guild_file(Bin, Dir) ->
     Path = filename:join(Dir, "Guild"),
     ok = filelib:ensure_dir(Path),
     ok = file:write_file(Path, Bin).
+
+maybe_ignored_errors_msg() ->
+    case guild_globals:get(guild_init_cmd_var_errors_ignored) of
+        {ok, true} -> ignored_errors_msg();
+        _ -> ok
+    end.
+
+ignored_errors_msg() ->
+    guild_cli:warn(
+      "WARNING: one or more errors were ignored because "
+      "'--ignore-vars' was used\n").
 
 %% ===================================================================
 %% Template support
@@ -380,12 +409,33 @@ latest_package(Val) ->
         {ok, Path} ->
             filename:basename(Path);
         {error, package} ->
-            throw(missing_package_msg(Val))
+            maybe_missing_package_error(Val)
     end.
+
+maybe_missing_package_error(Name) ->
+    case ignore_vars_global_option() of
+        true ->
+            warn_missing_package(Name),
+            "";
+        false ->
+            throw(missing_package_msg(Name))
+    end.
+
+ignore_vars_global_option() ->
+    {ok, Opts} = guild_globals:get(guild_init_cmd_opts),
+    proplists:get_bool(ignore_vars, Opts).
+
+warn_missing_package(Name) ->
+    guild_cli:warn(
+      io_lib:format(
+        "WARNING: there are no installed packages matching '~s'\n",
+        [Name])),
+    guild_globals:put(guild_init_cmd_var_errors_ignored, true).
 
 missing_package_msg(Name) ->
     io_lib:format(
-      "there are no installed packages matching '~s'",
+      "there are no installed packages matching '~s'\n"
+      "Use '--ignore-vars' to bypass this warning.",
       [Name]).
 
 latest_package_checkpoint(undefined) -> "";
@@ -394,15 +444,30 @@ latest_package_checkpoint(Val) ->
         {ok, Path} ->
             format_package_checkpoint(Path);
         {error, package} ->
-            throw(missing_package_msg(Val));
+            maybe_missing_package_error(Val);
         {error, {checkpoint, Path}} ->
-            throw(missing_checkpoint_msg(Val, Path))
+            maybe_missing_checkpoint_error(Val, Path)
     end.
 
 format_package_checkpoint(Path) ->
     Name = filename:basename(Path),
     Pkg = filename:basename(filename:dirname(Path)),
     filename:join(Pkg, Name).
+
+maybe_missing_checkpoint_error(Val, Path) ->
+    case ignore_vars_global_option() of
+        true ->
+            warn_missing_checkpoint(Val, Path),
+            "";
+        false ->
+            throw(missing_checkpoint_msg(Val, Path))
+    end.
+
+warn_missing_checkpoint(Pkg, Path) ->
+    guild_cli:warn(
+      io_lib:format(
+        "WARNING: there are no checkpoints available for ~s (using ~s)",
+        [Pkg, Path])).
 
 missing_checkpoint_msg(Pkg, Path) ->
     io_lib:format(
