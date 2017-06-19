@@ -59,6 +59,8 @@ parse_line(Line0, Rest0, PS0) ->
             {error, Err}
     end.
 
+add_meta("", PS) ->
+    PS;
 add_meta(Raw, #ps{meta=Meta}=PS) ->
     PS#ps{meta=[parse_meta(Raw)|Meta]}.
 

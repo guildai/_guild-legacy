@@ -153,6 +153,8 @@ test_inifile() ->
 
     %% Meta
 
+    {ok, []} = P("#+"),
+
     {ok, [{'$meta',
            [["var", "foo", "a sample var", "required"],
             ["var", "bar", "another sample var"]]},
@@ -195,7 +197,8 @@ test_project() ->
     M = guild_project,
 
     %% Empty project
-    {ok, []} = M:from_str(<<>>),
+    {ok, Empty} = M:from_str(<<>>),
+    Empty = [],
 
     %% Typical project
     {ok, P} =
@@ -272,6 +275,25 @@ test_project() ->
     [{"v1", "b1"}, {"v3", "b3"}] = P5Union([["b"]]),
     [{"v1", "a1"}, {"v2", "a2"}, {"v3", "b3"}] = P5Union([["a"], ["b"]]),
     [{"v1", "b1"}, {"v2", "a2"}, {"v3", "b3"}] = P5Union([["b"], ["a"]]),
+
+    %% Meta API
+
+    [] = M:meta(Empty),
+
+    {ok, P6} =
+        M:from_str(
+          "#+var foo \"sample var\"\n"
+          "#+var bar\n"
+          "#+\n"
+          "#+color red\n"),
+
+    [["var", "foo", "sample var"],
+     ["var","bar"],
+     ["color","red"]] = M:meta(P6),
+    [["var", "foo", "sample var"],
+     ["var", "bar"]] = M:meta(P6, "var"),
+    [["color","red"]] = M:meta(P6, "color"),
+    [] = M:meta(P6, "no such meta"),
 
     ok().
 

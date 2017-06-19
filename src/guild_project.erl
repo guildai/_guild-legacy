@@ -17,7 +17,8 @@
 -export([from_dir/1, from_file/1, from_str/1, dir/1, project_file/1,
          attr/3, set_attr/4, section/2, sections/2, section_name/1,
          section_attrs/2, section_attrs/1, section_attr/2,
-         section_attr/3, section_attr_union/2, apply_include/2]).
+         section_attr/3, section_attr_union/2, meta/1, meta/2,
+         apply_include/2]).
 
 %% ===================================================================
 %% Init
@@ -138,6 +139,16 @@ section_attrs_acc([{Name, _}=Attr|Rest], Project, RestPaths, Acc) ->
       lists:keystore(Name, 1, Acc, Attr));
 section_attrs_acc([], Project, RestPaths, Acc) ->
     section_attrs_acc(Project, RestPaths, Acc).
+
+%% ===================================================================
+%% Meta API
+%% ===================================================================
+
+meta(Project) ->
+    proplists:get_value('$meta', Project, []).
+
+meta(Project, Name) ->
+    [Meta || [MetaName|_]=Meta <- meta(Project), MetaName == Name].
 
 %% ===================================================================
 %% Apply include
