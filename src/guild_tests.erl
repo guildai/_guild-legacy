@@ -40,7 +40,8 @@ run() ->
     test_tensorflow_port_protocol(),
     test_tensorflow_read_image(),
     test_strip_project_sections(),
-    test_project_include().
+    test_project_include(),
+    test_globals().
 
 run(Test) ->
     guild_trace:init_from_env(os:getenv("TRACE")),
@@ -1044,3 +1045,27 @@ test_project_include() ->
     [{file, "foo"}, {["a"], [{"x", "X"}]}] = Apply(P3, T3),
 
     ok().
+
+%% ===================================================================
+%% Test globals
+%% ===================================================================
+
+test_globals() ->
+    start("globals"),
+
+    {ok, _} = application:ensure_all_started(guild),
+
+    error = guild_globals:get(foo),
+    ok = guild_globals:put(foo, 123),
+    {ok, 123} = guild_globals:get(foo),
+
+    %% Guild globals doesn't restore state after crash/restart.
+
+    crash_restart(guild_globals),
+    error = guild_globals:get(foo),
+
+    ok().
+
+crash_restart(Name) ->
+    true = exit(whereis(Name), kill),
+    timer:sleep(100).
