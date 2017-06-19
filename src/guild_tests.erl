@@ -282,15 +282,15 @@ test_project() ->
 
     {ok, P6} =
         M:from_str(
-          "#+var foo \"sample var\"\n"
+          "#+var foo \"sample var\" required \"default=1 2 3\"\n"
           "#+var bar\n"
           "#+\n"
           "#+color red\n"),
 
-    [["var", "foo", "sample var"],
+    [["var", "foo", "sample var", "required", "default=1 2 3"],
      ["var","bar"],
      ["color","red"]] = M:meta(P6),
-    [["var", "foo", "sample var"],
+    [["var", "foo", "sample var", "required", "default=1 2 3"],
      ["var", "bar"]] = M:meta(P6, "var"),
     [["color","red"]] = M:meta(P6, "color"),
     [] = M:meta(P6, "no such meta"),

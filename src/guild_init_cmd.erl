@@ -160,34 +160,35 @@ print_vars(Template) ->
     lists:foreach(fun print_var/1, var_defs(Template)).
 
 var_defs(#template{project=Project}) ->
-    guild_project:sections(Project, ["var"]).
+    [vardef(Var) || Var <- guild_project:meta(Project, "var")].
+
+vardef(["var", Name]) ->
+    #{name => Name, help => undefined, opts => []};
+vardef(["var", Name, Help]) ->
+    #{name => Name, help => Help, opts => []};
+vardef(["var", Name, Help|Opts]) ->
+    #{name => Name, help => Help, opts => Opts}.
 
 -define(help_inset, 20).
 
-print_var({["var", Name], Attrs}) ->
+print_var(#{name:=Name, help:=Help}) ->
     print_var_name(Name),
-    print_var_help(Attrs, ?help_inset - length(Name)),
+    print_var_help(Help, ?help_inset - length(Name)),
     io:format("~n").
 
 print_var_name(Name) ->
     io:format(Name).
 
-print_var_help(Attrs, Indent) ->
-    case var_help(Attrs) of
-        undefined -> ok;
-        Help ->
-            print_spaces(Indent),
-            io:format(Help)
-    end.
+print_var_help(undefined, _Indent) -> ok;
+print_var_help(Help, Indent) ->
+    print_spaces(Indent),
+    io:format(Help).
 
 print_spaces(N) when N > 0 ->
     io:format(" "),
     print_spaces(N - 1);
 print_spaces(_) ->
     ok.
-
-var_help(Attrs) ->
-    proplists:get_value("help", Attrs).
 
 %% ===================================================================
 %% Init project
@@ -261,17 +262,20 @@ validate_user_vars(Vars, Template, Opts) ->
 
 validate_user_vars(Vars, Template) ->
     VarDefs = var_defs(Template),
-    Validate = fun(Def) -> check_required_var(Def, Vars, Template) end,
+    Validate = var_validate_fun(Vars, Template),
     lists:foreach(Validate, VarDefs).
 
-check_required_var({["var", Name], Attrs}, Vars, Template) ->
-    case is_var_required(Attrs) andalso is_var_missing(Name, Vars) of
+var_validate_fun(Vars, Template) ->
+    fun(Def) -> check_required_var(Def, Vars, Template) end.
+
+check_required_var(#{name:=Name, opts:=Opts}, Vars, Template) ->
+    case is_var_required(Opts) andalso is_var_missing(Name, Vars) of
         true -> missing_required_var_error(Name, Template);
         false -> ok
     end.
 
-is_var_required(Attrs) ->
-    proplists:get_value("required", Attrs) == "yes".
+is_var_required(Opts) ->
+    lists:member("required", Opts).
 
 is_var_missing(Name, Vars) ->
     proplists:get_value(Name, Vars, undefined) == undefined.
@@ -289,20 +293,21 @@ apply_default_vars(UserVars, Template, BaseVars) ->
     ApplyMissing = fun(Def, Vars) -> apply_missing_var(Vars, Def, BaseVars) end,
     lists:foldl(ApplyMissing, UserVars, VarDefs).
 
-apply_missing_var(Vars, {["var", Name], _}=Def, BaseVars) ->
+apply_missing_var(Vars, #{name:=Name}=Def, BaseVars) ->
     case is_var_missing(Name, Vars) of
         true -> maybe_apply_default(Vars, Def, BaseVars);
         false -> Vars
     end.
 
-maybe_apply_default(Vars, {["var", Name], Attrs}, BaseVars) ->
-    case var_default(Attrs) of
+maybe_apply_default(Vars, #{name:=Name, opts:=Opts}, BaseVars) ->
+    case var_default(Opts) of
         undefined -> Vars;
         Default -> [{Name, render_default(Default, BaseVars)}|Vars]
     end.
 
-var_default(Attrs) ->
-    proplists:get_value("default", Attrs).
+var_default(["default="++Default|_]) -> Default;
+var_default([_|Rest]) -> var_default(Rest);
+var_default([]) -> undefined.
 
 render_default(Val, Vars) ->
     Mod = guild_init_var_template,
@@ -347,12 +352,9 @@ render_guild_file_(Mod, Vars, Opts) ->
     handle_render_guild_file(Mod:render(Vars)).
 
 handle_render_guild_file({ok, Bin}) ->
-    strip_vars(Bin);
+    guild_project_util:strip_meta(Bin);
 handle_render_guild_file({error, Msg}) ->
     guild_cli:cli_error(Msg).
-
-strip_vars(Bin) ->
-    guild_project_util:strip_sections(Bin, ["var"]).
 
 maybe_copy_template_src(#template{src=undefined}, _Dest) -> ok;
 maybe_copy_template_src(#template{src=Src}, Dest) ->

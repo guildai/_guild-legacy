@@ -68,7 +68,7 @@ parse_meta(S) ->
     [meta_token(Part) || Part <- split_meta(S)].
 
 split_meta(S) ->
-    Pattern = "\"(.*)\"|([^\s]+)",
+    Pattern = "\"(.*?)\"|([^\s]+)",
     Opts = [global, {capture, all_but_first, list}],
     {match, Parts} = re:run(S, Pattern, Opts),
     Parts.

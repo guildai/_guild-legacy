@@ -15,7 +15,7 @@
 -module(guild_project_util).
 
 -export([runroot/1, runroot/2, all_runroots/1, flags/2, run_model/2,
-         strip_sections/2]).
+         strip_sections/2, strip_meta/1]).
 
 -define(default_runroot, "runs").
 
@@ -148,3 +148,13 @@ strip_acc([], _StripH, _AnyH, _Stripping, Acc) ->
 
 match(Subject, Pattern) ->
     re:run(Subject, Pattern, [{capture, none}]) == match.
+
+%% ===================================================================
+%% Strip meta
+%% ===================================================================
+
+strip_meta(Bin) ->
+    [Line || Line <- split_lines(Bin), not is_meta(Line)].
+
+is_meta(Line) ->
+    re:run(Line, "^\\s*#\\+", [{capture, none}]) == match.
