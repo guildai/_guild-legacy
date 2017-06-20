@@ -100,8 +100,10 @@ project_error_msg(Error, Dir) ->
 
 project_error_msg({missing_project_file, _}, Name, Dir) ->
     missing_project_file_msg(Name, Dir);
-project_error_msg({attr_line, Line, Num}, Name, Dir) ->
-    syntax_error_msg(Line, Num, Name, Dir).
+project_error_msg({syntax, LNum}, Name, Dir) ->
+    syntax_error_msg(LNum, Name, Dir);
+project_error_msg({directive, LNum}, Name, Dir) ->
+    bad_directive_error_msg(LNum, Name, Dir).
 
 missing_project_file_msg(Name, Dir) ->
     io_lib:format(
@@ -109,13 +111,21 @@ missing_project_file_msg(Name, Dir) ->
       "Try 'guild init~s' to initialize a project or change directories.",
       [project_dir_desc(Dir), Name, project_dir_opt(Dir)]).
 
-syntax_error_msg(Line, Num, Name, Dir) ->
+syntax_error_msg(LNum, Name, Dir) ->
     Path = filename:join(Dir, Name),
     io_lib:format(
       "~s contains an error on line ~b~n"
-      "~s:~b: syntax error: ~s~n"
+      "~s:~b: syntax error~n"
       "Try editing the file or submit an issue at " ?github_repo_url,
-      [Path, Num, Path, Num, Line]).
+      [Path, LNum, Path, LNum]).
+
+bad_directive_error_msg(LNum, Name, Dir) ->
+    Path = filename:join(Dir, Name),
+    io_lib:format(
+      "~s contains an error on line ~b~n"
+      "~s:~b: unknown directive~n"
+      "Try editing the file or submit an issue at " ?github_repo_url,
+      [Path, LNum, Path, LNum]).
 
 profile_flags(Opts, Project) ->
     case proplists:get_value(profile, Opts) of
