@@ -58,7 +58,7 @@ not_preparable_error(Model) ->
     guild_cli:cli_error(
       io_lib:format(
         "section~s does not support a prepare operation\n"
-        "Try 'guild evaluate --help' for more information.",
+        "Try 'guild prepare --help' for more information.",
         [maybe_section_name(Model)])).
 
 maybe_section_name({_, []}) -> "";
