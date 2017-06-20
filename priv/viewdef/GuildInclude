@@ -107,7 +107,6 @@
   label =
   format = 0.0 b
 
-
 [template "op-cpu-percent-series"]
 
   title = Process CPU %
