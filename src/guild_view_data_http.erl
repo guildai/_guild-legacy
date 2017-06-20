@@ -154,7 +154,6 @@ parse_run_ids(Str) ->
     Tokens = string:tokens(Str, ","),
     [I || {I, []} <- lists:map(fun string:to_integer/1, Tokens)].
 
-
 runs_for_ids([], _View) -> [];
 runs_for_ids(undefined, View) ->
     guild_view:all_runs(View);

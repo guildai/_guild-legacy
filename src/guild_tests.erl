@@ -23,6 +23,7 @@
 run() ->
     guild_trace:init_from_env(os:getenv("TRACE")),
     test_inifile(),
+    test_inifile_samples(),
     test_project(),
     test_input_buffer(),
     test_proc_waiting(),
@@ -63,7 +64,7 @@ ensure_started(Mod) ->
     end.
 
 %% ===================================================================
-%% Ini file
+%% Inifile
 %% ===================================================================
 
 test_inifile() ->
@@ -226,6 +227,33 @@ test_inifile() ->
     {ok, [{["foo"], [{"bar", ""}]}]} = P("[foo]\nbar:"),
 
     ok().
+
+%% ===================================================================
+%% Inifile samples
+%% ===================================================================
+
+test_inifile_samples() ->
+    start("inifile_samples"),
+
+    Section = fun guild_project:section/2,
+    Attr = fun guild_project:section_attr/2,
+
+    PSrc = sample_inifile("Project"),
+    I1Src = sample_inifile("Include1"),
+    I2Src = sample_inifile("Include2"),
+
+    {ok, P} = inifile:load(PSrc, [I1Src, I2Src]),
+    {ok, S} = Section(P, ["field", "loss"]),
+
+    {ok, "red-700"} = Attr(S, "color"),
+    {ok, "last"} = Attr(S, "reduce"),
+    {ok, "Cross entropy"} = Attr(S, "label"),
+    {ok, "series/tf/loss"} = Attr(S, "source"),
+
+    ok().
+
+sample_inifile(Name) ->
+    guild_app:priv_dir("test") ++ "/sample-inifiles/" ++ Name.
 
 %% ===================================================================
 %% Project support

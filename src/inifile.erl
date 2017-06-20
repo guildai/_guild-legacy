@@ -14,21 +14,39 @@
 
 -module(inifile).
 
--export([load/1, parse/1]).
+-export([load/1, load/2, parse/1]).
 
 -record(ps, {sec, secs, meta, lnum}).
 
 load(File) ->
-    case file:read_file(File) of
-        {ok, Bin} -> parse(Bin);
-        {error, Err} -> {error, Err}
-    end.
+    load_files_acc([File], []).
+
+load(File, Includes) ->
+    load_files_acc(Includes ++ [File], []).
+
+load_files_acc([F|Rest], Acc) ->
+    handle_read_file(file:read_file(F), Rest, Acc);
+load_files_acc([], Acc) ->
+    {ok, Acc}.
+
+handle_read_file({ok, Bin}, Rest, Acc) ->
+    handle_parsed_file(parse(Bin, Acc), Rest);
+handle_read_file({error, Err}, _Rest, _Acc) ->
+    {error, Err}.
+
+handle_parsed_file({ok, Sections}, Rest) ->
+    load_files_acc(Rest, Sections);
+handle_parsed_file({error, Err}, _Rest) ->
+    {error, Err}.
 
 parse(Bin) ->
-    parse_lines(split_lines(Bin), init_parse_state()).
+    parse(Bin, []).
 
-init_parse_state() ->
-    #ps{sec=undefined, secs=[], meta=[], lnum=1}.
+parse(Bin, Sections0) ->
+    parse_lines(split_lines(Bin), init_parse_state(Sections0)).
+
+init_parse_state(Secs) ->
+    #ps{sec=undefined, secs=Secs, meta=[], lnum=1}.
 
 split_lines(Bin) ->
     re:split(Bin, "\r\n|\n|\r|\032", [{return, list}]).
