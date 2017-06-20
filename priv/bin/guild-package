@@ -2,6 +2,10 @@
 
 set -o pipefail
 
+if [ ! -z "${DEBUG:-}" ]; then
+    set -x
+fi
+
 realpath() {
     if [ "$(uname -s)" = "Darwin" ]; then
         perl -e 'use Cwd "abs_path";print abs_path(shift)' "$1"

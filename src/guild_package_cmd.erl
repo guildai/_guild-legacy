@@ -35,7 +35,8 @@ package_opts() ->
      {skip_archive, "--skip-archive",
       "Don't create package archive", [flag]},
      {clean, "-c, --clean",
-      "Removes sources before building", [flag]}].
+      "Removes sources before building", [flag]},
+     {debug, "--debug", "enable debugging", [hidden, flag]}].
 
 %% ===================================================================
 %% Main
@@ -62,5 +63,6 @@ cmd_env(Opts) ->
        {skip_sources, "SKIP_SOURCES", "1"},
        {skip_package, "SKIP_PACKAGE", "1"},
        {skip_archive, "SKIP_ARCHIVE", "1"},
-       {clean, "CLEAN", "1"}],
+       {clean, "CLEAN", "1"},
+       {debug, "DEBUG", "1"}],
       Opts).
