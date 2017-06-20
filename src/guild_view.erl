@@ -70,18 +70,13 @@ handle_msg({F, A}, _From, State) ->
 %% ===================================================================
 
 project_(State) ->
-    format_project(apply_viewdef_include(load_project(State))).
+    format_project(load_project(State)).
 
 load_project(#state{pdir=Dir}) ->
-    {ok, Project} = guild_project:from_dir(Dir),
+    ProjectSrc = filename:join(Dir, "Guild"),
+    ViewdefInclude = guild_include_path(),
+    {ok, Project} = inifile:load(ProjectSrc, [ViewdefInclude]),
     Project.
-
-apply_viewdef_include(P) ->
-    guild_project:apply_include(P, viewdef_project_include()).
-
-viewdef_project_include() ->
-    {ok, Include} = guild_project:from_file(guild_include_path()),
-    Include.
 
 guild_include_path() ->
     filename:join(guild_app:priv_dir("viewdef"), "GuildInclude").
@@ -102,7 +97,8 @@ section_path_key(Path) ->
 
 format_section_attrs(Attrs) ->
     AttrsBin = [{list_to_binary(K), list_to_binary(V)} || {K, V} <- Attrs],
-    maps:from_list(AttrsBin).
+    %% Reverse to maintain expected proplist lookup order
+    maps:from_list(lists:reverse(AttrsBin)).
 
 apply_project_meta(P, Formatted) ->
     Formatted#{<<"__meta__">> => project_attrs(P)}.
