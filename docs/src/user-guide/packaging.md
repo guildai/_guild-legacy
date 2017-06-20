@@ -49,6 +49,11 @@ dataset.
 
 #### Identify a candidate project
 
+Candidate projects may be in early stages, such as a published paper
+or blog post about a novel architecture or approach, or they may be
+fully developed TensorFlow scripts, such as those in the {% link
+https://github.com/tensorflow/models %}TensorFlow Models{% endlink %}.
+
 #### Name the package
 
 Name the package using generally accepted terms that are as short as
