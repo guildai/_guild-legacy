@@ -104,7 +104,7 @@ add_section(New, #ps{sec=Cur, secs=Secs}=PS) ->
 finalize_section({Name, Attrs}) ->
     {Name, Attrs}.
 
-parse_directive("attrs"++Attrs) ->
+parse_directive("attrs "++Attrs) ->
     case parse_keyspec(Attrs) of
         {ok, Keys} -> {ok, {attrs, Keys}};
         {error, Err} -> {error, Err}
