@@ -48,17 +48,4 @@ Guild.Project = new function() {
         });
         return sections;
     };
-
-    this.applySectionAttrs = function(sectionType, sectionName, target, project) {
-        var applied = Object.assign({}, target);
-        var section = project[sectionType + "\t" + sectionName];
-        if (section) {
-            Object.keys(section).forEach(function(key) {
-                if (target[key] === undefined) {
-                    applied[key] = section[key];
-                }
-            });
-        }
-        return applied;
-    };
 };

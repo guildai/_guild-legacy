@@ -62,15 +62,8 @@ limitations under the License.
            }
            this.lastFieldsRun = selected;
            var run = Guild.Run.runForId(selected, runs);
-           var fields = Guild.Project.orderedNamedSections(
+           return Guild.Project.orderedNamedSections(
                project, "field", run.model);
-           return fields.map(function(field) {
-               return Guild.Project.applySectionAttrs(
-                   "template",
-                   field.template,
-                   field,
-                   project);
-           });
        },
 
        fieldColClasses: function(fields) {

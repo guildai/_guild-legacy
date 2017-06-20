@@ -91,21 +91,7 @@ limitations under the License.
            if (project === undefined) {
                return undefined;
            }
-           var fieldsRaw = Guild.Project.orderedSections(
-               project, "compare-field");
-           return fieldsRaw.map(function(raw) {
-               var fieldRefResolved = Guild.Project.applySectionAttrs(
-                   "field",
-                   raw.fieldref,
-                   raw,
-                   project);
-               return Guild.Project.applySectionAttrs(
-                   "template",
-                   fieldRefResolved.template,
-                   fieldRefResolved,
-                   project);
-           });
-           return fields;
+           return Guild.Project.orderedSections(project, "compare-field");
        },
 
        computeTableDataReady: function(fields) {

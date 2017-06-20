@@ -62,15 +62,8 @@ limitations under the License.
            }
            this.lastSeriesRun = selected;
            var run = Guild.Run.runForId(selected, runs);
-           var series = Guild.Project.orderedNamedSections(
+           return Guild.Project.orderedNamedSections(
                project, "series", run.model);
-           return series.map(function(chartSeries) {
-               return Guild.Project.applySectionAttrs(
-                   "template",
-                   chartSeries.template,
-                   chartSeries,
-                   project);
-           });
        },
 
        activeChanged: function(val) {
