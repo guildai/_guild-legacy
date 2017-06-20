@@ -50,11 +50,13 @@ parse_line("#+"++Meta, Rest, PS) ->
 parse_line("#"++_, Rest, PS) ->
     parse_lines(Rest, incr_lnum(PS));
 parse_line("["++_=Line, Rest, PS) ->
-    handle_section_parse(parse_section_line(Line, PS), Rest, PS);
+    handle_section_parse(parse_section_line(Line), Rest, PS);
+parse_line("@"++Directive, Rest, PS) ->
+    handle_directive(parse_directive(Directive), Rest, PS);
 parse_line(Line0, Rest0, PS0) ->
     case read_line_continuations(Line0, Rest0, PS0) of
         {ok, {Line, Rest, PS}} ->
-            handle_attr_parse(parse_attr_line(Line, PS), Rest, PS);
+            handle_attr_parse(parse_attr_line(Line), Rest, PS);
         {error, Err} ->
             {error, Err}
     end.
@@ -76,21 +78,23 @@ split_meta(S) ->
 meta_token(["", Word]) -> Word;
 meta_token([Quoted]) -> Quoted.
 
-parse_section_line(Line, #ps{lnum=Num}) ->
-    Pattern =
-        "^\\[\\s*([^ ]+)"
-        "(?:\\s+\"(.+?)\")?"
-        "(?:\\s+\"(.+?)\")?"
-        "\\s*]$",
-    case re:run(Line, Pattern, [{capture, all_but_first, list}]) of
+-define(
+   section_pattern,
+   "^\\[\\s*([^ ]+)"
+   "(?:\\s+\"(.+?)\")?"
+   "(?:\\s+\"(.+?)\")?"
+   "\\s*]$").
+
+parse_section_line(Line) ->
+    case re:run(Line, ?section_pattern, [{capture, all_but_first, list}]) of
         {match, Keys} -> {ok, {Keys, []}};
-        nomatch -> {error, {section_line, Num}}
+        nomatch -> {error, syntax}
     end.
 
 handle_section_parse({ok, Section}, Rest, PS) ->
     parse_lines(Rest, incr_lnum(add_section(Section, PS)));
-handle_section_parse({error, Err}, _Rest, _PS) ->
-    {error, Err}.
+handle_section_parse({error, syntax}, _Rest, #ps{lnum=LNum}) ->
+    {error, {syntax, LNum}}.
 
 add_section(New, #ps{sec=undefined}=PS) ->
     PS#ps{sec=New};
@@ -98,7 +102,48 @@ add_section(New, #ps{sec=Cur, secs=Secs}=PS) ->
     PS#ps{sec=New, secs=[finalize_section(Cur)|Secs]}.
 
 finalize_section({Name, Attrs}) ->
-    {Name, lists:reverse(Attrs)}.
+    {Name, Attrs}.
+
+parse_directive("attrs"++Attrs) ->
+    case parse_keyspec(Attrs) of
+        {ok, Keys} -> {ok, {attrs, Keys}};
+        {error, Err} -> {error, Err}
+    end;
+parse_directive(_) ->
+    {error, directive}.
+
+parse_keyspec(Spec) ->
+    Line = ["[", Spec, "]"],
+    case re:run(Line, ?section_pattern, [{capture, all_but_first, list}]) of
+        {match, Keys} -> {ok, Keys};
+        nomatch -> {error, syntax}
+    end.
+
+handle_directive({ok, {attrs, Keys}}, Rest, PS) ->
+    handle_attrs_directive(Keys, Rest, PS);
+handle_directive({error, syntax}, _Rest, #ps{lnum=LNum}) ->
+    {error, {syntax, LNum}};
+handle_directive({error, directive}, _Rest, #ps{lnum=LNum}) ->
+    {error, {directive, LNum}}.
+
+handle_attrs_directive(_Keys, _Rest, #ps{sec=undefined, lnum=LNum}) ->
+    {error, {no_section_for_attrs_directive, LNum}};
+handle_attrs_directive(Keys, Rest, #ps{sec=Sec, secs=Secs}=PS) ->
+    NextSec = apply_attrs(Keys, Sec, Secs),
+    parse_lines(Rest, incr_lnum(PS#ps{sec=NextSec})).
+
+apply_attrs(Keys, Sec, Secs) ->
+    case find_section(Keys, Secs) of
+        {ok, {_, Attrs}} -> apply_attrs(Attrs, Sec);
+        error -> Sec
+    end.
+
+find_section(Keys, [{Keys, _}=S|_]) -> {ok, S};
+find_section(Keys, [_|Rest]) -> find_section(Keys, Rest);
+find_section(_, []) -> error.
+
+apply_attrs(NewAttrs, {Keys, CurAttrs}) ->
+    {Keys, NewAttrs ++ CurAttrs}.
 
 read_line_continuations(Line, Rest, PS) ->
     {ok, Pattern} = re:compile("(.*?)\\\\$"),
@@ -121,19 +166,19 @@ handle_line_continuation(_Part, [], #ps{lnum=Num}, _Pattern, _Acc) ->
 finalize_line_continuation(Line, Acc, Rest, PS) ->
     {ok, {lists:reverse([Line|Acc]), Rest, PS}}.
 
-parse_attr_line(Line, #ps{lnum=Num}) ->
+parse_attr_line(Line) ->
     Pattern = "([^\\s]+)\\s*[:=]\\s*(.*)",
     case re:run(Line, Pattern, [{capture, all_but_first, list}]) of
         {match, [Name, Val]} -> {ok, {Name, Val}};
-        nomatch              -> {error, {attr_line, Line, Num}}
+        nomatch -> error
     end.
 
-handle_attr_parse({ok, _}, _Rest, #ps{sec=undefined, lnum=Num}) ->
-    {error, {no_section_for_attr, Num}};
+handle_attr_parse({ok, _}, _Rest, #ps{sec=undefined, lnum=LNum}) ->
+    {error, {no_section_for_attr, LNum}};
 handle_attr_parse({ok, Attr}, Rest, PS) ->
     parse_lines(Rest, incr_lnum(add_attr(Attr, PS)));
-handle_attr_parse({error, Err}, _Rest, _PS) ->
-    {error, Err}.
+handle_attr_parse(error, _Rest, #ps{lnum=LNum}) ->
+    {error, {syntax, LNum}}.
 
 add_attr(Attr, #ps{sec={Name, Attrs}}=PS) ->
     PS#ps{sec={Name, [Attr|Attrs]}}.

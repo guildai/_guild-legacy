@@ -82,8 +82,20 @@ test_inifile() ->
         P("[foo]\n"
           "bar = 123\n"),
 
+    %% Last attr appears first
+    {ok, P1} =
+        P("[foo]\n"
+          "a = 1\n"
+          "a = 2\n"),
+    [{["foo"], [{"a", "2"}, {"a", "1"}]}] = P1,
+
+    %% This is so that last defined is read using keyfind
+
+    [{_, Attrs1}] = P1,
+    {"a", "2"} = lists:keyfind("a", 1, Attrs1),
+
     %% Single section, two attrs
-    {ok, [{["foo"], [{"bar", "123"}, {"baz", "456"}]}]} =
+    {ok, [{["foo"], [{"baz", "456"}, {"bar", "123"}]}]} =
         P("[foo]\n"
           "bar = 123\n"
           "baz = 456"),
@@ -99,7 +111,7 @@ test_inifile() ->
           "a1 = A1\n"),
 
     %% Single section, two attrs, various white space
-    {ok, [{["foo"], [{"bar", "123"}, {"baz", "456"}]}]} =
+    {ok, [{["foo"], [{"baz", "456"}, {"bar", "123"}]}]} =
         P("\n"
           "[  foo  ]\n"
           "\n"
@@ -109,11 +121,11 @@ test_inifile() ->
 
     %% Multiple sections, multiple values
     {ok, [{["s-1"],
-           [{"a-1", "123"},
-            {"a-2", "456"}]},
+           [{"a-2", "456"},
+            {"a-1", "123"}]},
           {["s-2"],
-           [{"a-1", "789"},
-            {"a-2", "012"}]}]} =
+           [{"a-2", "012"},
+            {"a-1", "789"}]}]} =
         P("[s-1]\n"
           "a-1 = 123\n"
           "a-2 = 456\n"
@@ -122,7 +134,7 @@ test_inifile() ->
           "a-2 = 012\n"),
 
     %% Alternate attr delimiter (':')
-    {ok, [{["foo"], [{"bar", "123"}, {"baz", "456"}]}]} =
+    {ok, [{["foo"], [{"baz", "456"}, {"bar", "123"}]}]} =
         P("[foo]\n"
           "bar: 123\n"
           "baz: 456"),
@@ -140,8 +152,8 @@ test_inifile() ->
 
     %% Line continuation
     {ok, [{["foo"],
-           [{"bar","1       2       3"},
-            {"baz","4, 5, 6,   8, 9, 10"}]}]} =
+           [{"baz","4, 5, 6,   8, 9, 10"},
+            {"bar","1       2       3"}]}]} =
         P("[foo]\n"
           "bar = 1 \\\n"
           "      2 \\\n"
@@ -164,18 +176,46 @@ test_inifile() ->
           "[s1]\n"
           "v1 = 123\n"),
 
+    %% Attrs directive
+
+    {ok, [{["template", "foo"],
+           [{"b", "2"},
+            {"a", "1"}]},
+          {["s1"],
+           [{"b", "3"},
+            {"b", "2"},
+            {"a", "1"}]}]} =
+        P("[template \"foo\"]\n"
+          "a = 1\n"
+          "b = 2\n"
+          "[s1]\n"
+          "@attrs template \"foo\"\n"
+          "b = 3\n"),
+
+    %% Reference an attrs section that doesn't exist
+
+    {ok, [{["foo"], [{"b","2"}, {"a","1"}]}]} =
+        P("[foo]\n"
+          "@attrs template \"doesn't exist\"\n"
+          "a = 1\n"
+          "b = 2\n"),
+
     %% Attr without a section
     {error, {no_section_for_attr, 1}} = P("foo = bar"),
     {error, {no_section_for_attr, 3}} = P("\n\nfoo = bar"),
 
     %% Malformed section
-    {error, {section_line, 1}} = P("[foo\n"),
-    {error, {section_line, 1}} = P("[foo bar]\n"),
-    {error, {section_line, 3}} = P("[foo]\n\n[bar\n"),
+    {error, {syntax, 1}} = P("[foo\n"),
+    {error, {syntax, 1}} = P("[foo bar]\n"),
+    {error, {syntax, 3}} = P("[foo]\n\n[bar\n"),
 
     %% Malformed attr
-    {error, {attr_line, ["bar"], 2}} = P("[foo]\nbar"),
-    {error, {attr_line, ["baz"], 3}} = P("[foo]\nbar=123\nbaz"),
+    {error, {syntax, 2}} = P("[foo]\nbar"),
+    {error, {syntax, 3}} = P("[foo]\nbar=123\nbaz"),
+
+    %% Unsupported directives
+    {error, {directive, 1}} = P("@foo\n"),
+    {error, {directive, 3}} = P("\n\n@foo\n"),
 
     %% Line continuation at eof
     {error, {eof, 2}} = P("[foo]\nbar = 123 \\"),
@@ -294,6 +334,47 @@ test_project() ->
      ["var", "bar"]] = M:meta(P6, "var"),
     [["color","red"]] = M:meta(P6, "color"),
     [] = M:meta(P6, "no such meta"),
+
+    ok().
+
+%% ===================================================================
+%% Project attrs directive
+%% ===================================================================
+
+test_project_attrs_directive() ->
+    start("project_attrs_directive"),
+
+    M = guild_project,
+
+    Src =
+        "[template \"summary-field\"]\n"
+        "\n"
+        "@attrs template \"summary-field\"\n"
+        "label =\n"
+        "icon = default\n"
+        "color = gray-500\n"
+        "reduce = last\n"
+        "\n"
+        "[template \"loss-field\"]\n"
+        "\n"
+        "@attrs template \"summary-field\"\n"
+        "label = Loss\n"
+        "icon = entropy\n"
+        "color = blue-700\n"
+        "\n"
+        "[field \"loss\"]\n"
+        "\n"
+        "@attrs template \"loss-field\"\n"
+        "label = Cross entropy\n"
+        "source = series/tf/loss\n",
+    {ok, P} = M:from_str(Src),
+    {ok, S} = M:section(P, ["field", "loss"]),
+
+    {ok, "Cross entropy"} = M:section_attr(S, "label"),
+    {ok, "entropy"} = M:section_attr(S, "icon"),
+    {ok, "blue-700"} = M:section_attr(S, "color"),
+    {ok, "last"} = M:section_attr(S, "reduce"),
+    {ok, "series/tf/loss"} = M:section_attr(S, "source"),
 
     ok().
 
