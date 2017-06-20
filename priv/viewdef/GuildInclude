@@ -21,6 +21,12 @@
 
   element = guild-series
 
+  extra_series_templates = \
+    op-cpu-percent-series \
+    op-memory-series \
+    gpu-percent-series \
+    gpu-memory-series
+
 [component "output"]
 
   element = guild-output

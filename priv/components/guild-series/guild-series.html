@@ -62,8 +62,9 @@ limitations under the License.
            }
            this.lastSeriesRun = selected;
            var run = Guild.Run.runForId(selected, runs);
-           return Guild.Project.orderedNamedSections(
-               project, "series", run.model);
+           var projectSeries = this.util.projectSeries(project, run);
+           var extraSeries = this.util.extraSeries(project);
+           return projectSeries.concat(extraSeries);
        },
 
        activeChanged: function(val) {
@@ -71,6 +72,31 @@ limitations under the License.
            charts.forEach(function(c) {
                c.active = val;
            });
+       },
+
+       util: new function() {
+           this.projectSeries = function(project, run) {
+               return Guild.Project.orderedNamedSections(
+                   project, "series", run.model);
+           };
+
+           this.extraSeries = function(project) {
+               var series = [];
+               var componentDef = Guild.Project.namedSection(
+                   project, "component", "series");
+               if (componentDef) {
+                   var names = (componentDef.extra_series_templates || "").split(/\s+/);
+                   for (var i = 0; i < names.length; i++) {
+                       var template = Guild.Project.namedSection(
+                           project, "template", names[i]);
+                       console.log("template", names[i], template);
+                       if (template) {
+                           series.push(template);
+                       }
+                   }
+               }
+               return series;
+           };
        }
    });
   </script>
