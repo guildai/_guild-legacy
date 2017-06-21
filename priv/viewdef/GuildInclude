@@ -20,12 +20,11 @@
 [component "series"]
 
   element = guild-series
-
   extra_series_templates = \
-    op-cpu-percent-series \
-    op-memory-series \
-    gpu-percent-series \
-    gpu-memory-series
+      op-cpu-percent-series \
+      op-memory-series \
+      gpu-percent-series \
+      gpu-memory-series
 
 [component "output"]
 
@@ -74,6 +73,14 @@
   reduce = last
   format = 0.0000
 
+[template "learning-rate-field"]
+
+  color = green-500
+  icon = maps:directions-walk
+  label = Learning rate
+  reduce = last
+  format = 0.0000
+
 [template "steps-field"]
 
   color = blue-700
@@ -105,6 +112,12 @@
   title = Accuracy
   label =
   format = 0.00%
+
+[template "learning-rate-series"]
+
+  title = Learning rate
+  label =
+  format = 0.0000
 
 [template "percent-util-series"]
 
