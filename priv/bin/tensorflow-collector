@@ -64,8 +64,14 @@ def add_scalars_from_summary(summary, run, event, data):
                 value.simple_value, data)
 
 def add_scalar(run, tag, time, step, value, data):
-    vals = data.setdefault("tf/" + run + "/" + tag, [])
+    vals = data.setdefault(tf_tag_path(run, tag), [])
     vals.append([int(time * 1000), step, legal_json(value)])
+
+def tf_tag_path(run, tag):
+    if run and run != ".":
+        return "tf/" + run + "/" + tag
+    else:
+        return "tf/" + tag
 
 def legal_json(val):
     if val != val: # test for float('nan')
