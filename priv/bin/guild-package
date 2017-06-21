@@ -15,6 +15,8 @@ realpath() {
 }
 
 project="$(realpath $1)"
+srcdir="$(realpath ${ALT_SRCDIR:-$project/src})"
+pkgdir="$project/pkg"
 
 ###################################################################
 # Helpers
@@ -102,7 +104,6 @@ maybe-sources() {
 }
 
 srcdir-init() {
-    srcdir="$(realpath ${ALT_SRCDIR:-$project/src})"
     if [ ! -z "${CLEAN:-}" ]; then
         echo "Cleaning sources"
         rm -rf "$srcdir"
@@ -278,7 +279,6 @@ maybe-package() {
 }
 
 pkgdir-init() {
-    pkgdir="$project/pkg"
     if [ -e "$pkgdir" ]; then
         echo "Removing package directory $pkgdir"
         rm -rf "$pkgdir"
