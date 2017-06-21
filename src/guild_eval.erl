@@ -17,3 +17,9 @@
 %% Represents an evaluation operation for a run.
 
 -module(guild_eval).
+
+-export([is_eval/1]).
+
+is_eval(Dir) ->
+    %% Use guild_run:is_run/1 as it's the same structural test.
+    guild_run:is_run(Dir).

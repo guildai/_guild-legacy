@@ -43,11 +43,13 @@ parser_commands() ->
     parser_commands(
       ["check",
        "cmds-json",
+       "delete-eval",
        "delete-run",
        "evaluate",
        "init",
        "install",
        "list-attrs",
+       "list-evals",
        "list-models",
        "list-packages",
        "list-runs",
@@ -66,14 +68,15 @@ parser_commands(Names) ->
 
 cmd_info("check")       -> {guild_check_cmd, "check Guild setup"};
 cmd_info("cmds-json")   -> {guild_cmds_json_cmd, "commands JSON (hidden)"};
+cmd_info("delete-eval") -> {guild_delete_eval_cmd, "deletes an evaluation"};
 cmd_info("delete-run")  -> {guild_delete_run_cmd, "deletes a run"};
 cmd_info("evaluate")    -> {guild_eval_cmd, "evaluate a trained model"};
 cmd_info("init")        -> {guild_init_cmd, "initialize a Guild project"};
 cmd_info("install")     -> {guild_install_cmd, "install a Guild package"};
 cmd_info("list-attrs")  -> {guild_list_attrs_cmd, "list run attributes"};
+cmd_info("list-evals")  -> {guild_list_evals_cmd, "list run evaluations"};
 cmd_info("list-models") -> {guild_list_models_cmd, "list project models"};
-cmd_info("list-packages") ->
-    {guild_list_packages_cmd, "list installed packages"};
+cmd_info("list-packages") -> {guild_list_packages_cmd, "list installed packages"};
 cmd_info("list-runs")   -> {guild_list_runs_cmd, "list project runs"};
 cmd_info("list-series") -> {guild_list_series_cmd, "list run series names"};
 cmd_info("package")     -> {guild_package_cmd, "create a Guild package"};
