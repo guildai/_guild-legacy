@@ -61,16 +61,28 @@ github-path() {
 }
 
 ###################################################################
-# Source dir
+# Packager
 ###################################################################
 
-srcdir-init() {
-    srcdir="$(realpath ${ALT_SRCDIR:-$project/src})"
-    if [ ! -z "${CLEAN:-}" ]; then
-        echo "Cleaning sources"
-        rm -rf "$srcdir"
+try-packager-init() {
+    local packager=${package_packager:-}
+    if [ -f "$packager" ]; then
+        echo "Using $packager"
+        source "$project/packager"
     fi
-    mkdir -p "$srcdir"
+}
+
+packager-call() {
+    local name=$1
+    local default=${2:-}
+    if type -t $name > /dev/null; then
+        echo "Running $name"
+        pushd-quiet "$srcdir"
+        eval $name
+        popd-quiet
+    elif [ ! -z $default ]; then
+        eval $default
+    fi
 }
 
 ###################################################################
@@ -79,12 +91,23 @@ srcdir-init() {
 
 maybe-sources() {
     if [ -z "${SKIP_SOURCES:-}" ]; then
+        srcdir-init
         sources-download
         sources-check
         sources-extract
+        sources-prepare
     else
         echo "Skipping sources"
     fi
+}
+
+srcdir-init() {
+    srcdir="$(realpath ${ALT_SRCDIR:-$project/src})"
+    if [ ! -z "${CLEAN:-}" ]; then
+        echo "Cleaning sources"
+        rm -rf "$srcdir"
+    fi
+    mkdir -p "$srcdir"
 }
 
 #------------------------------------------------------------------
@@ -229,6 +252,15 @@ file-source-copy() {
     cp "$file" "$srcdir/"
 }
 
+#------------------------------------------------------------------
+# Extract
+#------------------------------------------------------------------
+
+sources-prepare() {
+    if [ -z "${SKIP_SOURCES:-}" ]; then
+        packager-call prepare
+    fi
+}
 
 ###################################################################
 # Package
@@ -237,7 +269,8 @@ file-source-copy() {
 maybe-package() {
     if [ -z "${SKIP_PACKAGE:-}" ]; then
         pkgdir-init
-        packager-run
+        packager-call build
+        packager-call package default-package
         package-finalize
     else
         echo "Skipping package"
@@ -251,34 +284,6 @@ pkgdir-init() {
         rm -rf "$pkgdir"
     fi
     mkdir -p "$pkgdir"
-}
-
-packager-run() {
-    maybe-packager-init
-    packager-call prepare
-    packager-call build
-    packager-call package default-package
-}
-
-maybe-packager-init() {
-    local packager=${package_packager:-}
-    if [ -f "$packager" ]; then
-        echo "Using $packager"
-        source "$project/packager"
-    fi
-}
-
-packager-call() {
-    local name=$1
-    local default=${2:-}
-    if type -t $name > /dev/null; then
-        echo "Running $name"
-        pushd-quiet "$srcdir"
-        eval $name
-        popd-quiet
-    elif [ ! -z $default ]; then
-        eval $default
-    fi
 }
 
 default-package() {
@@ -312,7 +317,7 @@ package-archive() {
 # Main
 ###################################################################
 
-srcdir-init
+try-packager-init
 maybe-sources
 maybe-package
 maybe-archive
