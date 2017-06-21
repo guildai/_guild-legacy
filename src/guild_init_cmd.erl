@@ -173,22 +173,16 @@ vardef(["var", Name, Help|Opts]) ->
 
 print_var(#{name:=Name, help:=Help}) ->
     print_var_name(Name),
-    print_var_help(Help, ?help_inset - length(Name)),
-    io:format("~n").
+    print_var_help(Help, ?help_inset - length(Name) + 1),
+    guild_cli:out("\n").
 
 print_var_name(Name) ->
-    io:format(Name).
+    guild_cli:out(Name).
 
 print_var_help(undefined, _Indent) -> ok;
 print_var_help(Help, Indent) ->
-    print_spaces(Indent),
-    io:format(Help).
-
-print_spaces(N) when N > 0 ->
-    io:format(" "),
-    print_spaces(N - 1);
-print_spaces(_) ->
-    ok.
+    guild_cmd_support:cli_out_spaces(Indent),
+    guild_cli:out(Help).
 
 %% ===================================================================
 %% Init project

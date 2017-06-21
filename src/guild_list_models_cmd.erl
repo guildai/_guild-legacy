@@ -40,5 +40,22 @@ print_models(Models) ->
     lists:foreach(fun print_model/1, Models).
 
 print_model(M) ->
+    Pos = print_model_name(M),
+    maybe_print_model_desc(M, Pos),
+    guild_cli:out("\n").
+
+print_model_name(M) ->
     Name = guild_model:name_for_project_section(M, "?"),
-    guild_cli:out(io_lib:format("~s~n", [Name])).
+    guild_cli:out(io_lib:format("~s", [Name])),
+    length(Name).
+
+-define(desc_inset, 20).
+
+maybe_print_model_desc(M, Pos) ->
+    case guild_project:section_attr(M, "description") of
+        {ok, Desc} ->
+            guild_cmd_support:cli_out_spaces(?desc_inset - Pos + 1),
+            guild_cli:out(Desc);
+        error ->
+            ok
+    end.

@@ -22,7 +22,7 @@
          model_section_for_args/2,
          model_or_resource_section_for_args/2, run_db_for_args/2,
          port_opt/2, exec_operation/2, exec_op/2, preview_op_cmd/1,
-         exec_run/2, env_from_opts/2]).
+         exec_run/2, env_from_opts/2, cli_out_spaces/1]).
 
 -define(github_repo_url, "https://github.com/guildai/guild").
 
@@ -480,3 +480,13 @@ maybe_flag_val(Flag, Name, Val, Opts, Env) ->
         true -> [{Name, Val}|Env];
         false -> Env
     end.
+
+%% ===================================================================
+%% CLI output spaces
+%% ===================================================================
+
+cli_out_spaces(N) when N > 0 ->
+    guild_cli:out(" "),
+    cli_out_spaces(N - 1);
+cli_out_spaces(_) ->
+    ok.
