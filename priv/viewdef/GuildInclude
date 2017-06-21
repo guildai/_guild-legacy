@@ -55,6 +55,17 @@
   reduce = last
   format = 0.00%
 
+[template "train-accuracy-field"]
+
+  @attrs template "accuracy-field"
+  color = teal-600
+  label = Train Accuracy
+
+[template "validation-accuracy-field"]
+
+  @attrs template "accuracy-field"
+  label = Validation Accuracy
+
 [template "loss-field"]
 
   color = red-700
