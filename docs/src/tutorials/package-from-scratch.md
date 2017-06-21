@@ -510,26 +510,45 @@ which may simplify script maintenance.
 Create a script named `mnist_deep_with_summaries.py` in the project
 directory that looks like this:
 
-TODO: reference this file in source somewhere!
+## TODO
 
-TODO: Add model and flags
+### TODO: reference this file in source somewhere!
 
-TODO: Add compare fields
+### TODO: Add model and flags
 
-TODO: Mod copy working instructions above a
+### TODO: Add compare fields
+
+### TODO: Mod copy working instructions above a
 
 - Rename src/tensorflow to src/tensorflow.orig
 - Copy src/tensorflow.orig to src/tensorflow.new
 - Make changes to src/tensorflow.new
 
-TODO: additional sources
+### TODO: additional sources
 
 - Guild.in (copied from tensorflow.new
 - tensorflow.patch
 - mnist_deep_with_summaries.py
 
-TODO: packager
+### TODO: packager
 
 - patch files in prepare
 - delete build
 - copy files in package
+
+### TODO: new vs orig  workflow
+
+Update docs to simply copy the top level dir from its original to
+NAME.orig. Then modify the original, using NAME.orig to generate a
+patch file.
+
+This is because the Guild project might refer to locations in that top
+level dir and so will require the original name.
+
+Also note to copy Guild.in to Guild, if there is one.
+
+### TODO: filling in supported hyper params?
+
+This might not apply here as much, because the example is very
+simple. But we could show how additional params could be exposed -
+simply by defining the flag or by patching + flag.
