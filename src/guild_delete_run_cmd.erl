@@ -23,7 +23,7 @@
 parser() ->
     cli:parser(
       "guild delete-run",
-      "[OPTION]... RUNDIR",
+      "[OPTION]... [RUNDIR]",
       "Remove a run by deleting RUNDIR or the latest using --latest-run.\n"
       "\n"
       "Use 'guild list-runs' to list runs that can be used for RUNDIR.\n",
@@ -56,6 +56,6 @@ quote_dir(Dir) ->
 print_invalid_rundir(Dir) ->
     guild_cli:cli_error(
       io_lib:format(
-        "'~s' is not a Guild run directory~nn"
-        "Try 'guild list runs' for a list.",
+        "'~s' is not a Guild run directory~n"
+        "Try 'guild list-runs' for a list.",
         [Dir])).
