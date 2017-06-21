@@ -71,7 +71,7 @@ limitations under the License.
                return "col-12";
            } else if (fields.length == 2) {
                return "col-12 col-sm-6";
-           } else if (fields.length == 3) {
+           } else if (fields.length % 3 == 0 || fields.length % 3 == 2) {
                return "col-12 col-md-4";
            } else if (fields.length == 4) {
                return "col-12 col-sm-6 col-xl-3";
