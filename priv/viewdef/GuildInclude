@@ -6,16 +6,26 @@
 
 [train-view]
 
-  content = fields series output
+  content = train-fields series output
   sidebar = flags attrs
+
+[eval-view]
+
+  content = eval-fields
 
 ###################################################################
 # Components
 ###################################################################
 
-[component "fields"]
+[component "train-fields"]
 
   element = guild-fields
+  scope = run
+
+[component "eval-fields"]
+
+  element = guild-fields
+  scope = eval
 
 [component "series"]
 
