@@ -93,7 +93,7 @@ format_project_section({Path, Attrs}) ->
     {section_path_key(Path), format_section_attrs(Attrs)}.
 
 section_path_key(Path) ->
-    iolist_to_binary(lists:join($\t, Path)).
+    iolist_to_binary(guild_util:list_join(Path, $\t)).
 
 format_section_attrs(Attrs) ->
     AttrsBin = [{list_to_binary(K), list_to_binary(V)} || {K, V} <- Attrs],
