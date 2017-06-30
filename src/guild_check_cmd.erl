@@ -35,6 +35,7 @@ parser() ->
 main(_Opts, []) ->
     guild_app:init_support([exec]),
     print_guild_info(),
+    print_erlang_info(),
     print_tensorflow_info(),
     print_psutil_info(),
     print_nvidia_tools_info().
@@ -45,6 +46,11 @@ print_guild_info() ->
 
 guild_home() ->
     filename:dirname(guild_app:priv_dir()).
+
+print_erlang_info() ->
+    io:format(
+      user, "otp_version:            ~s~n",
+      [erlang:system_info(otp_release)]).
 
 print_tensorflow_info() ->
     CheckBin = guild_app:priv_bin("tensorflow-check"),
