@@ -40,41 +40,18 @@ limitations under the License.
       <div class="row">
         <guild-run-select-page-header env="{{env}}"></guild-run-select-page-header>
       </div>
-      <div class="row">
-        <guild-eval-select env="{{env}}"></guild-eval-select>
-      </div>
+
+      <guild-view-page-overlay id="overlay"></guild-view-page-overlay>
 
       <div class="row row-20">
         <div id="main" class="col-lg-8 col-xl-9">
-
-          <div class="row">
-            <div class="col-12">
-              <vz-field
-                  label="Test accuracy"
-                  value="98.23%"
-                  color="green-700"
-                  icon="maps:my-location">
-              </vz-field>
-            </div>
-          </div>
-
+          Main here
         </div>
         <div id="sidebar" class="col-12 col-lg-4 col-xl-3">
-
-          <div class="component">
-            <guild-component-panel heading="Flags">
-              <vz-keyval-table data="[[flagsTEMP]]"></vz-keyval-table>
-            </guild-component-panel>
-          </div>
-
-          <div class="component">
-            <guild-component-panel heading="Attributes">
-              <vz-keyval-table data="[[attrsTEMP]]"></vz-keyval-table>
-            </guild-component-panel>
-          </div>
-
+          Sidebar here
         </div>
       </div>
+
     </div>
   </template>
   <script>
@@ -84,27 +61,57 @@ limitations under the License.
        properties: {
            env: Object,
 
-           flagsTEMP: {
-               value: function() {
-                   return {
-                       "Foo": "123",
-                       "Bar": "456"
-                   }
-               }
-           },
+       },
 
-           attrsTEMP: {
-               value: function() {
-                   return {
-                       "cpu_cores": "8",
-                       "cpu_model": "Intel(R) Core(TM) i7-6820HQ CPU @ 2.70GHz",
-                       "gpu0_memory": "2002 MB",
-                       "gpu0_name": "GeForce 940MX",
-                       "mem_total": "32040 MB",
-                       "tensorflow_version": "1.2.0"
-                   }
+       observers: [
+           "refreshPage(env.project, env.selectedRun, env.runs)"
+       ],
+
+       refreshPage: function(project, selected, runs) {
+           var run = Guild.Run.runForId(selected, runs);
+           if (run) {
+               if (this.lastContentRun != run.id) {
+                   this.lastContentRun = run.id;
+                   var view = this.util.viewForRun(project, run);
+                   this.refreshTarget("main", view, "content", project);
+                   this.refreshTarget("sidebar", view, "sidebar", project);
+                   this.$.overlay.close();
                }
+           } else {
+               // run was deleted
+               this.$.overlay.open();
            }
+       },
+
+       refreshTarget: function(targetId, view, componentsAttr, project) {
+           console.log("refreshTarget", targetId, view, componentsAttr, project); return;
+           var content = this.initContent(view, componentsAttr, project);
+           var target = this.$[targetId];
+           this.util.removeChildren(target);
+           for (var i = 0; i < content.length; i++) {
+               var row = this.initContentRow(content[i]);
+               Polymer.dom(target).appendChild(row);
+           }
+       },
+
+       util: new function() {
+
+           this.viewForRun = function(project, run) {
+               return Guild.Project.namedSectionOrDefault(
+                   project,
+                   "train-view",
+                   run.model);
+           };
+
+           this.resolveContent = function(name, project) {
+               return Guild.Project.namedSection(project, "component", name);
+           };
+
+           this.removeChildren = function(el) {
+               while (el.firstChild) {
+                   el.removeChild(el.firstChild);
+               }
+           };
        }
    });
   </script>
