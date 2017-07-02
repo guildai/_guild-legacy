@@ -21,6 +21,34 @@ limitations under the License.
 <link rel="import" href="../guild-styles/guild-styles.html">
 <link rel="import" href="../guild-view/guild-view-page-overlay.html">
 
+<!-- Page components
+
+     The scheme used to define components for this page is an unfortunate
+     requirements due to Polymer's lack of data binding for dynamically
+     created components (see https://github.com/Polymer/polymer/issues/1778).
+     Components must be declared in the DOM to support data binding. Each
+     possible component is wrapped in a template that tests specifically for
+     an "element" value. Ideally we could generate the component dynamically,
+     set the require attributes, and bidirectional data bindings would just
+     work.
+
+     The steps to add support for a new component:
+
+     - Import the component definition
+
+     - Add the component to the main or sidebar within a conditional template,
+       based on where is may reasonably be used. If it can be reasonably used
+       in both, you must add it to both.
+
+     - Write a condition (e.g. isFoo) that tests specifically for the component
+       element string.
+-->
+<link rel="import" href="../guild-attrs/guild-attrs.html">
+<link rel="import" href="../guild-fields/guild-fields.html">
+<link rel="import" href="../guild-flags/guild-flags.html">
+<link rel="import" href="../guild-output/guild-output.html">
+<link rel="import" href="../guild-series/guild-series.html">
+
 <dom-module id="guild-train-page">
   <template>
     <style include="guild-row-styles"></style>
@@ -48,8 +76,35 @@ limitations under the License.
 
       <div class="row row-20">
         <div id="main" class="col-lg-8 col-xl-9">
+          <template is="dom-repeat" items="[[components.main]]" as="c">
+            <div class="row row-20">
+              <div class="component col-12">
+                <template is="dom-if" if="[[isFields(c)]]">
+                  <guild-fields env="[[env]]" active="[[active]]"></guild-fields>
+                </template>
+                <template is="dom-if" if="[[isSeries(c)]]">
+                  <guild-series env="[[env]]" active="[[active]]"></guild-series>
+                </template>
+                <template is="dom-if" if="[[isOutput(c)]]">
+                  <guild-output env="[[env]]" active="[[active]]"></guild-output>
+                </template>
+              </div>
+            </div>
+          </template>
         </div>
         <div id="sidebar" class="col-12 col-lg-4 col-xl-3">
+          <template is="dom-repeat" items="[[components.sidebar]]" as="c">
+            <div class="row row-20">
+              <div class="component col-12">
+                <template is="dom-if" if="[[isFlags(c)]]">
+                  <guild-flags env="[[env]]"></guild-flags>
+                </template>
+                <template is="dom-if" if="[[isAttrs(c)]]">
+                  <guild-attrs env="[[env]]"></guild-attrs>
+                </template>
+              </div>
+            </div>
+          </template>
         </div>
       </div>
 
@@ -61,16 +116,76 @@ limitations under the License.
 
        properties: {
            env: Object,
-           active: {
-               type: Boolean,
-               observer: "activeChanged"
+           active: Boolean,
+           components: {
+               computed: "computeComponents(env.project, env.selectedRun, env.runs)"
            }
        },
 
        observers: [
-           "refreshPage(env.project, env.selectedRun, env.runs)"
+           "runChanged(env.selectedRun, env.runs)"
        ],
 
+       computeComponents: function(project, selected, runs) {
+           var run = Guild.Run.runForId(selected, runs);
+           if (run) {
+               var view = this.util.viewForRun(project, run);
+               return {
+                   main: this.viewComponents(view, "content", project),
+                   sidebar: this.viewComponents(view, "sidebar", project)
+               }
+           } else {
+               return this.components;
+           }
+       },
+
+       viewComponents: function(view, type, project) {
+           var refs = (view[type] || "").split(/\s+/);
+           var comps = [];
+           for (var i = 0; i < refs.length; i++) {
+               var cdef = this.util.resolveContent(refs[i], project);
+               if (cdef) {
+                   console.log("cdef", cdef);
+                   comps.push(cdef);
+               }
+           }
+           return comps;
+       },
+
+       isFields: function(c) {
+           return c.element == "guild-fields";
+       },
+
+       isSeries: function(c) {
+           return c.element == "guild-series";
+       },
+
+       isAttrs: function(c) {
+           return c.element == "guild-attrs";
+       },
+
+       isFlags: function(c) {
+           return c.element == "guild-flags";
+       },
+
+       isOutput: function(c) {
+           return c.element == "guild-output";
+       },
+
+       runChanged: function(selected, runs) {
+           var run = Guild.Run.runForId(selected, runs);
+           if (run) {
+               if (this.lastContentRun != run.id) {
+                   this.lastContentRun = run.id;
+                   this.$.overlay.close();
+               }
+           } else {
+               // run was deleted
+               this.$.overlay.open();
+           }
+       },
+
+       /*
        refreshPage: function(project, selected, runs) {
            var run = Guild.Run.runForId(selected, runs);
            if (run) {
@@ -86,54 +201,7 @@ limitations under the License.
                this.$.overlay.open();
            }
        },
-
-       refreshTarget: function(targetId, view, componentsAttr, project) {
-           var content = this.initContent(view, componentsAttr, project);
-           var target = this.$[targetId];
-           this.util.removeChildren(target);
-           for (var i = 0; i < content.length; i++) {
-               var row = this.initContentRow(content[i]);
-               Polymer.dom(target).appendChild(row);
-           }
-       },
-
-       initContent: function(section, type, project) {
-           var refs = (section[type] || "").split(/\s+/);
-           var content = [];
-           for (var i = 0; i < refs.length; i++) {
-               var cdef = this.util.resolveContent(refs[i], project);
-               if (cdef) {
-                   this.importElementSource(cdef.element);
-                   var c = this.create(cdef.element);
-                   c.env = this.env;
-                   content.push(c);
-               }
-           }
-           return content;
-       },
-
-       importElementSource: function(element) {
-           var relHref = "../" + element + "/" + element + ".html";
-           var href = this.resolveUrl(relHref);
-           this.importHref(href);
-       },
-
-       initContentRow: function(content) {
-           var row = this.create("div");
-           row.className = "row row-20";
-           var col = this.create("div");
-           col.className = "component col-12";
-           row.appendChild(col);
-           col.appendChild(content);
-           return row;
-       },
-
-       activeChanged: function(val) {
-           var cs = Polymer.dom(this.root).querySelectorAll(".component");
-           cs.forEach(function(c) {
-               c.children[0].active = val;
-           });
-       },
+       */
 
        util: new function() {
 
@@ -146,12 +214,6 @@ limitations under the License.
 
            this.resolveContent = function(name, project) {
                return Guild.Project.namedSection(project, "component", name);
-           };
-
-           this.removeChildren = function(el) {
-               while (el.firstChild) {
-                   el.removeChild(el.firstChild);
-               }
            };
        }
    });

@@ -70,6 +70,7 @@ limitations under the License.
        },
 
        selectedRunChanged: function(selected, route) {
+           console.log("selected-run-changed", selected, route.__queryParams);
            var params = selected
                       ? this.util.applyRunParam(selected, route.__queryParams)
                       : this.util.deleteRunParam(route.__queryParams);

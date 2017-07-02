@@ -84,7 +84,6 @@ limitations under the License.
        },
 
        refreshTarget: function(targetId, view, componentsAttr, project) {
-           console.log("refreshTarget", targetId, view, componentsAttr, project); return;
            var content = this.initContent(view, componentsAttr, project);
            var target = this.$[targetId];
            this.util.removeChildren(target);
