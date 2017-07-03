@@ -28,7 +28,7 @@ limitations under the License.
     <div class="row row-20">
       <template is="dom-repeat" items="[[fields]]" as="field">
         <div class$="field-col [[fieldColClasses(fields)]]">
-          <guild-field env="[[env]]" field="[[field]]"></guild-field>
+          <guild-field env="[[env]]" field="[[field]]" scope="[[scope]]"></guild-field>
         </div>
       </template>
     </div>
@@ -39,6 +39,7 @@ limitations under the License.
 
        properties: {
            env: Object,
+           scope: String,
            fields: {
                type: Array,
                computed: "computeFields(env.project, env.selectedRun, env.runs)"

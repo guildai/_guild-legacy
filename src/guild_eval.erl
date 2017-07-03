@@ -18,8 +18,12 @@
 
 -module(guild_eval).
 
--export([is_eval/1]).
+-export([is_eval/1, evals_for_rundir/1]).
 
 is_eval(Dir) ->
     %% Use guild_run:is_run/1 as it's the same structural test.
     guild_run:is_run(Dir).
+
+evals_for_rundir(Dir) ->
+    Pattern = filename:join(Dir, "eval-*"),
+    filelib:wildcard(binary_to_list(Pattern)).

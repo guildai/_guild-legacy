@@ -147,7 +147,16 @@ runs(#state{run_roots=RunRoots}) ->
     guild_run:runs_for_runroots(RunRoots).
 
 format_runs(Runs) ->
-    sort_formatted_runs([guild_run_util:format_run(Run) || Run <- Runs]).
+    sort_formatted_runs([format_run(Run) || Run <- Runs]).
+
+format_run(Run) ->
+    apply_has_eval(guild_run_util:format_run(Run)).
+
+apply_has_eval(#{dir:=Dir}=Run) ->
+    case guild_eval:evals_for_rundir(Dir) of
+        [] -> Run#{has_eval=>false};
+        _ -> Run#{has_eval=>true}
+    end.
 
 sort_formatted_runs(Runs) ->
     Cmp = fun(A, B) -> run_start_time(A) > run_start_time(B) end,

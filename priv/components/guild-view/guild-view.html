@@ -18,10 +18,9 @@ limitations under the License.
 <link rel="import" href="../guild-env/guild-env.html">
 
 <link rel="import" href="../guild-compare-page/guild-compare-page.html">
-<link rel="import" href="../guild-eval-page/guild-eval-page.html">
+<link rel="import" href="../guild-components-page/guild-components-page.html">
 <link rel="import" href="../guild-run/guild-run.html">
 <link rel="import" href="../guild-tensorboard-page/guild-tensorboard-page.html">
-<link rel="import" href="../guild-train-page/guild-train-page.html">
 
 <link rel="import" href="guild-view-app-layout.html">
 <link rel="import" href="guild-view-fullscreen.html">
@@ -43,13 +42,13 @@ limitations under the License.
 
       <guild-view-page id="train" label="Train" icon="av:repeat" env="{{env}}">
         <template>
-          <guild-train-page env="{{env}}" viewdef="[[viewdef]]"></guild-train-page>
+          <guild-components-page env="{{env}}" viewdef="[[viewdef]]" scope="train"></guild-components-page>
         </template>
       </guild-view-page>
 
       <guild-view-page id="eval" label="Evaluate" icon="image:crop-free" env="{{env}}">
         <template>
-          <guild-eval-page env="{{env}}" viewdef="[[viewdef]]"></guild-eval-page>
+          <guild-components-page env="{{env}}" viewdef="[[viewdef]]" scope="eval"></guild-components-page>
         </template>
       </guild-view-page>
 

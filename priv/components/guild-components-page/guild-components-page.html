@@ -20,6 +20,7 @@ limitations under the License.
 <link rel="import" href="../guild-run-select-page-header/guild-run-select-page-header.html">
 <link rel="import" href="../guild-styles/guild-styles.html">
 <link rel="import" href="../guild-view/guild-view-page-overlay.html">
+<link rel="import" href="../paper-card/paper-card.html">
 
 <!-- Page components
 
@@ -49,7 +50,7 @@ limitations under the License.
 <link rel="import" href="../guild-output/guild-output.html">
 <link rel="import" href="../guild-series/guild-series.html">
 
-<dom-module id="guild-train-page">
+<dom-module id="guild-components-page">
   <template>
     <style include="guild-row-styles"></style>
     <style>
@@ -65,6 +66,17 @@ limitations under the License.
      .bottom-spaced {
          margin-bottom: 0;
      }
+
+     paper-card {
+         width: 100%;
+     }
+
+     div.code {
+         margin: 1em 0;
+         padding: 1em;
+         font-family: monospace;
+         background-color: #f6f6f6;
+     }
     </style>
 
     <div class="container-fluid">
@@ -74,49 +86,74 @@ limitations under the License.
 
       <guild-view-page-overlay id="overlay"></guild-view-page-overlay>
 
-      <div class="row row-20">
-        <div id="main" class="col-lg-8 col-xl-9">
-          <template is="dom-repeat" items="[[components.main]]" as="c">
-            <div class="row row-20">
-              <div class="component col-12">
-                <template is="dom-if" if="[[isFields(c)]]">
-                  <guild-fields env="[[env]]" active="[[active]]"></guild-fields>
-                </template>
-                <template is="dom-if" if="[[isSeries(c)]]">
-                  <guild-series env="[[env]]" active="[[active]]"></guild-series>
-                </template>
-                <template is="dom-if" if="[[isOutput(c)]]">
-                  <guild-output env="[[env]]" active="[[active]]"></guild-output>
-                </template>
+      <template is="dom-if" if="[[waitingForEval]]">
+        <div class="row row-20">
+          <div class="col-6 offset-3">
+            <paper-card heading="Waiting for evaluation">
+              <div class="card-content">
+                This run has not been evaluated. To evaluate, run the
+                following command in your project:
+                <div class="code">
+                  guild evaluate [[runDir]]
+                </div>
               </div>
-            </div>
-          </template>
+            </paper-card>
+          </div>
         </div>
-        <div id="sidebar" class="col-12 col-lg-4 col-xl-3">
-          <template is="dom-repeat" items="[[components.sidebar]]" as="c">
-            <div class="row row-20">
-              <div class="component col-12">
-                <template is="dom-if" if="[[isFlags(c)]]">
-                  <guild-flags env="[[env]]"></guild-flags>
-                </template>
-                <template is="dom-if" if="[[isAttrs(c)]]">
-                  <guild-attrs env="[[env]]"></guild-attrs>
-                </template>
+      </template>
+
+      <template is="dom-if" if="[[!waitingForEval]]">
+        <div class="row row-20">
+          <div class="col-lg-8 col-xl-9">
+            <template is="dom-repeat" items="[[components.main]]" as="c">
+              <div class="row row-20">
+                <div class="component col-12">
+                  <template is="dom-if" if="[[isFields(c)]]">
+                    <guild-fields env="[[env]]" active="[[active]]" scope="[[scope]]"></guild-fields>
+                  </template>
+                  <template is="dom-if" if="[[isSeries(c)]]">
+                    <guild-series env="[[env]]" active="[[active]]" scope="[[scope]]"></guild-series>
+                  </template>
+                  <template is="dom-if" if="[[isOutput(c)]]">
+                    <guild-output env="[[env]]" active="[[active]]" scope="[[scope]]"></guild-output>
+                  </template>
+                </div>
               </div>
-            </div>
-          </template>
+            </template>
+          </div>
+          <div class="col-12 col-lg-4 col-xl-3">
+            <template is="dom-repeat" items="[[components.sidebar]]" as="c">
+              <div class="row row-20">
+                <div class="component col-12">
+                  <template is="dom-if" if="[[isFlags(c)]]">
+                    <guild-flags env="[[env]]" scope="[[scope]]"></guild-flags>
+                  </template>
+                  <template is="dom-if" if="[[isAttrs(c)]]">
+                    <guild-attrs env="[[env]]" scope="[[scope]]"></guild-attrs>
+                  </template>
+                </div>
+              </div>
+            </template>
+          </div>
         </div>
-      </div>
+      </template>
 
     </div>
   </template>
   <script>
    Polymer({
-       is: "guild-train-page",
+       is: "guild-components-page",
 
        properties: {
            env: Object,
+           scope: String,
            active: Boolean,
+           waitingForEval: {
+               computed: "computeWaitingForEval(scope, env.selectedRun, env.runs)"
+           },
+           runDir: {
+               computed: "computeRunDir(env.selectedRun, env.runs)"
+           },
            components: {
                computed: "computeComponents(env.project, env.selectedRun, env.runs)"
            }
@@ -125,6 +162,16 @@ limitations under the License.
        observers: [
            "runChanged(env.selectedRun, env.runs)"
        ],
+
+       computeWaitingForEval: function(scope, selected, runs) {
+           var run = Guild.Run.runForId(selected, runs);
+           return scope == "eval" && run && !run.has_eval;
+       },
+
+       computeRunDir: function(selected, runs) {
+           var run = Guild.Run.runForId(selected, runs);
+           return run && run.dir;
+       },
 
        computeComponents: function(project, selected, runs) {
            var run = Guild.Run.runForId(selected, runs);

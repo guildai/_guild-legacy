@@ -22,6 +22,7 @@ limitations under the License.
   <template>
     <guild-run-data-listener
         env="[[env]]"
+        scope="[[scope]]"
         run-data-source="attrs"
         run-data-fetch-interval="0"
         data="{{data}}">
@@ -35,7 +36,8 @@ limitations under the License.
        is: "guild-attrs",
 
        properties: {
-           env: Object
+           env: Object,
+           scope: String
        }
    });
   </script>

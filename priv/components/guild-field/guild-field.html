@@ -21,6 +21,7 @@ limitations under the License.
   <template>
     <guild-run-data-listener
         env="[[env]]"
+        scope="[[scope]]"
         run-data-source="[[field.source]]"
         stop-with-run
         data-reduce="[[field.reduce]]"
@@ -40,7 +41,8 @@ limitations under the License.
        is: "guild-field",
 
        properties: {
-           env: Object
+           env: Object,
+           scope: String
        },
 
        mapIcon: function(icon) {

@@ -25,9 +25,10 @@ limitations under the License.
 
        properties: {
            env: Object,
+           scope: String,
            runDataSource: String,
            dataSource: {
-               computed: "computeDataSource(runDataSource, env.selectedRun)",
+               computed: "computeDataSource(runDataSource, env.selectedRun, scope)",
            },
            stopWithRun: {
                type: Boolean,
@@ -61,9 +62,13 @@ limitations under the License.
            formattedDefault: String
        },
 
-       computeDataSource: function(runDataSource, selectedRun) {
+       computeDataSource: function(runDataSource, selectedRun, scope) {
            if (selectedRun) {
-               return runDataSource + "?run=" + selectedRun;
+               if (scope == "eval") {
+                   return runDataSource + "?run=" + selectedRun + "&eval";
+               } else {
+                   return runDataSource + "?run=" + selectedRun;
+               }
            } else {
                return null;
            }
