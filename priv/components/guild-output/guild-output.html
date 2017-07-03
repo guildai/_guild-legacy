@@ -44,6 +44,7 @@ limitations under the License.
 
     <guild-run-data-listener
         env="[[env]]"
+        scope="[[scope]]"
         run-data-source="output"
         data="{{data}}"
         stop-with-run
@@ -72,6 +73,7 @@ limitations under the License.
 
        properties: {
            env: Object,
+           scope: String,
            filter: String,
            nextIndex: Number,
            data: Object

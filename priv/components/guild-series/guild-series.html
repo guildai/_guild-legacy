@@ -28,7 +28,7 @@ limitations under the License.
     <div class="row row-20">
       <template is="dom-repeat" items="[[series]]" as="chartSeries">
         <div class="series-col col-12 col-xl-6">
-          <guild-chart env="[[env]]" series="[[chartSeries]]"></guild-chart>
+          <guild-chart env="[[env]]" scope="[[scope]]" series="[[chartSeries]]"></guild-chart>
         </div>
       </template>
     </div>
@@ -39,6 +39,7 @@ limitations under the License.
 
        properties: {
            env: Object,
+           scope: String,
            series: {
                type: Array,
                computed: "computeSeries(env.project, env.selectedRun, env.runs)"

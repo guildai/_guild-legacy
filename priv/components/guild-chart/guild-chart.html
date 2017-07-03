@@ -44,6 +44,7 @@ limitations under the License.
 
     <guild-run-data-listener
         env="[[env]]"
+        scope="[[scope]]"
         run-data-source="[[series.source]]"
         data="{{data}}"
         active="[[active]]"
@@ -72,6 +73,7 @@ limitations under the License.
 
        properties: {
            env: Object,
+           scope: String,
            series: Object,
            active: Boolean,
            data: Object,
