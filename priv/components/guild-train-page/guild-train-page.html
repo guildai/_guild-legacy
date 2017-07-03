@@ -135,7 +135,7 @@ limitations under the License.
                    sidebar: this.viewComponents(view, "sidebar", project)
                }
            } else {
-               return this.components;
+               return [];
            }
        },
 
@@ -145,7 +145,6 @@ limitations under the License.
            for (var i = 0; i < refs.length; i++) {
                var cdef = this.util.resolveContent(refs[i], project);
                if (cdef) {
-                   console.log("cdef", cdef);
                    comps.push(cdef);
                }
            }
@@ -184,24 +183,6 @@ limitations under the License.
                this.$.overlay.open();
            }
        },
-
-       /*
-       refreshPage: function(project, selected, runs) {
-           var run = Guild.Run.runForId(selected, runs);
-           if (run) {
-               if (this.lastContentRun != run.id) {
-                   this.lastContentRun = run.id;
-                   var view = this.util.viewForRun(project, run);
-                   this.refreshTarget("main", view, "content", project);
-                   this.refreshTarget("sidebar", view, "sidebar", project);
-                   this.$.overlay.close();
-               }
-           } else {
-               // run was deleted
-               this.$.overlay.open();
-           }
-       },
-       */
 
        util: new function() {
 

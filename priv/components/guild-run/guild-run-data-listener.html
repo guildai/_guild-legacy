@@ -71,7 +71,6 @@ limitations under the License.
 
        computeDataFetchInterval: function(interval, stopWithRun, selected,
                                           runs, settings) {
-           console.log("compute-data-fetch-interval", stopWithRun, this.util.isRunning(selected, runs));
            if (stopWithRun && !this.util.isRunning(selected, runs)) {
                return 0;
            } else {
@@ -82,7 +81,6 @@ limitations under the License.
        },
 
        handleData: function(data) {
-           //console.log("handle-data", this.runDataSource, this.dataFetchInterval, this.active);
            this.data = data;
        },
 
