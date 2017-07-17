@@ -86,6 +86,14 @@ limitations under the License.
 
       <guild-view-page-overlay id="overlay"></guild-view-page-overlay>
 
+      <!-- NOTE The hard-codedness of "evals" here is not ideal - we'd like
+           abstract the content from the "components page" entirely and just
+           drive content from the view. In this case, we're stopping short of
+           a full blown abstraction and relying on our understanding of "scope"
+           here, which can be "train" or "eval". In time this may become a
+           more complete abstraction.
+      -->
+
       <template is="dom-if" if="[[waitingForEval]]">
         <div class="row row-20">
           <div class="col-6 offset-3">
@@ -100,6 +108,10 @@ limitations under the License.
             </paper-card>
           </div>
         </div>
+      </template>
+
+      <template is="dom-if" if="[[eval]]">
+        You're looking at an eval page yo.
       </template>
 
       <template is="dom-if" if="[[!waitingForEval]]">
@@ -155,7 +167,7 @@ limitations under the License.
                computed: "computeRunDir(env.selectedRun, env.runs)"
            },
            components: {
-               computed: "computeComponents(env.project, env.selectedRun, env.runs)"
+               computed: "computeComponents(env.project, env.selectedRun, env.runs, scope)"
            }
        },
 
@@ -173,17 +185,20 @@ limitations under the License.
            return run && run.dir;
        },
 
-       computeComponents: function(project, selected, runs) {
+       computeComponents: function(project, selected, runs, scope) {
            var run = Guild.Run.runForId(selected, runs);
            if (run) {
-               var view = this.util.viewForRun(project, run);
-               return {
-                   main: this.viewComponents(view, "content", project),
-                   sidebar: this.viewComponents(view, "sidebar", project)
+               var view = this.util.viewForRun(project, run, scope);
+               if (view) {
+                   return {
+                       main: this.viewComponents(view, "content", project),
+                       sidebar: this.viewComponents(view, "sidebar", project)
+                   }
+               } else {
+                   console.warn("view not defined for scope", this.scope);
                }
-           } else {
-               return [];
            }
+           return [];
        },
 
        viewComponents: function(view, type, project) {
@@ -233,10 +248,10 @@ limitations under the License.
 
        util: new function() {
 
-           this.viewForRun = function(project, run) {
+           this.viewForRun = function(project, run, scope) {
                return Guild.Project.namedSectionOrDefault(
                    project,
-                   "train-view",
+                   scope + "-view",
                    run.model);
            };
 

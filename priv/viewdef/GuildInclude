@@ -12,8 +12,11 @@
 
 [eval-view]
 
-  content = fields series output
-  sidebar = flags attrs
+  content = fields
+  sidebar = flags
+  
+  _content = fields series output
+  _sidebar = flags attrs
   scope = eval
 
 ###################################################################
