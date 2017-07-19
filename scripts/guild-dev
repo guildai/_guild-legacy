@@ -33,4 +33,8 @@ export EMU=beam
 export PROGNAME=$0
 export ERL_CRASH_DUMP=/dev/null
 
-exec $BINDIR/erlexec +B -boot start_clean -noshell -run guild main -extra "$@"
+if [ "$1" = "shell" ]; then
+    exec $BINDIR/erlexec +B -boot start_clean
+else
+    exec $BINDIR/erlexec +B -boot start_clean -noshell -run guild main -extra "$@"
+fi
