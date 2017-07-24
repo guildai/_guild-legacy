@@ -168,7 +168,7 @@ project_dir_desc(".") -> "This directory";
 project_dir_desc(Dir) -> io_lib:format("Directory '~s'", [Dir]).
 
 project_dir_opt(".") -> "";
-project_dir_opt(Dir) -> io_lib:format(" --project-dir ~s", [escape_path(Dir)]).
+project_dir_opt(Dir) -> io_lib:format(" --project ~s", [escape_path(Dir)]).
 
 escape_path(Path) -> re:replace(Path, " ", "\\\\ ", [global]).
 
