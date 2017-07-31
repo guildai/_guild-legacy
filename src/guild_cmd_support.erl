@@ -21,8 +21,8 @@
          validate_rundir/1, run_for_args/2, model_section_for_name/2,
          model_section_for_args/2,
          model_or_resource_section_for_args/2, run_db_for_args/2,
-         port_opt/2, exec_operation/2, exec_op/2, preview_op_cmd/1,
-         exec_run/2, env_from_opts/2, cli_out_spaces/1]).
+         port_opt/2, exec_op/2, preview_op_cmd/1, exec_run/2,
+         env_from_opts/2, cli_out_spaces/1]).
 
 -define(github_repo_url, "https://github.com/guildai/guild").
 
@@ -357,14 +357,6 @@ port_opt(Opts, Default) ->
 
 validate_port(P) when P > 0, P < 65535 -> P;
 validate_port(_) -> throw({error, "invalid value for --port"}).
-
-%% ===================================================================
-%% Exec operation
-%% ===================================================================
-
-exec_operation(Name, Op) ->
-    {ok, Pid} = guild_operation_sup:start_op(Name, Op),
-    wait_for_op_result(Pid).
 
 %% ===================================================================
 %% Exec op
