@@ -50,8 +50,9 @@ view_options() ->
       fmt("refresh interval in seconds (default is ~b)",
           [?default_refresh_interval]),
       [{metavar, "SECONDS"}]},
-     {logging, "-l, --logging",
-      "enable logging", [flag]},
+     {logging, "-l, --logging", "enable logging", [flag]},
+     {disable_tb, "--disable-tensorboard",
+      "disable TensorBoard support", [flag]},
      %% view --debug flag is shorthand for global --debug and --reload
      {debug, "--debug", "Run with debug settings", [hidden, flag]},
      {tf_demo, "--tf-demo", "Use tf-demo data", [hidden, flag]}].
@@ -66,7 +67,7 @@ main(Opts, []) ->
     apply_debug_opts(Opts),
     Project = guild_cmd_support:project_from_opts(Opts),
     guild_app:init_support([exec]),
-    TBInfo = start_tensorboard(Project, Opts),
+    TBInfo = maybe_start_tensorboard(Project, Opts),
     View = init_project_view(Project, Opts, TBInfo),
     Port = guild_cmd_support:port_opt(Opts, ?default_port),
     Server = start_http_server(View, Port, Opts),
@@ -81,6 +82,12 @@ maybe_apply_debug_opts(true) ->
     ok = application:ensure_started(sasl);
 maybe_apply_debug_opts(false) ->
     ok.
+
+maybe_start_tensorboard(Project, Opts) ->
+    case proplists:get_bool(disable_tb, Opts) of
+        true -> tb_info(undefined);
+        false -> start_tensorboard(Project, Opts)
+    end.
 
 start_tensorboard(Project, Opts) ->
     LogDir = tensorboard_logdir(Project),
